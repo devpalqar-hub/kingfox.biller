@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/DashBoard/Service/DashBoardController.dart';
 import 'package:kinfox_biller/DashBoard/Views/Header.dart';
+import 'package:kinfox_biller/InitiateReturnScreen/InitiateReturnScreen.dart';
+import 'package:kinfox_biller/InventoryManagementScreen/InventoryManagementScreen.dart';
+import 'package:kinfox_biller/OverViewScreen/OverViewScreen.dart';
 import 'package:kinfox_biller/SalesScreen/SalesScreen.dart';
 
 class Dashboardscreen extends StatelessWidget {
@@ -9,11 +12,11 @@ class Dashboardscreen extends StatelessWidget {
 
   final controller = Get.put(DashboardController());
 
-  final pages = const [
-    SalesScreen(),
-    //OverviewScreen(),
-    //InventoryScreen(),
-    //ReturnsScreen(),
+  final pages = [
+    const SalesScreen(),
+    const OverviewScreen(),
+    const InventoryManagementScreen(),
+    InitiateReturnScreen(),
   ];
 
   @override
@@ -22,7 +25,7 @@ class Dashboardscreen extends StatelessWidget {
       body: Column(
         children: [
 
-          const Header(),
+           Header(),
 
           Expanded(
             child: GetBuilder<DashboardController>(

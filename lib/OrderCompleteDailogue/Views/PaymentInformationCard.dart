@@ -9,7 +9,7 @@ class PaymentInformationCard extends StatelessWidget {
     return Container(
       width: 738.w,
       height: 170.h,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24.r),
@@ -17,7 +17,7 @@ class PaymentInformationCard extends StatelessWidget {
      
    
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children:  [

@@ -10,7 +10,7 @@ class NoProductsCard extends StatelessWidget {
       width: double.infinity,
       height: 600.h,
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F4F4),
+        color:  Colors.white,
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: const Color(0xFFE5E7EB),

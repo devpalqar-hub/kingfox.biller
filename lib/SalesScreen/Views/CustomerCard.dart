@@ -7,8 +7,8 @@ class CustomerVoucherCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  Container(
-       width: 448.w,
-        padding: const EdgeInsets.all(18),
+       
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20.r),

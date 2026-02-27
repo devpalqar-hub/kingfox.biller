@@ -7,9 +7,9 @@ class OrderDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 738.w,
+      width: 730.w,
       height: 320.h,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
      
       decoration: BoxDecoration(
         color: Colors.white,
@@ -139,13 +139,13 @@ Widget _CartItem({
               borderRadius: BorderRadius.circular(18.r),
             ),
             child: Padding(
-              padding: EdgeInsets.all(10.w),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
               child: Image.asset(image, fit: BoxFit.contain),
             ),
           ),
           SizedBox(width: 16.w),
           SizedBox(
-            width: 212.w, // 300 - (72+16)
+            width: 212.w, 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

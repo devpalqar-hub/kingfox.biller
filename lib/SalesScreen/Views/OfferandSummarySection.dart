@@ -10,7 +10,7 @@ class OfferAndSummarySection extends StatelessWidget {
       padding: const EdgeInsets.only(left: 12.0,),
       child: Container(
         width: 440.w,
-        padding:  EdgeInsets.all(20.w),
+        padding:  EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         color: const Color(0xFFF5F6F8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class OfferAndSummarySection extends StatelessWidget {
             Text(
               "Order Summary",
               style: TextStyle(
-                fontSize: 28.sp,
+                fontSize: 26.sp,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF101828),
               ),

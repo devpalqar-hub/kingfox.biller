@@ -14,7 +14,7 @@ class ScanSearch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10.w), 
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.r),
@@ -45,6 +45,7 @@ class ScanSearch extends StatelessWidget {
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: "Scan barcode or search products",
+                         isCollapsed: true,
                       ),
                     ),
                   ),

@@ -17,7 +17,11 @@ class Header extends StatelessWidget {
           color: Colors.white,
           child: Row(
             children: [
-              Image(image:  const AssetImage("assets/logo.png"), height: 30.h,),
+              Image.asset(
+                  "assets/logo.png", 
+                  height: 30.h,
+                  fit: BoxFit.contain,
+                ),
               SizedBox(width: 20.w),
               Text(
                 "KingFox",
@@ -36,10 +40,10 @@ class Header extends StatelessWidget {
 
                   const Spacer(),
 
-/// PROFILE SECTION
+
 Row(
   children: [
-    /// GREY NAME CONTAINER
+   
     Container(
       padding: EdgeInsets.symmetric(
         horizontal: 10.w,

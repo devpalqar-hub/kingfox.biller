@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:kinfox_biller/SalesScreen/CompletePaymentScreen.dart';
+import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
+
 
 class PaymentSectionCard extends StatefulWidget {
   const PaymentSectionCard({super.key});
@@ -21,7 +22,7 @@ class _PaymentSectionCardState
   Widget build(BuildContext context) {
     return Container(
       width: 480.w,
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
        borderRadius: BorderRadius.only(
@@ -33,12 +34,8 @@ class _PaymentSectionCardState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// ==========================
-          /// TITLE
-          /// ==========================
           Padding(
-            padding:  EdgeInsets.only(left: 8.0,  ),
+            padding:  EdgeInsets.only(left: 8.w,  ),
             child: Row(
               children: [
                 Text(
@@ -47,18 +44,18 @@ class _PaymentSectionCardState
                     fontSize: 22.sp,
                   color:const Color(0xFF475467),
                   fontWeight: FontWeight.w400,
-                    letterSpacing: 2,
+                    letterSpacing: 2.h,
                         
                   ),
                 ),
-                SizedBox(width: 130.w),
+                SizedBox(width: 100.w),
                  Text(
                   "₹3,677",
                   style: TextStyle(
                     fontSize: 30.sp,
                   color:const Color(0xFF2BA153),
                   fontWeight: FontWeight.w600,
-                    letterSpacing: 2,
+                    letterSpacing: 2.h,
                         
                   ),
                 ),
@@ -73,23 +70,18 @@ class _PaymentSectionCardState
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
-              letterSpacing: 2,
+              letterSpacing: 2.h,
               color: const Color(0xFF667085),
             ),
           ),
 
           SizedBox(height: 24.h),
 
-          /// ==========================
-          /// CASH & ONLINE BUTTONS
-          /// ==========================
           Row(
             children: [
-
-              /// CASH BUTTON
                Padding(
-                 padding: const EdgeInsets.all(5.0),
-                 child: _paymentButton(
+                 padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
+                 child: _paymentType(
                     title: "Cash",
                     icon: Icons.payments_outlined,
                     isSelected: selectedMethod == "cash",
@@ -103,11 +95,9 @@ class _PaymentSectionCardState
               
 
               SizedBox(width: 10.w),
-
-              /// ONLINE BUTTON
               Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: _paymentButton(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                child: _paymentType(
                     title: "Online",
                     icon: Icons.qr_code,
                     isSelected: selectedMethod == "online",
@@ -123,9 +113,12 @@ class _PaymentSectionCardState
           ),
 
           SizedBox(height: 36.h),
-          GestureDetector(
+         GestureDetector(
   onTap: () {
-    Get.to(() => const CompletePaymentScreen());
+    Get.dialog(
+      const OrderCompleteDialog(),
+      barrierDismissible: false,
+    );
   },
   child: Container(
     width: double.infinity,
@@ -147,8 +140,8 @@ class _PaymentSectionCardState
           "COMPLETE & PRINT",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 26.sp,
-            fontWeight: FontWeight.w600,
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -157,9 +150,6 @@ class _PaymentSectionCardState
 ),
           SizedBox(height: 20.h),
 
-          /// ==========================
-          /// F12 QUICK PRINT TEXT
-          /// ==========================
           Center(
             child: RichText(
               text: TextSpan(
@@ -207,10 +197,7 @@ class _PaymentSectionCardState
     );
   }
 
-  /// ==========================
-  /// REUSABLE PAYMENT BUTTON
-  /// ==========================
-  Widget _paymentButton({
+  Widget _paymentType({
     required String title,
     required IconData icon,
     required bool isSelected,
@@ -219,7 +206,7 @@ class _PaymentSectionCardState
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 185.w,
+        width: 165.w,
         height: 52.h,
         decoration: BoxDecoration(
           color: isSelected
@@ -230,7 +217,7 @@ class _PaymentSectionCardState
             color: isSelected
                 ? Colors.black
                 : const Color(0xFFBDBDBD),
-            width: 2,
+            width: 2.w,
           ),
         ),
         child: Row(

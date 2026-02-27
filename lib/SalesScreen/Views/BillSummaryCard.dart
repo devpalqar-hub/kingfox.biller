@@ -11,7 +11,7 @@ class BillSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 450.w,
+      width: 395.w,
     
       decoration: BoxDecoration(
         color: const Color(0xFFF5F6F8),

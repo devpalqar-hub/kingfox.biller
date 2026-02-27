@@ -9,7 +9,7 @@ class CartCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F4F4),
+        color:  Colors.white,
         borderRadius: BorderRadius.circular(30.r),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),

@@ -12,11 +12,11 @@ class SalesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEDF2ED),
+      backgroundColor: const Color(0xffF1F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 40.h),
             child: Column(
               children: [
                 Row(
