@@ -6,6 +6,6 @@ class DashboardController extends GetxController {
 
   void changeTab(int index) {
     currentTab = index;
-    update(); // rebuild UI
+    update(); 
   }
 }

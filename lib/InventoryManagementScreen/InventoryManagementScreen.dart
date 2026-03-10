@@ -27,7 +27,6 @@ class InventoryManagementScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Title
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -74,17 +73,17 @@ class InventoryManagementScreen extends StatelessWidget {
 
                 SizedBox(height: 30.h),
 
-                /// Cards Row
-                const InventoryCardsRow(),
+               
+                 InventoryCardsRow(),
 
                 SizedBox(height: 25.h),
 
-                /// Filters
-                const InventoryFilters(),
+
+                 InventoryFilters(),
 
                 SizedBox(height: 20.h),
 
-                /// Table
+                
                 const InventoryTable(),
               ],
             ),

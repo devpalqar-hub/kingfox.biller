@@ -24,8 +24,6 @@ class OrderCompleteDialog extends StatelessWidget {
           child: Column(
            
             children: [
-
-              /// Close Button
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
@@ -35,8 +33,6 @@ class OrderCompleteDialog extends StatelessWidget {
               ),
 
               SizedBox(height: 10.h),
-
-              /// Success Icon
               CircleAvatar(
                 radius: 40.r,
                 backgroundColor: const Color(0xFFE6F4EA),
@@ -73,9 +69,9 @@ class OrderCompleteDialog extends StatelessWidget {
         width: 750.w,
         child: Column(
           children: [
-            const OrderDetailsCard(),
+            OrderDetailsCard(),
             SizedBox(height: 20.h),
-            const PaymentInformationCard(),
+           PaymentInformationCard(),
           ],
         ),
       ),

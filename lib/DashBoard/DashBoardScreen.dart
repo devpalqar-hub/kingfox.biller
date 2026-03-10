@@ -13,7 +13,7 @@ class Dashboardscreen extends StatelessWidget {
   final controller = Get.put(DashboardController());
 
   final pages = [
-    const SalesScreen(),
+     SalesScreen(),
     const OverviewScreen(),
     const InventoryManagementScreen(),
     InitiateReturnScreen(),

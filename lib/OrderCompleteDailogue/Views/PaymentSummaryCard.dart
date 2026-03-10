@@ -17,8 +17,6 @@ class PaymentSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          /// Title
           Row(
             children: [
               Icon(Icons.receipt_long,
@@ -44,7 +42,7 @@ class PaymentSummaryCard extends StatelessWidget {
 
           SizedBox(height: 20.h),
 
-          /// Dotted Divider
+         
           Container(
             height: 1,
             decoration: const BoxDecoration(
@@ -60,7 +58,7 @@ class PaymentSummaryCard extends StatelessWidget {
 
           SizedBox(height: 22.h),
 
-          /// Total Paid
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -85,7 +83,7 @@ class PaymentSummaryCard extends StatelessWidget {
 
           SizedBox(height: 30.h),
 
-          /// New Sale Button
+          
           Container(
             width: double.infinity,
             height: 48.h,
@@ -113,7 +111,7 @@ class PaymentSummaryCard extends StatelessWidget {
 
           SizedBox(height: 16.h),
 
-          /// Print Receipt Button
+          
           Container(
             width: double.infinity,
             height: 48.h,
@@ -141,7 +139,7 @@ class PaymentSummaryCard extends StatelessWidget {
 
           SizedBox(height: 22.h),
 
-          /// View Billing History
+          
           Center(
             child: Text(
               "View Billing History",

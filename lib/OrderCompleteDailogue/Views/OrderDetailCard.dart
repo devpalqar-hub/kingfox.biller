@@ -39,7 +39,7 @@ class OrderDetailsCard extends StatelessWidget {
                 ],
               ),
 
-              /// PAID Badge
+              
               Container(
                 padding: EdgeInsets.symmetric(
                     horizontal: 18.w, vertical: 8.h),
@@ -86,7 +86,7 @@ class OrderDetailsCard extends StatelessWidget {
 ),
           SizedBox(height: 20.h),
 
-          /// First Item
+        
           _CartItem(
             image: "assets/shirt.png",
             title: "Premium Cotton T-Shirt",
@@ -99,7 +99,7 @@ class OrderDetailsCard extends StatelessWidget {
 
           SizedBox(height: 20.h),
 
-          /// Second Item
+        
           _CartItem(
             image: "assets/jeans.png",
             title: "Slim Fit Indigo Denim",
@@ -174,25 +174,25 @@ Widget _CartItem({
       ),
     ),
 
-    /// SIZE
+   
     SizedBox(
       width: 120.w,
       child: Text(size, style: _valueStyle()),
     ),
 
-    /// QTY
+   
     SizedBox(
       width: 60.w,
       child: Text(qty, style: _valueStyle()),
     ),
 
-    /// PRICE
+ 
     SizedBox(
       width: 100.w,
       child: Text(price, style: _valueStyle()),
     ),
 
-    /// TOTAL
+
     SizedBox(
       width: 100.w,
       child: Text(

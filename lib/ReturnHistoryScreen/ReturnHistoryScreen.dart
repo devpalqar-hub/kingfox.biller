@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
+
 import 'package:kinfox_biller/ReturnHistoryScreen/Views/ReturnsTable.dart';
 import 'package:kinfox_biller/ReturnHistoryScreen/Views/SummaryCard.dart';
 
 class ReturnHistoryScreen extends StatelessWidget {
-  const ReturnHistoryScreen({super.key});
+  ReturnHistoryScreen({super.key});
+
+  final ReturnsController controller = Get.put(ReturnsController());
 
   @override
   Widget build(BuildContext context) {
+    
+    controller.getReturns();
+
     return Scaffold(
       backgroundColor: const Color(0xffF1F5F9),
       body: Padding(
@@ -15,8 +23,6 @@ class ReturnHistoryScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-        
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -41,8 +47,7 @@ class ReturnHistoryScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                 Container(
+                Container(
                   width: 320.w,
                   height: 44.h,
                   padding: EdgeInsets.symmetric(horizontal: 14.w),
@@ -57,8 +62,7 @@ class ReturnHistoryScreen extends StatelessWidget {
                       Expanded(
                         child: TextField(
                           decoration: InputDecoration(
-                            hintText:
-                                "Search Return ID or Original Invoice...",
+                            hintText: "Search Return ID or Original Invoice...",
                             border: InputBorder.none,
                             hintStyle: TextStyle(fontSize: 13.sp),
                           ),
@@ -71,8 +75,6 @@ class ReturnHistoryScreen extends StatelessWidget {
             ),
 
             SizedBox(height: 28.h),
-
-            
             Row(
               children: const [
                 Expanded(
@@ -105,10 +107,20 @@ class ReturnHistoryScreen extends StatelessWidget {
                 ),
               ],
             ),
-
             SizedBox(height: 26.h),
-
-            const Expanded(child: ReturnTable()),
+            Expanded(
+              child: GetBuilder<ReturnsController>(
+                builder: (_) {
+                  if (controller.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (controller.returnsList.isEmpty) {
+                    return const Center(child: Text("No returns found"));
+                  }
+                  return ReturnTable(returns: controller.returnsList);
+                },
+              ),
+            ),
           ],
         ),
       ),

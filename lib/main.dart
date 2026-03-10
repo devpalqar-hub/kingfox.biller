@@ -4,6 +4,9 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:kinfox_biller/DashBoard/DashBoardScreen.dart';
 import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 
+String baseUrl = "https://api.kingfox.palqar.cloud/v1";
+String? accessToken;
+
 void main() {
   runApp(KingfoxBiller());
 }

@@ -11,8 +11,6 @@ Widget build(BuildContext context) {
     insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
     child: Stack(
       children: [
-
-        /// ===== YOUR EXISTING UI (UNCHANGED) =====
         Container(
           width: 512.w,
           padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 32.h),
@@ -167,15 +165,12 @@ Widget build(BuildContext context) {
             ],
           ),
         ),
-
-        /// ===== CLOSE BUTTON (ADDED ONLY) =====
         Positioned(
           top: 12.h,
           right: 12.w,
           child: GestureDetector(
             onTap: () {
-              Navigator.pop(context); // closes popup
-              // if using GetX -> Get.back();
+              Navigator.pop(context); 
             },
             child: Container(
               height: 36.w,

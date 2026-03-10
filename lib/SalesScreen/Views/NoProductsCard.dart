@@ -20,8 +20,6 @@ class NoProductsCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
-            /// Circular Icon Background
             Container(
               width: 140.w,
               height: 140.w,
@@ -38,7 +36,6 @@ class NoProductsCard extends StatelessWidget {
 
             SizedBox(height: 32.h),
 
-            /// Title
             Text(
               "No products added",
               style: TextStyle(
@@ -49,8 +46,6 @@ class NoProductsCard extends StatelessWidget {
             ),
 
             SizedBox(height: 16.h),
-
-            /// Subtitle
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 120.w),
               child: Text(

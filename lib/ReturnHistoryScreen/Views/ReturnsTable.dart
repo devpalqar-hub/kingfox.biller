@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kinfox_biller/ReturnHistoryScreen/Views/ReturnData.dart';
+import 'package:kinfox_biller/ReturnHistoryScreen/Model/ReturnModel.dart';
 
 
 class ReturnTable extends StatelessWidget {
-  const ReturnTable({super.key});
+  final List<ReturnModel> returns;
+
+  const ReturnTable({super.key, required this.returns});
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +17,6 @@ class ReturnTable extends StatelessWidget {
       ),
       child: Column(
         children: [
-
-          /// HEADER
           Container(
             padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 20.w),
             decoration: const BoxDecoration(
@@ -35,9 +35,43 @@ class ReturnTable extends StatelessWidget {
               ],
             ),
           ),
-
-          const ReturnData(),
-      
+          ...returns.map((r) {
+            return Container(
+              padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 20.w),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: Text(r.id.toString())),
+                  Expanded(child: Text(r.items.isNotEmpty ? r.items[0].variant.sku : "-")),
+                  Expanded(child: Text(r.customer.name)),
+                  Expanded(child: Text("${r.items.length} Item(s)")),
+                  Expanded(child: Text("₹${r.totalRefund}")),
+                  Expanded(child: Text("Returned")), 
+                  Expanded(child: Text(r.createdAt.split("T")[0])), 
+                  Expanded(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                          },
+                          icon: const Icon(Icons.visibility),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                          },
+                          icon: const Icon(Icons.edit),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
         ],
       ),
     );

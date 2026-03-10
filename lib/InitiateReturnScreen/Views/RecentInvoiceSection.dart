@@ -34,7 +34,7 @@ class RecentInvoicesSection extends StatelessWidget {
                   SizedBox(width: 580.w),
                    GestureDetector(
                      onTap: () {
-                       Get.to(() => const ReturnHistoryScreen());
+                       Get.to(() =>  ReturnHistoryScreen());
                      },
                      child: Text(
                                      "View all history",

@@ -62,8 +62,6 @@ class ReturnSummaryCard extends StatelessWidget {
               ],
             ),
           ),
-
-          /// ================= BODY (WHITE) =================
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
             child: Column(
@@ -106,7 +104,6 @@ class ReturnSummaryCard extends StatelessWidget {
 
                 SizedBox(height: 24.h),
 
-                /// REFUND METHOD
                 Text(
                   "REFUND METHOD",
                   style: TextStyle(
@@ -176,8 +173,6 @@ class ReturnSummaryCard extends StatelessWidget {
                 ),
 
                 SizedBox(height: 16.h),
-
-                /// INFO TEXT
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/SalesScreen/Views/ScanPage.dart';
 
 class ScanSearch extends StatelessWidget {
   final TextEditingController controller;
@@ -13,51 +16,94 @@ class ScanSearch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 50.h,
-             // width: 785.w,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              decoration: BoxDecoration(
-                color: const Color(0xffE5E7EB),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.qr_code_scanner,
-                    size: 20.sp,
-                    color: Colors.black54,
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Scan barcode or search products",
-                         isCollapsed: true,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return GetBuilder<AddProductController>(
+      builder: (productController) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
           ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 50.h,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE5E7EB),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                              onTap: () async {
 
-          SizedBox(width: 15.w),
-          ReturnButton(onTap: onReturnTap),
-        ],
-      ),
+  final barcode = await Get.to(() => const ScanPage());
+
+  if (barcode != null) {
+    Get.find<AddProductController>().scanAndAddProduct(barcode, 5);
+  }
+
+},
+  child: Icon(
+    Icons.qr_code_scanner,
+    size: 20.sp,
+    color: Colors.black54,
+  ),
+),
+                      SizedBox(width: 10.w),
+
+                        Expanded(
+  child: TextField(
+    controller: controller,
+    onChanged: (value) {
+      if (value.length >= 2) {
+        productController.searchProducts(value);
+      } else if (value.isEmpty) {
+        productController.searchProductsList.clear();
+        productController.update();
+      }
+    },
+    onSubmitted: (value) {
+      if (value.isNotEmpty) {
+        productController.scanAndAddProduct(value, 5);
+        controller.clear();
+
+        productController.searchProductsList.clear();
+        productController.update();
+      }
+    },
+    decoration: InputDecoration(
+      border: InputBorder.none,
+      hintText: "Scan barcode or search products",
+      isCollapsed: true,
+      isDense: true,
+      suffixIcon: controller.text.isNotEmpty
+          ? IconButton(
+              icon: const Icon(Icons.close, size: 18),
+              onPressed: () {
+                controller.clear();
+
+                productController.searchProductsList.clear();
+                productController.update();
+              },
+            )
+          : null,
+    ),
+  ),
+),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 15.w),
+              ReturnButton(onTap: onReturnTap),
+            ],
+          ),
+        );
+      },
     );
   }
 }
