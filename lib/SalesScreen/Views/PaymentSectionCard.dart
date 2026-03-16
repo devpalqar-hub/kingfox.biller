@@ -6,7 +6,7 @@ import '../Service/SalesController.dart';
 
 class PaymentSectionCard extends StatefulWidget {
   final double totalAmount;
-  final Function(String paymentMethod) onComplete;
+ final Future<bool> Function(String paymentMethod) onComplete;
 
   const PaymentSectionCard({
     super.key,
@@ -24,7 +24,7 @@ class _PaymentSectionCardState extends State<PaymentSectionCard> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AddProductController>(
-      builder: (_) {
+      builder: (controller) {
         return Container(
           width: 480.w,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -66,7 +66,7 @@ class _PaymentSectionCardState extends State<PaymentSectionCard> {
                 ),
               ),
 
-              SizedBox(height: 60.h),
+              SizedBox(height: 15.h),
 
               
               Text(
@@ -79,7 +79,7 @@ class _PaymentSectionCardState extends State<PaymentSectionCard> {
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 15.h),
 
             
               Row(
@@ -100,73 +100,47 @@ class _PaymentSectionCardState extends State<PaymentSectionCard> {
                 ],
               ),
 
-              SizedBox(height: 36.h),
+              SizedBox(height: 35.h),
 
               GestureDetector(
-                onTap: () async {
-                  widget.onComplete(selectedMethod);
-                  Get.dialog(
-                    const OrderCompleteDialog(),
-                    barrierDismissible: false,
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 60.h,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(24.r),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.print, color: Colors.white, size: 28.sp),
-                      SizedBox(width: 14.w),
-                      Text(
-                        "COMPLETE & PRINT",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              onTap: () async {
+  if (controller.cart == null) return;
+
+  bool success = await widget.onComplete(selectedMethod);
+
+  if (success) {
+    String invoiceNumber = "INV-${DateTime.now().millisecondsSinceEpoch}";
+
+    Get.dialog(
+      OrderCompleteDialog(
+        cart: controller.cart!,
+        invoiceNumber: invoiceNumber,
+        paymentMethod: selectedMethod,
+      ),
+      barrierDismissible: false,
+    );
+  }
+},
+  child: Container(
+    height: 50.h,
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: Colors.green,
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    alignment: Alignment.center,
+    child: Text(
+      "Complete Payment",
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
               SizedBox(height: 20.h),
-              Center(
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      color: const Color(0xFF98A2B3),
-                    ),
-                    children: [
-                      const TextSpan(text: "Press "),
-                      WidgetSpan(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 1.h),
-                          margin: EdgeInsets.symmetric(horizontal: 6.w),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14.r),
-                            border: Border.all(color: const Color(0xFFD0D5DD)),
-                          ),
-                          child: Text(
-                            "F12",
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              color: const Color(0xFF667085),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const TextSpan(text: " for quick print and close"),
-                    ],
-                  ),
-                ),
-              ),
+            
             ],
           ),
         );

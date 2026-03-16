@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/DashBoard/Service/DashBoardController.dart';
+import 'package:kinfox_biller/LoginScreen/Service/AuthController.dart';
 
 
 class Header extends StatelessWidget {
@@ -9,6 +10,8 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
+
     return GetBuilder<DashboardController>(
       builder: (controller) {
         return Container(
@@ -66,7 +69,7 @@ Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Abhiram",
+                authController.userName,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,

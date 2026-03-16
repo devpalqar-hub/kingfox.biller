@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
 import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/OfferandSummarySection.dart';
 import 'package:kinfox_biller/SalesScreen/Views/PaymentSectionCard.dart';
 
 class BillSummaryCard extends StatelessWidget {
-  const BillSummaryCard({super.key});
+  final CartModel? cart;
+  const BillSummaryCard({super.key, this.cart});
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +22,23 @@ class BillSummaryCard extends StatelessWidget {
 
     return GetBuilder<AddProductController>(
       builder: (controller) {
+
+     
+        double subtotal = 0;
+        double gstAmount = 0;
+        double finalAmount = 0;
+
+        final items = controller.cart?.items ?? [];
+        for (var item in items) {
+          subtotal += item.lineTotal;
+        }
+
+        gstAmount = subtotal * 0.05;
+        finalAmount = subtotal + gstAmount;
+        controller.subtotal = subtotal;
+        controller.gstAmount = gstAmount;
+        controller.finalAmount = finalAmount;
+
         return Container(
           width: 395.w,
           decoration: BoxDecoration(
@@ -32,25 +51,22 @@ class BillSummaryCard extends StatelessWidget {
               CustomerVoucherCard(
                 nameController: nameController,
                 phoneController: phoneController,
-                emailController: emailController,
-                addressController: addressController,
+              //  emailController: emailController,
+               // addressController: addressController,
                 voucherController: voucherController,
               ),
 
-              
               OfferAndSummarySection(
-                subtotal: controller.subtotal,
-                gstAmount: controller.gstAmount,
-                finalAmount: controller.finalAmount, 
+                subtotal: subtotal,
+                gstAmount: gstAmount,
+                finalAmount: finalAmount, 
                 couponController: couponController,
-                
               ),
 
-            
               PaymentSectionCard(
-                totalAmount: controller.finalAmount,
+                totalAmount: finalAmount,
                 onComplete: (paymentMethod) async {
-                  await controller.checkoutCart(
+                  return await controller.checkoutCart(
                     paymentMethod: paymentMethod,
                     customerName: nameController.text,
                     customerPhone: phoneController.text,
@@ -58,7 +74,6 @@ class BillSummaryCard extends StatelessWidget {
                     customerAddress: addressController.text,
                     voucherCodes: [voucherController.text],
                     couponCode: couponController.text,
-
                   );
                 },
               ),

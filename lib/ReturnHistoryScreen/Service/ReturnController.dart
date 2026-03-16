@@ -13,7 +13,7 @@ class ReturnsController extends GetxController {
     isLoading = true;
     update();
 
-    final url = "$baseUrl/returns?branchId=1&type=INVOICE";
+    final url = "$baseUrl/returns?type=INVOICE";
     final response = await http.get(
       Uri.parse(url),
       headers: {
@@ -27,5 +27,51 @@ class ReturnsController extends GetxController {
 
     isLoading = false;
     update(); 
+  }
+
+
+  Future createReturn({
+    required int invoiceId,
+    required int variantId,
+    required int quantity,
+    required String reason,
+  }) async {
+
+    isLoading = true;
+    update();
+
+    final url = "$baseUrl/returns";
+
+    final body = {
+      "returnType": "INVOICE",
+      "invoiceId": invoiceId,
+      "onlineOrderId": null,
+      "reason": reason,
+      "items": [
+        {
+          "variantId": variantId,
+          "quantity": quantity
+        }
+      ]
+    };
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      getReturns();
+      Get.snackbar("Success", "Return created successfully");
+    } else {
+      Get.snackbar("Error", "Failed to create return");
+    }
+
+    isLoading = false;
+    update();
   }
 }

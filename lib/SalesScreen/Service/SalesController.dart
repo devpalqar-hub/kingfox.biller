@@ -8,7 +8,7 @@ import 'package:kinfox_biller/main.dart';
 class AddProductController extends GetxController {
 
   bool isLoading = false;
-
+bool isUpdatingQty = false;
   int? cartId;
   double subtotal = 0;
   double gstAmount = 0;
@@ -18,15 +18,11 @@ class AddProductController extends GetxController {
   List items = [];
 List<ProductVariantModel> searchProductsList = [];
 
-  Future scanAndAddProduct(String barcode, int gstPercent) async {
+Future scanAndAddProduct(String barcode, int gstPercent) async {
   isLoading = true;
   update();
 
   final url = "$baseUrl/billing/cart/scan";
-  final requestBody = {
-    "barcode": barcode,
-    "gstPercent": gstPercent.toString(),
-  };
 
   final response = await http.post(
     Uri.parse(url),
@@ -34,16 +30,15 @@ List<ProductVariantModel> searchProductsList = [];
       "Content-Type": "application/json",
       "Authorization": "Bearer $accessToken"
     },
-    body: jsonEncode(requestBody),
+    body: jsonEncode({
+      "barcode": barcode,
+      "gstPercent": gstPercent.toString(),
+    }),
   );
-  final data = jsonDecode(response.body);
-  cart = CartModel.fromJson(data);
 
-cartId = cart!.cartId;
-items = cart!.items;
-subtotal = cart!.subtotal;
-gstAmount = cart!.gstAmount;
-finalAmount = cart!.finalAmount;
+  final data = jsonDecode(response.body);
+
+  cart = CartModel.fromJson(data);
 
   isLoading = false;
   update();
@@ -53,18 +48,17 @@ Future getCart() async {
   isLoading = true;
   update();
 
-  final url = "$baseUrl/billing/cart";
   final response = await http.get(
-    Uri.parse(url),
+    Uri.parse("$baseUrl/billing/cart"),
     headers: {
       "Authorization": "Bearer $accessToken",
+      "Content-Type": "application/json",
     },
   );
 
   final data = jsonDecode(response.body);
+
   cart = CartModel.fromJson(data);
-  cartId = cart?.cartId;
-  items = cart?.items ?? [];
 
   isLoading = false;
   update();
@@ -105,7 +99,7 @@ Future searchProducts(String query) async {
   update();
 }
 
-Future<void> checkoutCart({
+Future<bool> checkoutCart({
   required String paymentMethod,
   String? customerName,
   String? customerPhone,
@@ -136,19 +130,30 @@ Future<void> checkoutCart({
     },
     body: jsonEncode(body),
   );
+  if (response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+    print("Parsed Response: $data");
 
-  if (response.statusCode == 200) {
+    
     items.clear();
     subtotal = 0;
     gstAmount = 0;
     finalAmount = 0;
+    cart = null;
+
+    isLoading = false;
     update();
+
+    return true; 
+  } else {
+  
+
+    isLoading = false;
+    update();
+
+    return false; 
   }
-
-  isLoading = false;
-  update();
 }
-
 
 
 Future<void> deleteCart() async {
@@ -165,54 +170,54 @@ Future<void> deleteCart() async {
     },
   );
 
-  if (response.statusCode == 200 || response.statusCode == 204) {
-    /// Clear local cart
-    cartId = null;
+  if (response.statusCode == 200 || response.statusCode == 201) {
+   
+    cart= null;
     items.clear();
-    subtotal = 0;
-    gstAmount = 0;
-    finalAmount = 0;
+   
   }
 
   isLoading = false;
   update();
 }
 Future<void> updateCartItemQuantity(int variantId, int quantity) async {
+
+  if (isUpdatingQty) return;
+
+  isUpdatingQty = true;
+
   final url = "$baseUrl/billing/cart/item/$variantId";
 
-  print("----- UPDATE CART ITEM API -----");
-  print("URL: $url");
-  print("Request Body: ${jsonEncode({"quantity": quantity})}");
+  final body = {
+    "quantity": quantity,
+  };
 
+  final headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $accessToken",
+  };
   final response = await http.patch(
     Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    },
-    body: jsonEncode({
-      "quantity": quantity,
-    }),
+    headers: headers,
+    body: jsonEncode(body),
   );
 
-  print("Status Code: ${response.statusCode}");
-  print("Response Body: ${response.body}");
-
   if (response.statusCode == 200) {
+
     final data = jsonDecode(response.body);
 
-    /// Replace full cart model
+    print("Parsed Response: $data");
+
     cart = CartModel.fromJson(data);
 
-    print("Cart Updated Successfully");
-    print("Cart ID: ${cart!.cartId}");
-    print("Items Count: ${cart!.items.length}");
-    print("Subtotal: ${cart!.subtotal}");
-    print("GST Amount: ${cart!.gstAmount}");
-    print("Final Amount: ${cart!.finalAmount}");
+    
+    for (var item in cart!.items) {
+    }
 
-    update(); // rebuild UI
+    update();
   } else {
-    print("Cart Update Failed ❌");
+   
   }
+
+  isUpdatingQty = false;
 }}

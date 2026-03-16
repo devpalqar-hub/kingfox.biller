@@ -7,6 +7,7 @@ class CartItemModel {
   final double price;
   final int quantity;
   final double lineTotal;
+  final String? image;
 
   CartItemModel({
     required this.variantId,
@@ -17,6 +18,7 @@ class CartItemModel {
     required this.price,
     required this.quantity,
     required this.lineTotal,
+    this.image,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class CartItemModel {
       price: (json['price'] ?? 0).toDouble(),
       quantity: json['quantity'] ?? 0,
       lineTotal: (json['lineTotal'] ?? 0).toDouble(),
+       image: json['image'],
     );
   }
 }class CartModel {

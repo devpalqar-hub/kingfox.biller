@@ -48,14 +48,14 @@ class _SalesScreenState extends State<SalesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
 
-                        /// LEFT SIDE
+                       
                         SizedBox(
                           width: 780.w,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
 
-                              /// Scan Search
+                           
                               ScanSearch(
                                 controller: scanController,
                                 onReturnTap: () {},
@@ -63,7 +63,7 @@ class _SalesScreenState extends State<SalesScreen> {
 
                               SizedBox(height: 10.h),
 
-                              /// Search Result List
+                            
                               if (controller.searchProductsList.isNotEmpty)
                                 Container(
                                   width: 780.w,
@@ -85,23 +85,20 @@ class _SalesScreenState extends State<SalesScreen> {
 
                               SizedBox(height: 20.h),
 
-                              /// CART SECTION
+                              
                               if (controller.cart == null ||
                                   controller.cart!.items.isEmpty)
                                 const NoProductsCard()
                               else
-                                CartCard(
-                                  items: controller.cart!.items,
-                                  cartId: controller.cart!.cartId,
-                                ),
+                             CartCard(cartId: controller.cart?.cartId)
                             ],
                           ),
                         ),
 
                         SizedBox(width: 16.w),
 
-                        /// BILL SUMMARY
-                        const BillSummaryCard(),
+                        
+                         BillSummaryCard(cart: controller.cart),
                       ],
                     ),
 
@@ -134,7 +131,7 @@ class _SalesScreenState extends State<SalesScreen> {
       child: Row(
         children: [
 
-          /// Product Image
+          
           Container(
             height: 55.h,
             width: 55.w,
@@ -151,7 +148,7 @@ class _SalesScreenState extends State<SalesScreen> {
 
           SizedBox(width: 12.w),
 
-          /// Product Details
+         
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +172,7 @@ class _SalesScreenState extends State<SalesScreen> {
             ),
           ),
 
-          /// Price + Add Button
+          
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

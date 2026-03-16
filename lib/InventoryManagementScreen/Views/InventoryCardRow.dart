@@ -1,21 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:kinfox_biller/InventoryManagementScreen/Service/InventoryController.dart';
+
 
 class InventoryCardsRow extends StatelessWidget {
   const InventoryCardsRow({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: _card("TOTAL SKUS", "1,432", Colors.white, Colors.black)),
-        SizedBox(width: 20.w),
-        Expanded(child: _card("LOW STOCK ALERTS", "18 Items",
-            const Color(0xffFDE68A), Colors.black)),
-        SizedBox(width: 20.w),
-        Expanded(child: _card("INVENTORY VALUE", "₹14,82,500",
-            const Color(0xff0F172A), Colors.white)),
-      ],
+
+    return GetBuilder<InventoryController>(
+      init: InventoryController()..getInventoryAnalytics(branchId: 2),
+      builder: (controller) {
+
+        final analytics = controller.analytics;
+
+        return Row(
+          children: [
+            Expanded(
+              child: _card(
+                "TOTAL SKUS",
+                analytics?.totalSKUs.toString() ?? "0",
+                Colors.white,
+                Colors.black,
+              ),
+            ),
+
+            SizedBox(width: 20.w),
+
+            Expanded(
+              child: _card(
+                "LOW STOCK ALERTS",
+                "${analytics?.lowStockAlerts ?? 0} Items",
+                const Color(0xffFDE68A),
+                Colors.black,
+              ),
+            ),
+
+            SizedBox(width: 20.w),
+
+            Expanded(
+              child: _card(
+                "INVENTORY VALUE",
+                "₹${analytics?.inventoryValue ?? 0}",
+                const Color(0xff0F172A),
+                Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -29,17 +64,25 @@ class InventoryCardsRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                  fontSize: 12.sp,
-                  color: textColor.withOpacity(.7),
-                  fontWeight: FontWeight.w600)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: textColor.withOpacity(.7),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
           SizedBox(height: 10.h),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: textColor)),
+
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
         ],
       ),
     );

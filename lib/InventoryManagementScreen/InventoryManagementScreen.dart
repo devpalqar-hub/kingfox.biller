@@ -51,23 +51,7 @@ class InventoryManagementScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 18.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30.r),
-                        border: Border.all(color: Colors.black),
-                        color: Colors.white,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.file_download_outlined, size: 18.sp),
-                          SizedBox(width: 6.w),
-                          Text("Export",
-                              style: TextStyle(fontSize: 14.sp)),
-                        ],
-                      ),
-                    )
+                   
                   ],
                 ),
 

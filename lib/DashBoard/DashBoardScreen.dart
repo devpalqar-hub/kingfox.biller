@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/DashBoard/Service/DashBoardController.dart';
 import 'package:kinfox_biller/DashBoard/Views/Header.dart';
-import 'package:kinfox_biller/InitiateReturnScreen/InitiateReturnScreen.dart';
+import 'package:kinfox_biller/ReturnScreens/InititateReturnScreen/InitiateReturnScreen.dart';
 import 'package:kinfox_biller/InventoryManagementScreen/InventoryManagementScreen.dart';
 import 'package:kinfox_biller/OverViewScreen/OverViewScreen.dart';
 import 'package:kinfox_biller/SalesScreen/SalesScreen.dart';

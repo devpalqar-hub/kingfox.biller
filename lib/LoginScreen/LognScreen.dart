@@ -24,8 +24,8 @@ class LoginScreen extends StatelessWidget {
                   color: Colors.black,
                   child: Center(
                     child: Image.asset(
-                      "assets/moon.png",
-                      width: 500.w,
+                      "assets/biller.png",
+                    
                       fit: BoxFit.contain,
                     ),
                   ),
