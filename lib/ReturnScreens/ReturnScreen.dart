@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
-import 'package:kinfox_biller/ReturnScreens/Service/ReturnController.dart';
+import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
+import 'package:kinfox_biller/ReturnScreens/Service/ReturnFlowController.dart';
 import 'package:kinfox_biller/ReturnScreens/Views/OrginalPurchaseList.dart';
 import 'package:kinfox_biller/ReturnScreens/Views/OrginalTransationInfo.dart';
 import 'package:kinfox_biller/ReturnScreens/Views/ReturnSummaryCard.dart';
@@ -13,9 +13,9 @@ class ReturnScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    
+    final ReturnsController controller = Get.find();
 
-    return GetBuilder<ReturnController>(
+    return GetBuilder<ReturnsController>(
       builder: (controller) {
 
         if (controller.isLoading) {
@@ -50,7 +50,10 @@ class ReturnScreen extends StatelessWidget {
                                 color: const Color(0xff1E293B),
                               ),
                               onPressed: () {
-                                Get.back();
+
+                                /// go back to initiate screen
+                                Get.find<ReturnFlowController>()
+                                    .backToInitiate();
                               },
                             ),
 
@@ -67,7 +70,6 @@ class ReturnScreen extends StatelessWidget {
 
                             SizedBox(width: 320.w),
 
-                            /// INVOICE NUMBER FROM API
                             Text(
                               "Invoice: ${controller.invoice?.invoiceNumber ?? ""}",
                               style: TextStyle(
@@ -80,7 +82,7 @@ class ReturnScreen extends StatelessWidget {
 
                         SizedBox(height: 24.h),
 
-                        /// PURCHASE ITEMS LIST
+                        /// PURCHASE ITEMS
                         const OriginalPurchaseList(),
                       ],
                     ),
@@ -95,7 +97,7 @@ class ReturnScreen extends StatelessWidget {
                 SizedBox(height: 32.h),
 
                 /// TRANSACTION INFO
-                const OriginalTransactionInfo(),
+               // const OriginalTransactionInfo(),
               ],
             ),
           ),

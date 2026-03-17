@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:kinfox_biller/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:kinfox_biller/main.dart';
+import 'package:kinfox_biller/DashBoard/DashBoardScreen.dart';
+import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 
 class AuthController extends GetxController {
 
@@ -13,41 +16,115 @@ class AuthController extends GetxController {
   String userEmail = "";
   String userRole = "";
 
+  /// LOGIN
   Future<void> login(String email, String password) async {
 
-    isLoading = true;
-    update();
+    try {
 
-    final response = await http.post(
-      Uri.parse("$baseUrl/auth/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password
-      }),
-    );
+      isLoading = true;
+      update();
 
-    final data = jsonDecode(response.body);
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "email": email,
+          "password": password
+        }),
+      );
 
-    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
 
-      accessToken = data["access_token"];
+      if (response.statusCode == 201) {
 
-      userId = data["user"]["id"];
-      userName = data["user"]["name"];
-      userEmail = data["user"]["email"];
-      userRole = data["user"]["role"];
-      Get.snackbar("Success", "Login successful");
+        accessToken = data["access_token"];
+
+        userId = data["user"]["id"].toString();
+        userName = data["user"]["name"] ?? "";
+        userEmail = data["user"]["email"] ?? "";
+        userRole = data["user"]["role"] ?? "";
+
+        /// Save token
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("accessToken", accessToken!);
+
+        Get.snackbar("Success", "Login successful");
+
+        /// Navigate to dashboard
+        Get.offAll(() => Dashboardscreen());
+
+      } else {
+
+        String errorMessage = "Login failed";
+
+        if (data["message"] != null) {
+          if (data["message"] is List) {
+            errorMessage = data["message"].join(", ");
+          } else {
+            errorMessage = data["message"].toString();
+          }
+        }
+
+        Get.snackbar("Error", errorMessage);
+      }
+
+    } catch (e) {
+
+      Get.snackbar("Error", "Something went wrong");
+
+    } finally {
+
+      isLoading = false;
+      update();
+    }
+  }
+
+  /// CHECK LOGIN ON APP START
+  Future<void> checkLogin() async {
+
+    final prefs = await SharedPreferences.getInstance();
+
+    String? savedToken = prefs.getString("accessToken");
+
+    if (savedToken != null && savedToken.isNotEmpty) {
+
+      accessToken = savedToken;
+
+      Get.offAll(() => Dashboardscreen());
 
     } else {
 
-      Get.snackbar("Error", data["message"] ?? "Login failed");
+      Get.offAll(() => LoginScreen());
 
     }
+  }
 
-    isLoading = false;
-    update();
+  /// LOGOUT
+  Future<void> logout() async {
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove("accessToken");
+
+    accessToken = null;
+
+    Get.offAll(() => LoginScreen());
+  }
+
+  /// HANDLE TOKEN EXPIRE (401)
+  void handleUnauthorized(int statusCode) {
+
+    if (statusCode == 401) {
+
+      logout();
+
+      Get.snackbar(
+        "Session Expired",
+        "Please login again",
+      );
+
+    }
   }
 }

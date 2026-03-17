@@ -1,29 +1,28 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+
+import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
+import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
 
 class CustomerVoucherCard extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
-  //final TextEditingController emailController;
-  //final TextEditingController addressController;
-  final TextEditingController voucherController;
-  final VoidCallback? onApplyCoupon;
   final VoidCallback? onEnterPhone;
-  final VoidCallback? onEnterEmail;
-  final VoidCallback? onEnterAddress;
+  final TextEditingController voucherCountController = TextEditingController();
 
-  const CustomerVoucherCard({
+  CustomerVoucherCard({
     super.key,
     required this.nameController,
     required this.phoneController,
-   // required this.emailController,
-   // required this.addressController,
-    required this.voucherController,
-    this.onApplyCoupon,
     this.onEnterPhone,
-    this.onEnterEmail,
-    this.onEnterAddress,
   });
+
+  final AddProductController controller = Get.put(AddProductController());
+  int get voucherCount {
+    return int.tryParse(voucherCountController.text) ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,70 +65,69 @@ class CustomerVoucherCard extends StatelessWidget {
 
           SizedBox(height: 10.h),
 
-          // Email
-         // _buildLabel("Email", Icons.email_outlined),
-          //SizedBox(height: 8.h),
-        //  Row(
-         //   children: [
-           //   Expanded(
-           //     child: _buildTextField(emailController, "Enter email", isEmail: true),
-            //  ),
-             // SizedBox(width: 10.w),
-             // _buildEnterButton(onEnterEmail),
-          //  ],
-          //),
-
-          //SizedBox(height: 18.h),
-
-          // Address
-          //_buildLabel("Address", Icons.location_on_outlined),
-         // SizedBox(height: 8.h),
-         // Row(
-           // children: [
-             // Expanded(
-               // child: _buildTextField(addressController, "Enter address"),
-             // ),
-             // SizedBox(width: 10.w),
-             // _buildEnterButton(onEnterAddress),
-           // ],
-          //),
-
-         // SizedBox(height: 18.h),
-
-          // Voucher
+          // Voucher Dropdown
           _buildLabel("Select Voucher", Icons.confirmation_number_outlined),
           SizedBox(height: 8.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(voucherController, "Enter coupon code"),
-              ),
-              SizedBox(width: 10.w),
-              InkWell(
-                onTap: onApplyCoupon,
-                borderRadius: BorderRadius.circular(14.r),
-                child: Container(
-                  height: 40.h,
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2BA153),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Apply",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
+          GetBuilder<AddProductController>(
+            builder: (controller) {
+              if (controller.isLoading) {
+                return _buildInfoBox("Loading vouchers...");
+              }
+
+              if (controller.campaigns.isEmpty) {
+                return _buildInfoBox("No vouchers available");
+              }
+
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-              ),
-            ],
+                child: DropdownButton<LuckyDrawCampaign>(
+                  isExpanded: true,
+                  underline: const SizedBox(),
+                  hint: Text("Select a voucher"),
+                  value: controller.selectedCampaign,
+                  items: controller.campaigns.map((campaign) {
+                    return DropdownMenuItem<LuckyDrawCampaign>(
+                      value: campaign,
+                      child: Text(campaign.name),
+                    );
+                  }).toList(),
+                  onChanged: (LuckyDrawCampaign? newValue) {
+                    controller.selectCampaign(newValue);
+                  },
+                ),
+              );
+            },
           ),
+
+          SizedBox(height: 10.h),
+
+          // Voucher Count
+          _buildLabel("Number of Vouchers", Icons.confirmation_num_outlined),
+          SizedBox(height: 8.h),
+          _buildTextField(voucherCountController, "Enter voucher count", isNumber: true),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoBox(String text) {
+    return Container(
+      height: 40.h,
+      alignment: Alignment.centerLeft,
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.grey, fontSize: 14.sp),
       ),
     );
   }
@@ -148,7 +146,7 @@ class CustomerVoucherCard extends StatelessWidget {
   }
 
   Widget _buildTextField(TextEditingController controller, String hint,
-      {bool isPhone = false, bool isEmail = false}) {
+      {bool isPhone = false, bool isNumber = false}) {
     return Container(
       height: 40.h,
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -159,11 +157,9 @@ class CustomerVoucherCard extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        keyboardType: isPhone
-            ? TextInputType.phone
-            : isEmail
-                ? TextInputType.emailAddress
-                : TextInputType.text,
+        keyboardType: isNumber
+            ? TextInputType.number
+            : (isPhone ? TextInputType.phone : TextInputType.text),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hint,
@@ -186,10 +182,10 @@ class CustomerVoucherCard extends StatelessWidget {
           color: const Color(0xFF6C7A89),
           borderRadius: BorderRadius.circular(14.r),
         ),
-        child:  Center(
+        child: Center(
           child: Text(
             "Enter",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600,fontSize: 12.sp),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12.sp),
           ),
         ),
       ),

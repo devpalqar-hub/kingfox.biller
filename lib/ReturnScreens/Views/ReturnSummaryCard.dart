@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:kinfox_biller/ReturnScreens/Service/ReturnController.dart';
-
+import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
+import 'package:kinfox_biller/ReturnScreens/InititateReturnScreen/InitiateReturnScreen.dart';
+import 'package:kinfox_biller/ReturnScreens/Service/ReturnFlowController.dart';
 import 'package:kinfox_biller/ReturnScreens/Views/RefundPopupCard.dart';
 
 class ReturnSummaryCard extends StatelessWidget {
@@ -10,20 +11,12 @@ class ReturnSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ReturnController>(
+    return GetBuilder<ReturnsController>(
       builder: (controller) {
-
         final invoice = controller.invoice;
 
-        final itemsCount = invoice?.items?.length ?? 0;
-
-        final subtotal =
-            double.tryParse(invoice?.subtotal ?? "0") ?? 0;
-
-        final finalAmount =
-            double.tryParse(invoice?.finalAmount ?? "0") ?? 0;
-
-        final taxRefund = finalAmount - subtotal;
+        final selectedCount = controller.selectedItems.length;
+        final totalItemsCount = invoice?.items?.length ?? 0;
 
         return Container(
           width: 320.w,
@@ -45,10 +38,7 @@ class ReturnSummaryCard extends StatelessWidget {
               /// HEADER
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 18.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
                 decoration: BoxDecoration(
                   color: const Color(0xffE32626),
                   borderRadius: BorderRadius.only(
@@ -88,9 +78,10 @@ class ReturnSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    _summaryRow("SELECTED ITEMS", "$itemsCount"),
-                    _summaryRow("TAX REFUND", "₹${taxRefund.toStringAsFixed(2)}"),
-                    _summaryRow("ADJUSTMENT FEES", "- ₹0.00", red: true),
+                    _summaryRow("SELECTED ITEMS", "$selectedCount"),
+                    _summaryRow("SUB TOTAL", "₹${invoice?.subtotal ?? "0.00"}"),
+                    _summaryRow("TAX REFUND", "₹${invoice?.tax ?? "0.00"}"),
+                    _summaryRow("DISCOUNT", "₹${invoice?.discount ?? "0.00"}", red: true),
 
                     SizedBox(height: 14.h),
                     Divider(color: Colors.grey.shade300),
@@ -111,7 +102,7 @@ class ReturnSummaryCard extends StatelessWidget {
                           ),
                           SizedBox(height: 8.h),
                           Text(
-                            "₹${finalAmount.toStringAsFixed(2)}",
+                            "₹${invoice?.finalAmount ?? "0.00"}",
                             style: TextStyle(
                               fontSize: 40.sp,
                               fontWeight: FontWeight.w700,
@@ -134,9 +125,7 @@ class ReturnSummaryCard extends StatelessWidget {
                         letterSpacing: 1,
                       ),
                     ),
-
                     SizedBox(height: 12.h),
-
                     Row(
                       children: [
                         Expanded(child: _methodButton("Online", selected: true)),
@@ -150,11 +139,55 @@ class ReturnSummaryCard extends StatelessWidget {
                     /// PROCESS REFUND
                     GestureDetector(
                       onTap: () {
+                        if (selectedCount == 0) {
+                          Get.snackbar("Error", "Please select at least one item");
+                          return;
+                        }
+
+                        final returnType = selectedCount == totalItemsCount
+                            ? "INVOICE"
+                            : "PARTIAL_RETURN";
+
+                        // Prepare dynamic refund items
+                        List<RefundItem> refundItems = controller.selectedItems.map((variantId) {
+                          final item = invoice?.items
+                              ?.firstWhere((e) => e.variant?.id == variantId);
+                           return RefundItem(
+  image: item?.variant?.color ?? "assets/placeholder.png",
+  name: item?.variant?.product?.name ?? "Item",
+  details: "QTY: ${item?.quantity ?? 1} • SKU: ${item?.variant?.sku ?? "-"}",
+);
+                        }).toList();
+
+                        
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (_) => const RefundSuccessPopup(),
+                          builder: (_) => RefundSuccessPopup(
+                            totalRefund: double.tryParse(invoice?.finalAmount ?? "0.0") ?? 0.0,
+                            method: "Cash", 
+                            reference: "RET-${invoice?.invoiceNumber ?? "0000"}",
+                            items: refundItems,
+                          ),
                         );
+
+                        
+                        for (var variantId in controller.selectedItems) {
+                          final item = invoice?.items
+                              ?.firstWhere((e) => e.variant?.id == variantId);
+                          if (item != null) {
+                            controller.createReturn(
+                              invoiceId: invoice!.id!,
+                              variantId: variantId,
+                              quantity: item.quantity ?? 1,
+                              reason: "Customer Request",
+                              returnType: returnType,
+                            );
+                          }
+                        }
+
+                        controller.selectedItems.clear();
+                        controller.update();
                       },
                       child: Container(
                         height: 58.h,
@@ -176,27 +209,31 @@ class ReturnSummaryCard extends StatelessWidget {
 
                     SizedBox(height: 14.h),
 
-                    /// CANCEL BUTTON
-                    Container(
-                      height: 52.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xffF1F2F4),
-                        borderRadius: BorderRadius.circular(30.r),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Cancel & Go Back",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xff64748B),
-                        ),
-                      ),
-                    ),
-
+                    
+                  GestureDetector(
+                           onTap: () {
+                     final controller = Get.find<ReturnFlowController>();
+                    controller.backToInitiate(); 
+                    controller.update();   
+                         },
+                        child: Container(
+                         height: 52.h,
+                          decoration: BoxDecoration(
+                          color: const Color(0xffF1F2F4),
+                            borderRadius: BorderRadius.circular(30.r),
+                           ),
+                            alignment: Alignment.center,
+                             child: Text( "Cancel & Go Back",
+      style: TextStyle(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xff64748B),
+      ),
+    ),
+  ),
+),
                     SizedBox(height: 16.h),
-
-                    Row(
+                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(Icons.info_outline,

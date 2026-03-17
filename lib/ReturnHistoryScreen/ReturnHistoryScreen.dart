@@ -13,16 +13,12 @@ class ReturnHistoryScreen extends StatefulWidget {
 }
 
 class _ReturnHistoryScreenState extends State<ReturnHistoryScreen> {
+   final ReturnsController  controller = Get.put(ReturnsController());
 
-  final ReturnsController controller = Get.put(ReturnsController());
-  @override 
-   void initState() {
-    super.initState();
-    controller.getReturns();
-  }
+  
+  @override
   Widget build(BuildContext context) {
     return GetBuilder<ReturnsController>(
-    
       builder: (controller) {
         return Scaffold(
           backgroundColor: const Color(0xffF1F5F9),
@@ -36,23 +32,15 @@ class _ReturnHistoryScreenState extends State<ReturnHistoryScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Row(
                           children: [
                             IconButton(
-                              onPressed: () {
-                                Get.back();
-                              },
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Color(0xff0F172A),
-                              ),
+                              onPressed: () => Get.back(),
+                              icon: const Icon(Icons.arrow_back, color: Color(0xff0F172A)),
                             ),
-
                             Text(
                               "Returns History",
                               style: TextStyle(
@@ -63,9 +51,7 @@ class _ReturnHistoryScreenState extends State<ReturnHistoryScreen> {
                             ),
                           ],
                         ),
-
                         SizedBox(height: 6.h),
-
                         Text(
                           "Track and manage all customer return transactions",
                           style: TextStyle(
@@ -97,10 +83,10 @@ class _ReturnHistoryScreenState extends State<ReturnHistoryScreen> {
                                 hintStyle: TextStyle(fontSize: 13.sp),
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
 
@@ -148,7 +134,10 @@ class _ReturnHistoryScreenState extends State<ReturnHistoryScreen> {
                       ? const Center(child: CircularProgressIndicator())
                       : controller.returnsList.isEmpty
                           ? const Center(child: Text("No returns found"))
-                          : ReturnTable(returns: controller.returnsList),
+                          : SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: ReturnTable(returns: controller.returnsList),
+                            ),
                 ),
               ],
             ),

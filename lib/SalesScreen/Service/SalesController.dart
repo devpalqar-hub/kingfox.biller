@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
+import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/ProductModel.dart';
 import 'package:kinfox_biller/main.dart';
 
@@ -14,9 +15,17 @@ bool isUpdatingQty = false;
   double gstAmount = 0;
   double finalAmount = 0;
   CartModel? cart;
+  List<LuckyDrawCampaign> campaigns = [];
+  LuckyDrawCampaign? selectedCampaign;
 
   List items = [];
 List<ProductVariantModel> searchProductsList = [];
+
+@override
+  void onInit() {
+    super.onInit();
+    fetchCampaigns(); // fetch campaigns as soon as controller initializes
+  }
 
 Future scanAndAddProduct(String barcode, int gstPercent) async {
   isLoading = true;
@@ -106,7 +115,8 @@ Future<bool> checkoutCart({
   String? customerEmail,
   String? customerAddress,
   String? couponCode,
-  List<String>? voucherCodes,
+  int? campaignId,
+  int? voucherCount,
 }) async {
   isLoading = true;
   update();
@@ -120,8 +130,16 @@ Future<bool> checkoutCart({
     "customerEmail": customerEmail ?? "",
     "customerAddress": customerAddress ?? "",
     "couponCode": couponCode ?? "",
-    "voucherCodes": voucherCodes ?? [],
+    "campaignId": campaignId ?? 0,
+    "voucherCount": voucherCount ?? 0,
   };
+
+  // Log the request
+  print("=== Checkout Cart Request ===");
+  print("URL: $url");
+  print("Headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken' }");
+  print("Body: ${jsonEncode(body)}");
+
   final response = await http.post(
     Uri.parse(url),
     headers: {
@@ -130,11 +148,16 @@ Future<bool> checkoutCart({
     },
     body: jsonEncode(body),
   );
+
+  // Log the response
+  print("=== Checkout Cart Response ===");
+  print("Status Code: ${response.statusCode}");
+  print("Body: ${response.body}");
+
   if (response.statusCode == 201) {
     final data = jsonDecode(response.body);
     print("Parsed Response: $data");
 
-    
     items.clear();
     subtotal = 0;
     gstAmount = 0;
@@ -144,17 +167,15 @@ Future<bool> checkoutCart({
     isLoading = false;
     update();
 
-    return true; 
+    return true;
   } else {
-  
-
+    print("Checkout failed with status: ${response.statusCode}");
     isLoading = false;
     update();
 
-    return false; 
+    return false;
   }
 }
-
 
 Future<void> deleteCart() async {
   isLoading = true;
@@ -220,4 +241,42 @@ Future<void> updateCartItemQuantity(int variantId, int quantity) async {
   }
 
   isUpdatingQty = false;
-}}
+}
+
+void fetchCampaigns() async {
+  isLoading = true;
+  update(); // triggers GetBuilder
+
+  final url = '$baseUrl/lucky-draw/campaigns';
+  print("Fetching campaigns from: $url"); // log request URL
+
+  final response = await http.get(
+    Uri.parse(url),
+    headers: {
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    },
+  );
+
+  print("Response status: ${response.statusCode}"); // log status code
+  print("Response body: ${response.body}"); // log response body
+
+  if (response.statusCode == 200) {
+    List data = jsonDecode(response.body);
+    campaigns = data.map((e) => LuckyDrawCampaign.fromJson(e)).toList();
+    print("Parsed campaigns: ${campaigns.map((c) => c.name).toList()}"); // log parsed names
+  } else {
+    campaigns = [];
+    print("Failed to fetch campaigns"); // log failure
+  }
+
+  isLoading = false;
+  update(); // refresh UI after data is loaded
+}
+
+void selectCampaign(LuckyDrawCampaign? campaign) {
+  selectedCampaign = campaign;
+  print("Selected campaign: ${campaign?.name}"); // log selection
+  update(); // rebuild dropdown
+}
+}

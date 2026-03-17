@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
 
-import 'package:kinfox_biller/ReturnScreens/Service/ReturnController.dart';
+
 
 class OriginalPurchaseList extends StatelessWidget {
   const OriginalPurchaseList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ReturnController>(
+    return GetBuilder<ReturnsController>(
       builder: (controller) {
 
         if (controller.isLoading) {
@@ -60,26 +61,23 @@ class OriginalPurchaseList extends StatelessWidget {
               ),
 
               _divider(),
-
-              /// ITEMS FROM API
-              ...List.generate(items.length, (index) {
-
-                final item = items[index];
-
-                return Column(
-                  children: [
-
-                    _itemTile(
-                      title: item.variant?.product?.name ?? "No Product",
-                      sku: "SKU: ${item.variant?.sku ?? "-"}",
-                      price: "₹${item.price ?? "0"}",
-                      maxQty: item.quantity ?? 1,
-                    ),
-
-                    if (index != items.length - 1) _divider(),
-                  ],
-                );
-              })
+                      ...List.generate(items.length, (index) {
+  final item = items[index];
+  return Column(
+    children: [
+      _itemTile(
+        title: item.variant?.product?.name ?? "No Product",
+        sku: "SKU: ${item.variant?.sku ?? "-"}",
+        price: "₹${item.price ?? "0"}",
+        maxQty: item.quantity ?? 1,
+        variantId: item.variant?.id ?? index, 
+        controller: controller,
+      ),
+      if (index != items.length - 1) _divider(),
+    ],
+  );
+}),
+              
             ],
           ),
         );
@@ -93,20 +91,24 @@ class OriginalPurchaseList extends StatelessWidget {
       color: const Color(0xffE5E7EB),
     );
   }
+Widget _itemTile({
+  required String title,
+  required String sku,
+  required String price,
+  required int maxQty,
+  required int variantId,
+  required ReturnsController controller,
+}) {
+  final isSelected = controller.isItemSelected(variantId);
 
-  Widget _itemTile({
-    required String title,
-    required String sku,
-    required String price,
-    required int maxQty,
-  }) {
-    return Container(
+  return InkWell(
+    onTap: () => controller.toggleItemSelection(variantId),
+    child: Container(
       color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// PRODUCT IMAGE PLACEHOLDER
           Container(
             height: 84.w,
@@ -117,85 +119,51 @@ class OriginalPurchaseList extends StatelessWidget {
             ),
             child: const Icon(Icons.inventory),
           ),
-
           SizedBox(width: 18.w),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                /// TITLE + PRICE
+                /// TITLE + PRICE + TICK
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 17.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
+                          Text(title, style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600)),
                           SizedBox(height: 4.h),
-
-                          Text(
-                            sku,
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              color: const Color(0xff64748B),
-                            ),
-                          ),
+                          Text(sku, style: TextStyle(fontSize: 13.sp, color: const Color(0xff64748B))),
                         ],
                       ),
                     ),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          price,
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xff16A34A),
-                          ),
-                        ),
-                        Text(
-                          "Unit Price",
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: const Color(0xff94A3B8),
-                          ),
-                        ),
+                        Text(price, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xff16A34A))),
+                        Text("Unit Price", style: TextStyle(fontSize: 12.sp, color: const Color(0xff94A3B8))),
                       ],
-                    )
+                    ),
+                    SizedBox(width: 10.w),
+                    Icon(
+                      isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                      color: isSelected ? Colors.green : Colors.grey,
+                      size: 24.sp,
+                    ),
                   ],
                 ),
-
                 SizedBox(height: 14.h),
-
                 /// PURCHASED QTY
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    "Purchased: $maxQty",
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xff94A3B8),
-                    ),
-                  ),
+                  child: Text("Purchased: $maxQty", style: TextStyle(fontSize: 13.sp, color: const Color(0xff94A3B8))),
                 ),
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-}
+    ),
+  );
+}}
