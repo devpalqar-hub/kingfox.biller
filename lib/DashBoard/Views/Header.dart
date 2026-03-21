@@ -83,15 +83,36 @@ Row(
     ),
 
     SizedBox(width: 12.w), 
-            CircleAvatar(
-  radius: 20.r,
-  backgroundColor: Colors.grey.shade300,
-  child: Icon(
-    Icons.person,
-    size: 22.sp,
-    color: Colors.white,
-  ),
-),
+                  PopupMenuButton<String>(
+      onSelected: (value) async {
+        if (value == "logout") {
+
+          
+          await authController.logout();
+
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: "logout",
+          child: Row(
+            children: [
+              Icon(Icons.logout, size: 18.sp, color: Colors.red),
+              SizedBox(width: 8.w),
+              const Text("Logout"),
+            ],
+          ),
+        ),
+      ],
+      child: CircleAvatar(
+        radius: 20.r,
+        backgroundColor: Colors.grey.shade300,
+        child: Icon(
+          Icons.person,
+          size: 22.sp,
+          color: Colors.white,
+        ),
+      ),),
   ],
 ),
               

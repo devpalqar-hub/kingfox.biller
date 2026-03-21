@@ -9,13 +9,14 @@ class AnalyticsModel {
     required this.dailySales,
   });
 
-  factory AnalyticsModel.fromJson(Map<String, dynamic> json) => AnalyticsModel(
-        summary: Summary.fromJson(json['summary']),
-        topSellers: (json['topSellers'] as List)
-            .map((e) => TopSeller.fromJson(e))
+  factory AnalyticsModel.fromJson(Map<String, dynamic> json) =>
+      AnalyticsModel(
+        summary: Summary.fromJson(json['summary'] ?? {}),
+        topSellers: (json['topSellers'] ?? [])
+            .map<TopSeller>((e) => TopSeller.fromJson(e))
             .toList(),
-        dailySales: (json['dailySales'] as List)
-            .map((e) => DailySale.fromJson(e))
+        dailySales: (json['dailySales'] ?? [])
+            .map<DailySale>((e) => DailySale.fromJson(e))
             .toList(),
       );
 
@@ -27,89 +28,105 @@ class AnalyticsModel {
 }
 
 class Summary {
-  final int totalInvoices;
-  final double totalRevenue;
-  final double totalDiscount;
+  final double totalOrders;
+  final double averageOrderValue;
+  final double returnRate;
   final double totalRefunds;
   final double netRevenue;
-  final int totalItemsSold;
-  final int totalReturns;
+  final double transactionsCount;
+  final double totalSales;
 
   Summary({
-    required this.totalInvoices,
-    required this.totalRevenue,
-    required this.totalDiscount,
+    required this.totalOrders,
+    required this.averageOrderValue,
+    required this.returnRate,
     required this.totalRefunds,
     required this.netRevenue,
-    required this.totalItemsSold,
-    required this.totalReturns,
+    required this.transactionsCount,
+    required this.totalSales,
   });
 
   factory Summary.fromJson(Map<String, dynamic> json) => Summary(
-        totalInvoices: json['totalInvoices'] ?? 0,
-        totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
-        totalDiscount: (json['totalDiscount'] ?? 0).toDouble(),
+        totalOrders: (json['totalOrders'] ?? 0).toDouble(),
+        averageOrderValue: (json['averageOrderValue'] ?? 0).toDouble(),
+        returnRate: (json['returnRate'] ?? 0).toDouble(),
         totalRefunds: (json['totalRefunds'] ?? 0).toDouble(),
         netRevenue: (json['netRevenue'] ?? 0).toDouble(),
-        totalItemsSold: json['totalItemsSold'] ?? 0,
-        totalReturns: json['totalReturns'] ?? 0,
+        transactionsCount: (json['transactionsCount'] ?? 0).toDouble(),
+        totalSales: (json['totalSales'] ?? 0).toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
-        'totalInvoices': totalInvoices,
-        'totalRevenue': totalRevenue,
-        'totalDiscount': totalDiscount,
+        'totalOrders': totalOrders,
+        'averageOrderValue': averageOrderValue,
+        'returnRate': returnRate,
         'totalRefunds': totalRefunds,
         'netRevenue': netRevenue,
-        'totalItemsSold': totalItemsSold,
-        'totalReturns': totalReturns,
+        'transactionsCount': transactionsCount,
+        'totalSales': totalSales,
       };
 }
 
 class TopSeller {
-  final int id;
-  final String name;
-  final double revenue;
+  final int variantId;
+  final String sku;
+  final String size;
+  final String color;
+  final String productName;
+  final int totalQtySold;
+  final double totalRevenue;
 
   TopSeller({
-    required this.id,
-    required this.name,
-    required this.revenue,
+    required this.variantId,
+    required this.sku,
+    required this.size,
+    required this.color,
+    required this.productName,
+    required this.totalQtySold,
+    required this.totalRevenue,
   });
 
   factory TopSeller.fromJson(Map<String, dynamic> json) => TopSeller(
-        id: json['id'] ?? 0,
-        name: json['name'] ?? '',
-        revenue: (json['revenue'] ?? 0).toDouble(),
+        variantId: json['variantId'] ?? 0,
+        sku: json['sku'] ?? '',
+        size: json['size'] ?? '',
+        color: json['color'] ?? '',
+        productName: json['productName'] ?? '',
+        totalQtySold: json['totalQtySold'] ?? 0,
+        totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'revenue': revenue,
+        'variantId': variantId,
+        'sku': sku,
+        'size': size,
+        'color': color,
+        'productName': productName,
+        'totalQtySold': totalQtySold,
+        'totalRevenue': totalRevenue,
       };
 }
 
 class DailySale {
   final String date;
-  final int invoices;
-  final double revenue;
+  final double sales;
+  final double orders;
 
   DailySale({
     required this.date,
-    required this.invoices,
-    required this.revenue,
+    required this.sales,
+    required this.orders,
   });
 
   factory DailySale.fromJson(Map<String, dynamic> json) => DailySale(
         date: json['date'] ?? '',
-        invoices: json['invoices'] ?? 0,
-        revenue: (json['revenue'] ?? 0).toDouble(),
+        sales: (json['sales'] ?? 0).toDouble(),
+        orders: (json['orders'] ?? 0).toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
         'date': date,
-        'invoices': invoices,
-        'revenue': revenue,
+        'sales': sales,
+        'orders': orders,
       };
 }

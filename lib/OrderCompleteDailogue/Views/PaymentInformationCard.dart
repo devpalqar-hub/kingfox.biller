@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PaymentInformationCard extends StatelessWidget {
-  final String paymentMethod;
+  //final String paymentMethod;
   final DateTime paymentDateTime;
   final double? paidAmount;
 
   const PaymentInformationCard({
     super.key,
-    required this.paymentMethod,
+   // required this.paymentMethod,
     required this.paymentDateTime,
     this.paidAmount,
   });
@@ -50,7 +50,7 @@ class PaymentInformationCard extends StatelessWidget {
                 children: [
                   Icon(Icons.money_outlined, size: 20.sp),
                   SizedBox(width: 6.w),
-                  Text(paymentMethod, style: TextStyle(fontSize: 14.sp)),
+                //  Text(paymentMethod, style: TextStyle(fontSize: 14.sp)),
                 ],
               ),
             ],

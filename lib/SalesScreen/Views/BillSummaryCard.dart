@@ -1,91 +1,108 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
-import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
+import 'package:get/get.dart';
+import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/SalesScreen/Service/PreviewController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
-import 'package:kinfox_biller/SalesScreen/Views/OfferandSummarySection.dart';
-import 'package:kinfox_biller/SalesScreen/Views/PaymentSectionCard.dart';class BillSummaryCard extends StatelessWidget {
-  final CartModel? cart;
-  const BillSummaryCard({super.key, this.cart});
+import 'package:kinfox_biller/SalesScreen/Views/OrderSummaryCard.dart';
+import 'package:kinfox_biller/SalesScreen/Views/VoucherSelectionCard.dart';
+
+class BillSummaryCard extends StatefulWidget {
+  const BillSummaryCard({super.key});
+
+  @override
+  State<BillSummaryCard> createState() => _BillSummaryCardState();
+}
+
+class _BillSummaryCardState extends State<BillSummaryCard> {
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final voucherCountController = TextEditingController();
+ 
+
+  final previewController = Get.put(PreviewController());
 
   @override
   Widget build(BuildContext context) {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final emailController = TextEditingController();
-    final addressController = TextEditingController();
-    final couponController = TextEditingController();
-
-    // Reference to the CustomerVoucherCard
-    final customerVoucherCard = CustomerVoucherCard(
-      nameController: nameController,
-      phoneController: phoneController,
-    );
-
     return GetBuilder<AddProductController>(
-      builder: (controller) {
-        double subtotal = 0;
-        double gstAmount = 0;
-        double finalAmount = 0;
+      builder: (cartController) {
+        return Column(
+          children: [
+            /// Customer
+            CustomerCard(
+              nameController: nameController,
+              phoneController: phoneController,
+            ),
 
-        final items = controller.cart?.items ?? [];
-        for (var item in items) subtotal += item.lineTotal;
+            SizedBox(height: 15.h),
 
-        gstAmount = subtotal * 0.05;
-        finalAmount = subtotal + gstAmount;
+            /// Voucher + Coupon
+            VoucherSelectionCard(
+              voucherCountController: voucherCountController,
+            ),
 
-        controller.subtotal = subtotal;
-        controller.gstAmount = gstAmount;
-        controller.finalAmount = finalAmount;
+            SizedBox(height: 15.h),
 
-        return Container(
-          width: 395.w,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F6F8),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: const Color(0xFFDCE4DC)),
-          ),
-          child: Column(
-            children: [
-              customerVoucherCard, // Display voucher card
+            /// 🔥 ONLY THIS PART LISTENS TO PREVIEW
+            GetBuilder<PreviewController>(
+              builder: (previewController) {
+                final data = previewController.preview;
 
-              OfferAndSummarySection(
-                subtotal: subtotal,
-                gstAmount: gstAmount,
-                finalAmount: finalAmount,
-                couponController: couponController,
-              ),
-
-              PaymentSectionCard(
-                totalAmount: finalAmount,
-                onComplete: (paymentMethod) async {
-                  if (controller.selectedCampaign == null) {
-                    Get.snackbar("Error", "Please select a voucher");
-                    return false;
-                  }
-
-                  if (customerVoucherCard.voucherCount <= 0) {
-                    Get.snackbar("Error", "Enter a valid voucher count");
-                    return false;
-                  }
-
-                  return await controller.checkoutCart(
-                    paymentMethod: paymentMethod,
-                    customerName: nameController.text,
-                    customerPhone: phoneController.text,
-                    customerEmail: emailController.text,
-                    customerAddress: addressController.text,
-                    couponCode: couponController.text,
-                    campaignId: controller.selectedCampaign!.id, // Selected voucher ID
-                    voucherCount: customerVoucherCard.voucherCount, // Voucher count
+                if (previewController.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
-                },
-              ),
-            ],
-          ),
+                }
+
+                return OrderSummaryCard(
+  subtotal: data?.subtotal ?? 0,
+  tax: data?.gstAmount ?? 0,
+  exchangeCredit: 0,
+  coupon: data?.discount ?? 0,
+  storeDiscount: 0,
+  grandTotal: data?.finalAmount ?? 0,
+                                                       onPrint: () async {
+  final cartController = Get.find<AddProductController>();
+
+  final success = await cartController.checkoutCart(
+    paymentMethod: "cash",
+    customerName: nameController.text,
+    customerPhone: phoneController.text,
+    couponCode: cartController.appliedCoupon,
+    campaignId: cartController.selectedCampaign?.id,
+    voucherCount:
+        int.tryParse(voucherCountController.text) ?? 0,
+  );
+
+  if (success) {
+   
+  Get.dialog(
+    OrderCompleteDialog(
+      cart: cartController.completedOrder!,
+      invoiceNumber: cartController.invoiceNumber ?? "N/A",
+    ),
+    barrierDismissible: false,
+  );
+
+    
+
+    
+    cartController.cart = null;
+    cartController.items.clear();
+    cartController.appliedCoupon = "";
+     previewController.preview = null;
+    cartController.update();
+    previewController.update();
+  } else {
+    Get.snackbar("Error", "Checkout Failed");
+  }
+},
+);
+              },
+            ),
+          ],
         );
       },
     );

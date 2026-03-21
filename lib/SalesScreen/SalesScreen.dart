@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:kinfox_biller/ReturnScreens/ProcessItemReturnDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/BillSummaryCard.dart';
-import 'package:kinfox_biller/SalesScreen/Views/CartCard.dart';
+import 'package:kinfox_biller/SalesScreen/Views/CartTable.dart';
 import 'package:kinfox_biller/SalesScreen/Views/NoProductsCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/ScanSearch.dart';
 
@@ -25,6 +27,7 @@ class _SalesScreenState extends State<SalesScreen> {
   void initState() {
     super.initState();
     controller.getCart();
+    controller.fetchCampaigns();
   }
 
   @override
@@ -41,7 +44,7 @@ class _SalesScreenState extends State<SalesScreen> {
 
             return SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 40.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                 child: Column(
                   children: [
                     Row(
@@ -50,23 +53,28 @@ class _SalesScreenState extends State<SalesScreen> {
 
                        
                         SizedBox(
-                          width: 780.w,
+                          width: 860.w,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
 
                            
                               ScanSearch(
-                                controller: scanController,
-                                onReturnTap: () {},
-                              ),
+                  controller: scanController,
+                   onReturnTap: () {
+                 showDialog(
+                  context: Get.context!, 
+                  builder: (_) =>  ProcessItemReturnDialog(),
+                    );
+                     },
+                    ),
 
                               SizedBox(height: 10.h),
 
                             
                               if (controller.searchProductsList.isNotEmpty)
                                 Container(
-                                  width: 780.w,
+                                  
                                   constraints: BoxConstraints(maxHeight: 300.h),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -89,16 +97,52 @@ class _SalesScreenState extends State<SalesScreen> {
                               if (controller.cart == null ||
                                   controller.cart!.items.isEmpty)
                                 const NoProductsCard()
-                              else
-                             CartCard(cartId: controller.cart?.cartId)
-                            ],
+                              else CartTableWidget(
+  cart: controller.cart!,
+
+  onIncrease: (variantId) {
+    if (controller.isUpdatingQty) return;
+
+    final item = controller.cart!.items
+        .firstWhere((e) => e.variantId == variantId);
+
+    controller.updateCartItemQuantity(
+      item.variantId,
+      item.quantity + 1,
+    );
+  },
+
+  onDecrease: (variantId) {
+    if (controller.isUpdatingQty) return;
+
+    final item = controller.cart!.items
+        .firstWhere((e) => e.variantId == variantId);
+
+    if (item.quantity > 1) {
+      controller.updateCartItemQuantity(
+        item.variantId,
+        item.quantity - 1,
+      );
+    }
+  },
+
+  onDelete: (variantId) {
+    if (controller.isUpdatingQty) return;
+
+    controller.updateCartItemQuantity(
+      variantId,
+      0, 
+    );
+  },
+),],
+                                      
                           ),
                         ),
 
-                        SizedBox(width: 16.w),
+                        SizedBox(width: 20.w),
 
                         
-                         BillSummaryCard(cart: controller.cart),
+                         BillSummaryCard(),
                       ],
                     ),
 

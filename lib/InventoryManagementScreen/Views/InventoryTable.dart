@@ -79,66 +79,72 @@ class _InventoryTableState extends State<InventoryTable> {
   }
 
   Widget _header() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Text("PRODUCT"),
-        Text("BRANCH"),
-        Text("SKU"),
-        Text("SIZE / COLOR"),
-        Text("STOCK LEVEL"),
-        Text("PRICE"),
-      ],
-    );
-  }
+  return Row(
+    children: const [
+      Expanded(flex: 2, child: Text("PRODUCT")),
+      Expanded(flex: 2, child: Text("BRANCH")),
+      Expanded(flex: 2, child: Text("SKU")),
+      Expanded(flex: 2, child: Text("SIZE / COLOR")),
+      Expanded(flex: 2, child: Text("STOCK LEVEL")),
+      Expanded(flex: 1, child: Text("PRICE")),
+    ],
+  );
+}
 
-  Widget _data(
-      String product,
-      String branch,
-      String sku,
-      String sizeColor,
-      String stock,
-      String price,
-      Color stockColor) {
+  
+}
 
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+Widget _data(
+  String product,
+  String branch,
+  String sku,
+  String sizeColor,
+  String stock,
+  String price,
+  Color stockColor,
+) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 15.h),
+    child: Row(
+      children: [
 
-          Text(product),
+        Expanded(flex: 2, child: Text(product)),
+        Expanded(flex: 2, child: Text(branch)),
+        Expanded(flex: 2, child: Text(sku)),
+        Expanded(flex: 2, child: Text(sizeColor)),
 
-          Text(branch),
-
-          Text(sku),
-
-          Text(sizeColor),
-
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-            decoration: BoxDecoration(
-              color: stockColor.withOpacity(.15),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Text(
-              stock,
-              style: TextStyle(
-                color: stockColor,
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-
-          Text(
+        
+        Expanded(
+           flex: 2,
+         child: Align(
+          alignment: Alignment.centerLeft,
+           child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+             decoration: BoxDecoration(
+             color: stockColor.withOpacity(0.15),
+             borderRadius: BorderRadius.circular(10.r),
+               ),
+               child: Text(
+                 stock,
+                 style: TextStyle(
+                   color: stockColor,
+                   fontSize: 12.sp,
+                    ),
+                     ),
+                     ),
+                ),
+               ),
+        Expanded(
+          flex: 1,
+          child: Text(
             price,
             style: TextStyle(
               color: const Color(0xff22C55E),
               fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }

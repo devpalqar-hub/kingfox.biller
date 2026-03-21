@@ -1,91 +1,236 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
 import 'package:kinfox_biller/ReturnHistoryScreen/Model/ReturnModel.dart';
-
-import 'package:kinfox_biller/main.dart'; 
+import 'package:kinfox_biller/main.dart';
 
 class ReturnsController extends GetxController {
   var isLoading = false;
-List<ReturnModel> returnsList = [];
 
-
+  List<ReturnModel> returnsList = [];
+  Map<int, int> returnQty = {};
 
   InvoiceModel? invoice;
-
   List<InvoiceModel> recentInvoices = [];
+
+ String? selectedReason;
+
+  final TextEditingController internalNoteController =
+      TextEditingController();
+
+  /// ================= REASONS =================
+  List<String> returnReasons = [
+    "Sizing issue / Too large",
+    "Sizing issue / Too small",
+    "Damaged item",
+    "Defective product",
+    "Wrong item delivered",
+    "Quality not as expected",
+    "Item no longer needed",
+    "Changed mind",
+    "Received late",
+    "Other",
+  ];
+
   Set<int> selectedItems = {};
+
+  @override
+  void onInit() {
+    super.onInit();
+   selectedReason = null;
+    update();
+  }
+
+  void clearReturnData() {
+  selectedItems.clear();
+  returnQty.clear();
+  selectedReason = null;
+  invoice = null;
+  internalNoteController.clear();
+  update(); 
+}
+  
 
   void toggleItemSelection(int variantId) {
     if (selectedItems.contains(variantId)) {
       selectedItems.remove(variantId);
+      returnQty.remove(variantId);
     } else {
       selectedItems.add(variantId);
+      returnQty[variantId] = 1;
     }
-    update(); 
+    update();
   }
 
   bool isItemSelected(int variantId) {
     return selectedItems.contains(variantId);
   }
 
+  
 
+  double get totalReturnAmount {
+    double total = 0.0;
+
+    if (invoice == null) return 0.0;
+
+    for (var variantId in selectedItems) {
+      final item = invoice!.items
+          .firstWhere((e) => e.variantId == variantId);
+
+      final qty = returnQty[variantId] ?? 1;
+      final price = double.tryParse(item.price.toString()) ?? 0.0;
+
+      total += qty * price;
+    }
+
+    return total;
+  }
+
+
+  void increaseQty(int variantId, int maxQty) {
+    if (maxQty <= 0) return;
+
+    returnQty[variantId] = (returnQty[variantId] ?? 1);
+
+    if (returnQty[variantId]! < maxQty) {
+      returnQty[variantId] = returnQty[variantId]! + 1;
+      update();
+    }
+  }
+
+  void decreaseQty(int variantId) {
+    returnQty[variantId] = (returnQty[variantId] ?? 1);
+
+    if (returnQty[variantId]! > 1) {
+      returnQty[variantId] = returnQty[variantId]! - 1;
+      update();
+    }
+  }
+
+  /// ......get returns
   Future<void> getReturns() async {
-  isLoading = true;
-  update();
+    isLoading = true;
+    update();
 
-  final url = "$baseUrl/returns?type=INVOICE"; 
+    final url = "$baseUrl/returns?type=INVOICE";
 
-  final response = await http.get(
-    Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    },
-  );
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
 
-  // Log response info
-  print("📥 Response Status Code: ${response.statusCode}");
-  print("📥 Response Headers: ${response.headers}");
-  print("📥 Response Body: ${response.body}");
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      returnsList =
+          (data as List).map((e) => ReturnModel.fromJson(e)).toList();
+    }
 
-  final data = jsonDecode(response.body);
-  returnsList = (data as List).map((e) => ReturnModel.fromJson(e)).toList();
+    isLoading = false;
+    update();
+  }
 
-  isLoading = false;
-  update();
-}
+  /// ================= CREATE RETURN =================
+  ///Future createReturn({
+    //required int invoiceId,
+    //required int variantId,
+    //required int quantity,
+    //required String returnType,
+    //required String reason,
+  //}) async {
+    //isLoading = true;
+    //update();
 
-  Future createReturn({
-  required int invoiceId,
-  required int variantId,
-  required int quantity,
-  required String reason,
-  required String returnType,
-}) async {
-  isLoading = true;
-  update();
+    
+    //if (selectedReason == null) {
+      //Get.snackbar("Error", "Please select return reason");
+      //isLoading = false;
+      //update();
+      //return;
+   // }
 
-  final url = "$baseUrl/returns";
+    //if (selectedReason == "Other" &&
+      //  internalNoteController.text.trim().isEmpty) {
+      //Get.snackbar("Error", "Please enter internal note");
+      //isLoading = false;
+     // update();
+      //return;
+    //}
+
+    //final url = "$baseUrl/billing/return"; 
+    //final finalReason = selectedReason == "Other"
+      //  ? internalNoteController.text.trim()
+        //: selectedReason!;
+
+    //final body = {
+      //"returnType": returnType,
+     // "invoiceId": invoiceId,
+     // "onlineOrderId": null,
+     // "reason": finalReason,
+     // "items": [
+       // {
+         // "variantId": variantId,
+          //"quantity": quantity,
+       // }
+     // ]
+    //};
+
+    //final headers = {
+      //"Content-Type": "application/json",
+      //"Authorization": "Bearer $accessToken",
+    //};
+
+   
+
+   // final response = await http.post(
+     // Uri.parse(url),
+     // headers: headers,
+     // body: jsonEncode(body),
+    //);
+
+   
+
+    //if (response.statusCode == 200 || response.statusCode == 201) {
+     // await getReturns();
+
+    
+     // clearReturnData();
+
+    
+      //}
+    //} else {
+      
+   // }
+
+    //isLoading = false;
+    //update();
+ // }
+
+Future<bool> addReturnItemsToCart() async {
+  if (invoice == null) {
+    return false;
+  }
+  if (selectedItems.isEmpty) {
+    return false;
+  }
+
+  final items = selectedItems.map((variantId) {
+    return {
+      "variantId": variantId,
+      "quantity": returnQty[variantId] ?? 1,
+    };
+  }).toList();
+
+  final url = "$baseUrl/billing/cart/return-items";
 
   final body = {
-    "returnType": returnType,
-    "invoiceId": invoiceId,
-    "onlineOrderId": null,
-    "reason": reason,
-    "items": [
-      {
-        "variantId": variantId,
-        "quantity": quantity
-      }
-    ]
+    "originalInvoiceId": invoice!.id,
+    "items": items,
   };
-
-  // Log request
-  print("📤 POST Request URL: $url");
-  print("📤 Request Headers: {Content-Type: application/json, Authorization: Bearer $accessToken}");
-  print("📤 Request Body: ${jsonEncode(body)}");
 
   final response = await http.post(
     Uri.parse(url),
@@ -96,56 +241,40 @@ List<ReturnModel> returnsList = [];
     body: jsonEncode(body),
   );
 
-  // Log response
-  print("📥 Response Status Code: ${response.statusCode}");
-  print("📥 Response Headers: ${response.headers}");
-  print("📥 Response Body: ${response.body}");
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    await getReturns();
+    clearReturnData();
 
-  if (response.statusCode == 201 || response.statusCode == 200) {
-    getReturns();
-    Get.snackbar("Success", "Return created successfully");
+    return true;
+    
   } else {
-    Get.snackbar("Error", "Failed to create return");
+  
+    return false;
   }
-
-  isLoading = false;
-  update();
 }
-
+  /// ================= GET INVOICE =================
   Future<void> getInvoice(String invoiceId) async {
-  isLoading = true;
-  update();
+    isLoading = true;
+    update();
 
-  final url = "$baseUrl/invoices/$invoiceId"; 
+    final url = "$baseUrl/invoices/$invoiceId";
 
-  final headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer $accessToken",
-  };
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
 
-  // Log request
-  print("📤 GET Request URL: $url");
-  print("📤 Request Headers: $headers");
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      invoice = InvoiceModel.fromJson(data);
+    } else {
+      invoice = null;
+    }
 
-  final response = await http.get(Uri.parse(url), headers: headers);
-
-  // Log response
-  print("📥 Response Status Code: ${response.statusCode}");
-  print("📥 Response Headers: ${response.headers}");
-  print("📥 Response Body: ${response.body}");
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    invoice = InvoiceModel.fromJson(data);
-    print("✅ Invoice fetched successfully: ${invoice?.id}");
-  } else {
-    invoice = null;
-    final data = jsonDecode(response.body);
-    print("⚠️ API Error: ${data['message']}");
+    isLoading = false;
+    update();
   }
-
-  isLoading = false;
-  update();
-}
- 
 }

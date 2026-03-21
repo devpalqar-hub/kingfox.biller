@@ -1,3 +1,87 @@
+
+class CartModel {
+  final int cartId;
+  final int gstPercent;
+
+  final int? returnInvoiceId;
+  final double returnCredit;
+
+  final List<ReturnItemModel> returnItems;
+  final List<CartItemModel> items;
+
+  final double subtotal;
+  final double appliedReturnDiscount;
+  final double refundAmount;
+  final double discountedSubtotal;
+  final double gstAmount;
+  final double finalAmount;
+
+  final List<dynamic> availableVouchers;
+
+  CartModel({
+    required this.cartId,
+    required this.gstPercent,
+    required this.returnItems,
+    required this.items,
+    required this.subtotal,
+    required this.gstAmount,
+    required this.finalAmount,
+    required this.returnCredit,
+    required this.appliedReturnDiscount,
+    required this.refundAmount,
+    required this.discountedSubtotal,
+    required this.availableVouchers,
+    this.returnInvoiceId,
+  });
+
+  factory CartModel.fromJson(Map<String, dynamic> json) {
+    return CartModel(
+      cartId: json['cartId'] ?? 0,
+      gstPercent: json['gstPercent'] ?? 0,
+
+      returnInvoiceId: json['returnInvoiceId'],
+      returnCredit: (json['returnCredit'] ?? 0).toDouble(),
+
+      returnItems: (json['returnItems'] ?? [])
+          .map<ReturnItemModel>((e) => ReturnItemModel.fromJson(e))
+          .toList(),
+
+      items: (json['items'] ?? [])
+          .map<CartItemModel>((e) => CartItemModel.fromJson(e))
+          .toList(),
+
+      subtotal: (json['subtotal'] ?? 0).toDouble(),
+      appliedReturnDiscount:
+          (json['appliedReturnDiscount'] ?? 0).toDouble(),
+      refundAmount: (json['refundAmount'] ?? 0).toDouble(),
+      discountedSubtotal:
+          (json['discountedSubtotal'] ?? 0).toDouble(),
+      gstAmount: (json['gstAmount'] ?? 0).toDouble(),
+      finalAmount: (json['finalAmount'] ?? 0).toDouble(),
+
+      availableVouchers: json['availableVouchers'] ?? [],
+    );
+  }
+}
+class ReturnItemModel {
+  final int variantId;
+  final int quantity;
+  final double creditPerUnit;
+
+  ReturnItemModel({
+    required this.variantId,
+    required this.quantity,
+    required this.creditPerUnit,
+  });
+
+  factory ReturnItemModel.fromJson(Map<String, dynamic> json) {
+    return ReturnItemModel(
+      variantId: json['variantId'] ?? 0,
+      quantity: json['quantity'] ?? 0,
+      creditPerUnit: (json['creditPerUnit'] ?? 0).toDouble(),
+    );
+  }
+}
 class CartItemModel {
   final int variantId;
   final String sku;
@@ -32,35 +116,6 @@ class CartItemModel {
       quantity: json['quantity'] ?? 0,
       lineTotal: (json['lineTotal'] ?? 0).toDouble(),
        image: json['image'],
-    );
-  }
-}class CartModel {
-  final int cartId;
-  final int gstPercent;
-  final List<CartItemModel> items;
-  final double subtotal;
-  final double gstAmount;
-  final double finalAmount;
-
-  CartModel({
-    required this.cartId,
-    required this.gstPercent,
-    required this.items,
-    required this.subtotal,
-    required this.gstAmount,
-    required this.finalAmount,
-  });
-
-  factory CartModel.fromJson(Map<String, dynamic> json) {
-    return CartModel(
-      cartId: json['cartId'] ?? 0,
-      gstPercent: json['gstPercent'] ?? 0,
-      items: (json['items'] ?? [])
-          .map<CartItemModel>((e) => CartItemModel.fromJson(e))
-          .toList(),
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
-      gstAmount: (json['gstAmount'] ?? 0).toDouble(),
-      finalAmount: (json['finalAmount'] ?? 0).toDouble(),
     );
   }
 }

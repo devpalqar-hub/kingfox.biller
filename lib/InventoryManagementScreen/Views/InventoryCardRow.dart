@@ -11,7 +11,7 @@ class InventoryCardsRow extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return GetBuilder<InventoryController>(
-      init: InventoryController()..getInventoryAnalytics(branchId: 2),
+      init: InventoryController()..getInventoryAnalytics(),
       builder: (controller) {
 
         final analytics = controller.analytics;
@@ -43,7 +43,7 @@ class InventoryCardsRow extends StatelessWidget {
             Expanded(
               child: _card(
                 "INVENTORY VALUE",
-                "₹${analytics?.inventoryValue ?? 0}",
+                "${analytics?.inventoryValue ?? 0}",
                 const Color(0xff0F172A),
                 Colors.white,
               ),

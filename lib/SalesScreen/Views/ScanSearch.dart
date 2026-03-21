@@ -58,7 +58,7 @@ class ScanSearch extends StatelessWidget {
   child: TextField(
     controller: controller,
     onChanged: (value) {
-      if (value.length >= 2) {
+      if (value.length >= 3) {
         productController.searchProducts(value);
       } else if (value.isEmpty) {
         productController.searchProductsList.clear();
@@ -119,20 +119,23 @@ class ReturnButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(14.r),
       onTap: onTap,
       child: Container(
-        height: 42.h,
-        padding: EdgeInsets.symmetric(horizontal: 22.w),
+        height: 53.h,
+        padding: EdgeInsets.symmetric(
+            horizontal: 16.w, vertical: 16.h),
         decoration: BoxDecoration(
-          color: const Color(0xffE53935),
-          borderRadius: BorderRadius.circular(14.r),
+          color: const Color(0xffFEF2F2),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: const Color(0xffFECACA)),
         ),
         child: Row(
           children: [
-            Icon(Icons.refresh, color: Colors.white, size: 18.sp),
+            Icon(Icons.arrow_back,
+                color: Colors.red, size: 14.sp),
             SizedBox(width: 8.w),
             Text(
-              "RETURN",
+              "Return Item",
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.red,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
               ),

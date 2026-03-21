@@ -8,7 +8,6 @@ import 'package:kinfox_biller/DashBoard/DashBoardScreen.dart';
 import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 
 class AuthController extends GetxController {
-
   bool isLoading = false;
 
   String userId = "";
@@ -16,94 +15,67 @@ class AuthController extends GetxController {
   String userEmail = "";
   String userRole = "";
 
-  /// LOGIN
   Future<void> login(String email, String password) async {
+    isLoading = true;
+    update();
 
-    try {
+    final response = await http.post(
+      Uri.parse("$baseUrl/auth/login"),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "email": email,
+        "password": password,
+      }),
+    );
 
-      isLoading = true;
-      update();
+    final data = jsonDecode(response.body);
 
-      final response = await http.post(
-        Uri.parse("$baseUrl/auth/login"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
-          "email": email,
-          "password": password
-        }),
-      );
+    if (response.statusCode == 201) {
+      accessToken = data["access_token"];
 
-      final data = jsonDecode(response.body);
+      userId = data["user"]["id"].toString();
+      userName = data["user"]["name"] ?? "";
+      userEmail = data["user"]["email"] ?? "";
+      userRole = data["user"]["role"] ?? "";
 
-      if (response.statusCode == 201) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString("accessToken", accessToken!);
 
-        accessToken = data["access_token"];
+      Get.offAll(() => Dashboardscreen());
+    } else {
+      String errorMessage = "Login failed";
 
-        userId = data["user"]["id"].toString();
-        userName = data["user"]["name"] ?? "";
-        userEmail = data["user"]["email"] ?? "";
-        userRole = data["user"]["role"] ?? "";
-
-        /// Save token
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("accessToken", accessToken!);
-
-        Get.snackbar("Success", "Login successful");
-
-        /// Navigate to dashboard
-        Get.offAll(() => Dashboardscreen());
-
-      } else {
-
-        String errorMessage = "Login failed";
-
-        if (data["message"] != null) {
-          if (data["message"] is List) {
-            errorMessage = data["message"].join(", ");
-          } else {
-            errorMessage = data["message"].toString();
-          }
+      if (data["message"] != null) {
+        if (data["message"] is List) {
+          errorMessage = data["message"].join(", ");
+        } else {
+          errorMessage = data["message"].toString();
         }
-
-        Get.snackbar("Error", errorMessage);
       }
 
-    } catch (e) {
-
-      Get.snackbar("Error", "Something went wrong");
-
-    } finally {
-
-      isLoading = false;
-      update();
+      Get.snackbar("Error", errorMessage);
     }
+
+    isLoading = false;
+    update();
   }
 
-  /// CHECK LOGIN ON APP START
   Future<void> checkLogin() async {
-
     final prefs = await SharedPreferences.getInstance();
 
     String? savedToken = prefs.getString("accessToken");
 
     if (savedToken != null && savedToken.isNotEmpty) {
-
       accessToken = savedToken;
-
       Get.offAll(() => Dashboardscreen());
-
     } else {
-
       Get.offAll(() => LoginScreen());
-
     }
   }
 
-  /// LOGOUT
   Future<void> logout() async {
-
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.remove("accessToken");
@@ -113,18 +85,14 @@ class AuthController extends GetxController {
     Get.offAll(() => LoginScreen());
   }
 
-  /// HANDLE TOKEN EXPIRE (401)
   void handleUnauthorized(int statusCode) {
-
     if (statusCode == 401) {
-
       logout();
 
       Get.snackbar(
         "Session Expired",
         "Please login again",
       );
-
     }
   }
 }

@@ -176,13 +176,13 @@ class ReturnSummaryCard extends StatelessWidget {
                           final item = invoice?.items
                               ?.firstWhere((e) => e.variant?.id == variantId);
                           if (item != null) {
-                            controller.createReturn(
-                              invoiceId: invoice!.id!,
-                              variantId: variantId,
-                              quantity: item.quantity ?? 1,
-                              reason: "Customer Request",
-                              returnType: returnType,
-                            );
+                         //   controller.createReturn(
+                           //   invoiceId: invoice!.id!,
+                             // variantId: variantId,
+                              //quantity: item.quantity ?? 1,
+                              //reason: "Customer Request",
+                              //returnType: returnType,
+                            //);
                           }
                         }
 

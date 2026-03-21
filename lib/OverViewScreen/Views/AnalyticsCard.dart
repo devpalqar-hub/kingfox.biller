@@ -4,14 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class AnalyticsCard extends StatelessWidget {
   final String title;
   final String value;
-  final String subtitle;
+  //final String subtitle;
   final Color color;
 
   const AnalyticsCard({
     super.key,
     required this.title,
     required this.value,
-    required this.subtitle,
+   // required this.subtitle,
     required this.color,
   });
 
@@ -44,11 +44,11 @@ class AnalyticsCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: color)),
           SizedBox(height: 8.h),
-          Text(subtitle,
-              style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: color)),
+        //  Text(subtitle,
+          //    style: TextStyle(
+            //      fontSize: 12.sp,
+              //    fontWeight: FontWeight.w500,
+                //  color: color)),
         ],
       ),
     );

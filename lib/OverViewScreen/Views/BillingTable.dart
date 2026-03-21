@@ -49,7 +49,7 @@ class BillingHistoryTable extends StatelessWidget {
         Expanded(child: Text("AMOUNT", overflow: TextOverflow.ellipsis)),
         Expanded(child: Text("METHOD", overflow: TextOverflow.ellipsis)),
         Expanded(child: Text("STATUS", overflow: TextOverflow.ellipsis)),
-        Expanded(child: Text("ACTION", overflow: TextOverflow.ellipsis)),
+       // Expanded(child: Text("ACTION", overflow: TextOverflow.ellipsis)),
       ],
     );
   }
@@ -97,7 +97,7 @@ class BillingHistoryTable extends StatelessWidget {
                     color: status == "RETURNED" ? Colors.red : Colors.green),
                 overflow: TextOverflow.ellipsis),
           ),
-          const Expanded(child: Icon(Icons.remove_red_eye_outlined)),
+         
         ],
       ),
     );

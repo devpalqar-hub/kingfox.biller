@@ -17,14 +17,17 @@ bool isUpdatingQty = false;
   CartModel? cart;
   List<LuckyDrawCampaign> campaigns = [];
   LuckyDrawCampaign? selectedCampaign;
+  CartModel? completedOrder;
+String? invoiceNumber;
 
   List items = [];
 List<ProductVariantModel> searchProductsList = [];
+String appliedCoupon = "";
 
 @override
   void onInit() {
     super.onInit();
-    fetchCampaigns(); // fetch campaigns as soon as controller initializes
+    fetchCampaigns(); 
   }
 
 Future scanAndAddProduct(String barcode, int gstPercent) async {
@@ -74,7 +77,6 @@ Future getCart() async {
 }
 
 Future searchProducts(String query) async {
-
   if (query.isEmpty) {
     searchProductsList.clear();
     update();
@@ -84,30 +86,50 @@ Future searchProducts(String query) async {
   isLoading = true;
   update();
 
-  var response = await http.get(
-    Uri.parse("$baseUrl/billing/product-search?q=$query"),
-    headers: {
-      "Authorization": "Bearer $accessToken"
-    },
+  final url = "$baseUrl/billing/product-search?q=$query";
+
+  final headers = {
+    "Authorization": "Bearer $accessToken"
+  };
+
+  /// 🔥 REQUEST LOG
+  print("📤 ================= PRODUCT SEARCH REQUEST =================");
+  print("➡️ URL: $url");
+  print("➡️ METHOD: GET");
+  print("➡️ HEADERS: $headers");
+  print("➡️ QUERY: $query");
+  print("📤 ==========================================================");
+
+  final response = await http.get(
+    Uri.parse(url),
+    headers: headers,
   );
 
-  if (response.statusCode == 200) {
+  /// 🔥 RESPONSE LOG
+  print("📥 ================= PRODUCT SEARCH RESPONSE =================");
+  print("⬅️ STATUS CODE: ${response.statusCode}");
+  print("⬅️ BODY: ${response.body}");
+  print("📥 ===========================================================");
 
-    List data = jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    final List data = jsonDecode(response.body);
+
+    /// 🔍 PARSED DATA LOG
+    print("🔍 PARSED PRODUCTS COUNT: ${data.length}");
 
     searchProductsList =
         data.map((e) => ProductVariantModel.fromJson(e)).toList();
 
   } else {
+    /// ❌ ERROR LOG
+    print("❌ FAILED TO FETCH PRODUCTS");
 
     searchProductsList = [];
-
   }
 
   isLoading = false;
   update();
 }
-
 Future<bool> checkoutCart({
   required String paymentMethod,
   String? customerName,
@@ -123,60 +145,77 @@ Future<bool> checkoutCart({
 
   final url = "$baseUrl/billing/cart/checkout";
 
-  final body = {
+  final Map<String, dynamic> body = {
     "paymentMethod": paymentMethod.toUpperCase(),
     "customerName": customerName ?? "",
     "customerPhone": customerPhone ?? "",
     "customerEmail": customerEmail ?? "",
     "customerAddress": customerAddress ?? "",
-    "couponCode": couponCode ?? "",
-    "campaignId": campaignId ?? 0,
-    "voucherCount": voucherCount ?? 0,
   };
 
-  // Log the request
-  print("=== Checkout Cart Request ===");
-  print("URL: $url");
-  print("Headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken' }");
-  print("Body: ${jsonEncode(body)}");
+  /// ✅ Add coupon ONLY if exists
+  if (couponCode != null && couponCode.isNotEmpty) {
+    body["couponCode"] = couponCode;
+  }
+
+  /// ✅ Add voucher ONLY if campaign exists
+  if (campaignId != null) {
+    body["campaignId"] = campaignId;
+
+    if (voucherCount != null && voucherCount > 0) {
+      body["voucherCount"] = voucherCount;
+    }
+  }
+
+  final headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $accessToken",
+  };
+
+  /// 🔥 REQUEST LOG
+  print("📤 ================= CHECKOUT REQUEST =================");
+  print("➡️ URL: $url");
+  print("➡️ METHOD: POST");
+  print("➡️ HEADERS: $headers");
+  print("➡️ BODY: ${jsonEncode(body)}");
+  print("📤 ====================================================");
 
   final response = await http.post(
     Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    },
+    headers: headers,
     body: jsonEncode(body),
   );
 
-  // Log the response
-  print("=== Checkout Cart Response ===");
-  print("Status Code: ${response.statusCode}");
-  print("Body: ${response.body}");
+  /// 🔥 RESPONSE LOG
+  print("📥 ================= CHECKOUT RESPONSE =================");
+  print("⬅️ STATUS CODE: ${response.statusCode}");
+  print("⬅️ BODY: ${response.body}");
+  print("📥 =====================================================");
 
   if (response.statusCode == 201) {
     final data = jsonDecode(response.body);
-    print("Parsed Response: $data");
 
-    items.clear();
-    subtotal = 0;
-    gstAmount = 0;
-    finalAmount = 0;
-    cart = null;
+    /// 🔍 PARSED LOG
+    print("🔍 PARSED DATA: $data");
+
+    completedOrder = CartModel.fromJson(data["data"] ?? data);
+    invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
+
+    print("✅ Checkout Success");
+    print("🧾 Invoice Number: $invoiceNumber");
 
     isLoading = false;
     update();
-
     return true;
-  } else {
-    print("Checkout failed with status: ${response.statusCode}");
-    isLoading = false;
-    update();
-
-    return false;
   }
-}
 
+  /// ❌ ERROR LOG
+  print("❌ Checkout Failed");
+
+  isLoading = false;
+  update();
+  return false;
+}
 Future<void> deleteCart() async {
   isLoading = true;
   update();
@@ -245,11 +284,9 @@ Future<void> updateCartItemQuantity(int variantId, int quantity) async {
 
 void fetchCampaigns() async {
   isLoading = true;
-  update(); // triggers GetBuilder
+  update();
 
   final url = '$baseUrl/lucky-draw/campaigns';
-  print("Fetching campaigns from: $url"); // log request URL
-
   final response = await http.get(
     Uri.parse(url),
     headers: {
@@ -258,25 +295,23 @@ void fetchCampaigns() async {
     },
   );
 
-  print("Response status: ${response.statusCode}"); // log status code
-  print("Response body: ${response.body}"); // log response body
-
   if (response.statusCode == 200) {
     List data = jsonDecode(response.body);
-    campaigns = data.map((e) => LuckyDrawCampaign.fromJson(e)).toList();
-    print("Parsed campaigns: ${campaigns.map((c) => c.name).toList()}"); // log parsed names
+
+    campaigns =
+        data.map((e) => LuckyDrawCampaign.fromJson(e)).toList();
   } else {
     campaigns = [];
-    print("Failed to fetch campaigns"); // log failure
+
   }
 
   isLoading = false;
-  update(); // refresh UI after data is loaded
+  update();
 }
 
 void selectCampaign(LuckyDrawCampaign? campaign) {
   selectedCampaign = campaign;
-  print("Selected campaign: ${campaign?.name}"); // log selection
-  update(); // rebuild dropdown
+
+  update();
 }
 }
