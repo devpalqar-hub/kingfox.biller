@@ -76,74 +76,82 @@ TextEditingController internalNoteController = TextEditingController();
           
               SizedBox(height: 10.h),
           
-              Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 45.h,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.r),
-                          border:
-                              Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(width: 15.w,),
-                            Icon(Icons.receipt_long_outlined),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: TextField(
-  controller: invoiceController,
-  decoration:  InputDecoration(
-    hintText: "Search by Invoice number INV-2345",
-    border: InputBorder.none,
-    isDense: true,
-  ),
-),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    GestureDetector(
-            onTap: () {
-              final id = invoiceController.text.trim();
-              if (id.isNotEmpty) {
-                controller.getInvoice(id);
-              }
-            },
-            child: Container(
-              height: 45.h,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              decoration: BoxDecoration(
-                color: const Color(0xff0F49BD), // same blue theme
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-          const Icon(Icons.search, color: Colors.white),
-          SizedBox(width: 8.w),
-          Text(
-            "Fetch Order",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-            ),
+           Padding(
+  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
+  child: Row(
+    children: [
+      Expanded(
+        child: Container(
+          height: 45.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-                ],
-              ),
-            ),
-          ),
-                  ],
+          child: Row(
+            children: [
+              SizedBox(width: 15.w),
+              Icon(Icons.receipt_long_outlined),
+              SizedBox(width: 10.w),
+
+              Expanded(
+                child: TextField(
+                  controller: invoiceController,
+
+                  /// ❌ REMOVE onChanged logic completely
+
+                  decoration: InputDecoration(
+                    hintText: "2345",
+                    prefixText: "INV-", // ✅ only UI prefix
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
                 ),
               ),
-          
+            ],
+          ),
+        ),
+      ),
+
+      SizedBox(width: 10.w),
+
+      GestureDetector(
+        onTap: () {
+          final raw = invoiceController.text.trim();
+
+          if (raw.isNotEmpty) {
+            final fullInvoice = "INV-$raw"; // ✅ ADD PREFIX HERE ONLY
+            controller.getInvoice(fullInvoice);
+          } else {
+            Get.snackbar("Error", "Enter invoice number");
+          }
+        },
+        child: Container(
+          height: 45.h,
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xff0F49BD),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.search, color: Colors.white),
+              SizedBox(width: 8.w),
+              Text(
+                "Fetch Order",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+),
               SizedBox(height: 20.h),
           
               /// STEP 2

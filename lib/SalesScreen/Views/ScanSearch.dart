@@ -22,7 +22,7 @@ class ScanSearch extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(14.r),
           ),
           child: Row(
             children: [
@@ -37,62 +37,64 @@ class ScanSearch extends StatelessWidget {
                   child: Row(
                     children: [
                       GestureDetector(
-                              onTap: () async {
+                        onTap: () async {
+                          final barcode = await Get.to(() => const ScanPage());
 
-  final barcode = await Get.to(() => const ScanPage());
-
-  if (barcode != null) {
-    Get.find<AddProductController>().scanAndAddProduct(barcode, 5);
-  }
-
-},
-  child: Icon(
-    Icons.qr_code_scanner,
-    size: 20.sp,
-    color: Colors.black54,
-  ),
-),
+                          if (barcode != null) {
+                            productController.scanAndAddProduct(
+                              barcode,
+                              5,
+                            );
+                          }
+                        },
+                        child: Icon(
+                          Icons.qr_code_scanner,
+                          size: 20.sp,
+                          color: Colors.black54,
+                        ),
+                      ),
                       SizedBox(width: 10.w),
 
-                        Expanded(
-  child: TextField(
-    controller: controller,
-    onChanged: (value) {
-      if (value.length >= 3) {
-        productController.searchProducts(value);
-      } else if (value.isEmpty) {
-        productController.searchProductsList.clear();
-        productController.update();
-      }
-    },
-    onSubmitted: (value) {
-      if (value.isNotEmpty) {
-        productController.scanAndAddProduct(value, 5);
-        controller.clear();
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          onChanged: (value) {
+                            if (value.length >= 1) {
+                              productController.searchProducts(value);
+                            } else if (value.isEmpty) {
+                              productController.searchProductsList.clear();
+                              productController.update();
+                            }
+                          },
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              productController.scanAndAddProduct(value, 5);
+                              controller.clear();
 
-        productController.searchProductsList.clear();
-        productController.update();
-      }
-    },
-    decoration: InputDecoration(
-      border: InputBorder.none,
-      hintText: "Scan barcode or search products",
-      isCollapsed: true,
-      isDense: true,
-      suffixIcon: controller.text.isNotEmpty
-          ? IconButton(
-              icon: const Icon(Icons.close, size: 18),
-              onPressed: () {
-                controller.clear();
+                              productController.searchProductsList.clear();
+                              productController.update();
+                            }
+                          },
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Scan barcode or search products",
+                            isCollapsed: true,
+                            isDense: true,
+                            suffixIcon: controller.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () {
+                                      controller.clear();
 
-                productController.searchProductsList.clear();
-                productController.update();
-              },
-            )
-          : null,
-    ),
-  ),
-),
+                                      productController.searchProductsList
+                                          .clear();
+                                      productController.update();
+                                    },
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -120,8 +122,7 @@ class ReturnButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 53.h,
-        padding: EdgeInsets.symmetric(
-            horizontal: 16.w, vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         decoration: BoxDecoration(
           color: const Color(0xffFEF2F2),
           borderRadius: BorderRadius.circular(8.r),
@@ -129,8 +130,7 @@ class ReturnButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.arrow_back,
-                color: Colors.red, size: 14.sp),
+            Icon(Icons.arrow_back, color: Colors.red, size: 14.sp),
             SizedBox(width: 8.w),
             Text(
               "Return Item",

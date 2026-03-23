@@ -54,8 +54,9 @@ class LuckyDrawCampaign {
 
   factory LuckyDrawCampaign.fromJson(Map<String, dynamic> json) {
     var branchesJson = json['branches'] as List<dynamic>;
-    List<BranchModel> branchesList =
-        branchesJson.map((e) => BranchModel.fromJson(e)).toList();
+    List<BranchModel> branchesList = branchesJson
+        .map((e) => BranchModel.fromJson(e))
+        .toList();
 
     return LuckyDrawCampaign(
       id: json['id'],

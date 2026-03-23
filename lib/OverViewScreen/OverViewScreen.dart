@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/OverViewScreen/Service/HistoryController.dart';
 import 'package:kinfox_biller/OverViewScreen/Views/BillingTable.dart';
-import 'package:kinfox_biller/OverViewScreen/Views/BottomSummaryCrad.dart';
 import 'package:kinfox_biller/OverViewScreen/Views/AnalyticsCard.dart';
 
 class OverviewScreen extends StatefulWidget {
@@ -112,25 +111,25 @@ class _OverviewScreenState extends State<OverviewScreen> {
                             SizedBox(width: 20.w),
                             Expanded(
                               child: AnalyticsCard(
-                                title: "AVG. ORDER VALUE",
+                                title: "TOTAL SALES",
                                 value:
-                                    "₹${analytics.summary.averageOrderValue.toStringAsFixed(2)}",
-                                color: const Color(0xff8B5CF6),
+                                   "₹${analytics.summary.totalSales.toStringAsFixed(2)}",
+                                color: const Color(0xff22C55E),
                               ),
                             ),
                             SizedBox(width: 20.w),
                             Expanded(
                               child: AnalyticsCard(
-                                title: "RETURN RATE",
+                                title: "REFUNDS",
                                 value:
-                                    "${analytics.summary.returnRate.toStringAsFixed(2)}%",
+                                     "₹${analytics.summary.totalRefunds.toStringAsFixed(2)}",
                                 color: const Color(0xffEF4444),
                               ),
                             ),
                           ],
                         ),
 
-                      SizedBox(height: 50.h),
+                        SizedBox(height: 20.h,),
 
                       /// ================= BILLING HISTORY =================
                       Text(
@@ -171,37 +170,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                       SizedBox(height: 30.h),
 
                       /// ================= BOTTOM SUMMARY =================
-                      if (analytics != null)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: BottomSummaryCard(
-                                title: "TOTAL SALES",
-                                value:
-                                    "₹${analytics.summary.totalSales.toStringAsFixed(2)}",
-                                color: const Color(0xff22C55E),
-                              ),
-                            ),
-                            SizedBox(width: 20.w),
-                            Expanded(
-                              child: BottomSummaryCard(
-                                title: "TRANSACTIONS",
-                                value:
-                                    "${analytics.summary.transactionsCount} Active",
-                                color: const Color(0xff1E293B),
-                              ),
-                            ),
-                            SizedBox(width: 20.w),
-                            Expanded(
-                              child: BottomSummaryCard(
-                                title: "REFUNDS",
-                                value:
-                                    "₹${analytics.summary.totalRefunds.toStringAsFixed(2)}",
-                                color: const Color(0xffEF4444),
-                              ),
-                            ),
-                          ],
-                        ),
+                     
 
                       SizedBox(height: 40.h),
                     ],

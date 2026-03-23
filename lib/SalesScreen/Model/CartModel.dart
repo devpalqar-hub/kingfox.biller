@@ -1,4 +1,3 @@
-
 class CartModel {
   final int cartId;
   final int gstPercent;
@@ -16,6 +15,12 @@ class CartModel {
   final double gstAmount;
   final double finalAmount;
 
+  /// 🔥 NEW FIELDS
+  final double couponDiscountAmount;
+  final double finalAmountAfterCoupon;
+  final double grandFinalTotal;
+  final CouponModel? coupon;
+
   final List<dynamic> availableVouchers;
 
   CartModel({
@@ -31,6 +36,13 @@ class CartModel {
     required this.refundAmount,
     required this.discountedSubtotal,
     required this.availableVouchers,
+    required this.grandFinalTotal,
+
+    /// 🔥 NEW
+    required this.couponDiscountAmount,
+    required this.finalAmountAfterCoupon,
+    this.coupon,
+
     this.returnInvoiceId,
   });
 
@@ -59,26 +71,43 @@ class CartModel {
       gstAmount: (json['gstAmount'] ?? 0).toDouble(),
       finalAmount: (json['finalAmount'] ?? 0).toDouble(),
 
+      /// 🔥 NEW
+      couponDiscountAmount:
+          (json['couponDiscountAmount'] ?? 0).toDouble(),
+      finalAmountAfterCoupon:
+          (json['finalAmountAfterCoupon'] ?? 0).toDouble(),
+      grandFinalTotal:
+           (json['grandFinalTotal'] ?? 0).toDouble(),
+      coupon: json['coupon'] != null
+          ? CouponModel.fromJson(json['coupon'])
+          : null,
+
       availableVouchers: json['availableVouchers'] ?? [],
     );
   }
 }
 class ReturnItemModel {
-  final int variantId;
+   final String productName;
+  final int variantId; 
   final int quantity;
   final double creditPerUnit;
+  final String ? sku;
 
   ReturnItemModel({
+    required this.productName,
     required this.variantId,
     required this.quantity,
     required this.creditPerUnit,
+    required this.sku,
   });
 
   factory ReturnItemModel.fromJson(Map<String, dynamic> json) {
     return ReturnItemModel(
+      productName: json['productName']?? "",
       variantId: json['variantId'] ?? 0,
       quantity: json['quantity'] ?? 0,
       creditPerUnit: (json['creditPerUnit'] ?? 0).toDouble(),
+       sku: json['sku'] ?? "",
     );
   }
 }
@@ -116,6 +145,32 @@ class CartItemModel {
       quantity: json['quantity'] ?? 0,
       lineTotal: (json['lineTotal'] ?? 0).toDouble(),
        image: json['image'],
+    );
+  }
+}
+class CouponModel {
+  final String code;
+  final String discountType;
+  final double discountValue;
+  final double couponDiscountAmount;
+  final bool valid;
+
+  CouponModel({
+    required this.code,
+    required this.discountType,
+    required this.discountValue,
+    required this.couponDiscountAmount,
+    required this.valid,
+  });
+
+  factory CouponModel.fromJson(Map<String, dynamic> json) {
+    return CouponModel(
+      code: json['code'] ?? "",
+      discountType: json['discountType'] ?? "",
+      discountValue: (json['discountValue'] ?? 0).toDouble(),
+      couponDiscountAmount:
+          (json['couponDiscountAmount'] ?? 0).toDouble(),
+      valid: json['valid'] ?? false,
     );
   }
 }

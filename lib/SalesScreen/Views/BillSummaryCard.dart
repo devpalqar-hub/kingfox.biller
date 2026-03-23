@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
-import 'package:kinfox_biller/SalesScreen/Service/PreviewController.dart';
+
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/OrderSummaryCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/VoucherSelectionCard.dart';
@@ -17,89 +17,85 @@ class BillSummaryCard extends StatefulWidget {
 }
 
 class _BillSummaryCardState extends State<BillSummaryCard> {
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final voucherCountController = TextEditingController();
- 
-
-  final previewController = Get.put(PreviewController());
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AddProductController>(
       builder: (cartController) {
+        /// ✅ DEFINE CART HERE
+        final cart = cartController.cart;
+
+        /// 🔥 LOADING
+        if (cartController.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         return Column(
           children: [
-            /// Customer
-            CustomerCard(
-              nameController: nameController,
-              phoneController: phoneController,
-            ),
+        
+
+            /// ================= VOUCHER =================
+            VoucherSelectionCard(),
 
             SizedBox(height: 15.h),
 
-            /// Voucher + Coupon
-            VoucherSelectionCard(
-              voucherCountController: voucherCountController,
-            ),
+            OrderSummaryCard(
+              subtotal: cart?.subtotal ?? 0,
+              tax: cart?.gstAmount ?? 0,
 
-            SizedBox(height: 15.h),
+              exchangeCredit: cart?.returnCredit ?? 0,
+              coupon: cart?.couponDiscountAmount ?? 0,
+              appliedReturnDiscount: cart?.appliedReturnDiscount ?? 0,
+              refundAmount: cart?.refundAmount ?? 0,
+              grandTotal: (cart?.couponDiscountAmount ?? 0) > 0
+                  ? cart!.finalAmountAfterCoupon
+                  : cart?.finalAmount ?? 0,
 
-            /// 🔥 ONLY THIS PART LISTENS TO PREVIEW
-            GetBuilder<PreviewController>(
-              builder: (previewController) {
-                final data = previewController.preview;
-
-                if (previewController.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+              onPrint: () async {
+                if (cart == null) {
+                  Get.snackbar("Error", "Cart is empty");
+                  return;
                 }
 
-                return OrderSummaryCard(
-  subtotal: data?.subtotal ?? 0,
-  tax: data?.gstAmount ?? 0,
-  exchangeCredit: 0,
-  coupon: data?.discount ?? 0,
-  storeDiscount: 0,
-  grandTotal: data?.finalAmount ?? 0,
-                                                       onPrint: () async {
-  final cartController = Get.find<AddProductController>();
+                final success = await cartController.checkoutCart(
+                  paymentMethod: "cash",
+                  customerName: cartController.nameController.text,
+                  customerPhone: cartController.phoneController.text,
+                  couponCode: cartController.appliedCoupon,
+                  campaignId: cartController.selectedCampaign?.id,
+                  voucherCount:
+                      int.tryParse(
+                        cartController.voucherCountController.text,
+                      ) ??
+                      0,
+                );
 
-  final success = await cartController.checkoutCart(
-    paymentMethod: "cash",
-    customerName: nameController.text,
-    customerPhone: phoneController.text,
-    couponCode: cartController.appliedCoupon,
-    campaignId: cartController.selectedCampaign?.id,
-    voucherCount:
-        int.tryParse(voucherCountController.text) ?? 0,
-  );
+                if (success) {
+                  Get.dialog(
+                    OrderCompleteDialog(
+                      cart: cartController.completedOrder!,
+                      invoiceNumber: cartController.invoiceNumber ?? "N/A",
 
-  if (success) {
-   
-  Get.dialog(
-    OrderCompleteDialog(
-      cart: cartController.completedOrder!,
-      invoiceNumber: cartController.invoiceNumber ?? "N/A",
-    ),
-    barrierDismissible: false,
-  );
+                      /// ✅ PASS THESE
+                      subtotal: cart.subtotal,
+                      tax: cart.gstAmount,
+                      discount: cart.couponDiscountAmount,
+                      refundAmount: cart.refundAmount,
+                      total: cart.grandFinalTotal,
+                    ),
+                  );
 
-    
+                  /// RESET
+                  cartController.couponController.clear();
+                  cartController.voucherCountController.clear();
 
-    
-    cartController.cart = null;
-    cartController.items.clear();
-    cartController.appliedCoupon = "";
-     previewController.preview = null;
-    cartController.update();
-    previewController.update();
-  } else {
-    Get.snackbar("Error", "Checkout Failed");
-  }
-},
-);
+                  cartController.cart = null;
+                  cartController.items.clear();
+                  cartController.appliedCoupon = "";
+
+                  cartController.update();
+                } else {
+                  Get.snackbar("Error", "Checkout Failed");
+                }
               },
             ),
           ],

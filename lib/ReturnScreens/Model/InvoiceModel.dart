@@ -1,6 +1,6 @@
 
 
-class InvoiceModel {
+class RecentInvoiceModel {
   int id;
   String invoiceNumber;
   int customerId;
@@ -21,7 +21,7 @@ class InvoiceModel {
   List<Item> items;
   List<Payment> payments;
 
-  InvoiceModel({
+  RecentInvoiceModel({
     required this.id,
     required this.invoiceNumber,
     required this.customerId,
@@ -43,7 +43,7 @@ class InvoiceModel {
     required this.payments,
   });
 
-  factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
+  factory RecentInvoiceModel.fromJson(Map<String, dynamic> json) => RecentInvoiceModel(
         id: json["id"],
         invoiceNumber: json["invoiceNumber"],
         customerId: json["customerId"],

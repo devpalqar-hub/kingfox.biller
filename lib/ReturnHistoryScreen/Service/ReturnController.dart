@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
 import 'package:kinfox_biller/ReturnHistoryScreen/Model/ReturnModel.dart';
+import 'package:kinfox_biller/ReturnScreens/Model/InvoiceModel.dart';
+import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
 import 'package:kinfox_biller/main.dart';
 
 class ReturnsController extends GetxController {
@@ -13,7 +15,7 @@ class ReturnsController extends GetxController {
   Map<int, int> returnQty = {};
 
   InvoiceModel? invoice;
-  List<InvoiceModel> recentInvoices = [];
+List<RecentInvoiceModel> recentInvoices = [];
 
  String? selectedReason;
 
@@ -212,9 +214,12 @@ class ReturnsController extends GetxController {
 
 Future<bool> addReturnItemsToCart() async {
   if (invoice == null) {
+    print("❌ No invoice selected");
     return false;
   }
+
   if (selectedItems.isEmpty) {
+    print("❌ No items selected for return");
     return false;
   }
 
@@ -232,26 +237,52 @@ Future<bool> addReturnItemsToCart() async {
     "items": items,
   };
 
+  final headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $accessToken",
+  };
+
+  /// 🔥 REQUEST LOG
+  print("📤 ================= RETURN REQUEST =================");
+  print("➡️ URL: $url");
+  print("➡️ METHOD: POST");
+  print("➡️ HEADERS: $headers");
+  print("➡️ BODY: ${jsonEncode(body)}");
+  print("📤 ==================================================");
+
   final response = await http.post(
     Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    },
+    headers: headers,
     body: jsonEncode(body),
   );
 
+  /// 🔥 RESPONSE LOG
+  print("📥 ================= RETURN RESPONSE =================");
+  print("⬅️ STATUS CODE: ${response.statusCode}");
+  print("⬅️ BODY: ${response.body}");
+  print("📥 ===================================================");
+
   if (response.statusCode == 200 || response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+    
+    /// 🔍 PARSED DATA LOG
+    print("🔍 PARSED DATA: $data");
+
     await getReturns();
+     /// 🔥 IMPORTANT: REFRESH CART
+    await Get.find<AddProductController>().getCart();
     clearReturnData();
 
+    print("✅ Return Items Added Successfully");
+
     return true;
-    
   } else {
-  
+    print("❌ Failed to add return items");
+
     return false;
   }
 }
+
   /// ================= GET INVOICE =================
   Future<void> getInvoice(String invoiceId) async {
     isLoading = true;
@@ -277,4 +308,81 @@ Future<bool> addReturnItemsToCart() async {
     isLoading = false;
     update();
   }
+
+Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
+  if (variantIds.isEmpty) {
+    print("❌ No items selected for deletion");
+    return false;
+  }
+
+  final url = "$baseUrl/billing/cart/return-items";
+
+  final body = {
+    "variantIds": variantIds, // 👈 send list of ids to delete
+  };
+
+  final headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $accessToken",
+  };
+
+  /// 🔥 REQUEST LOG
+  print("📤 ============== DELETE RETURN ITEMS REQUEST ==============");
+  print("➡️ URL: $url");
+  print("➡️ METHOD: DELETE");
+  print("➡️ HEADERS: $headers");
+  print("➡️ BODY: ${jsonEncode(body)}");
+  print("📤 ========================================================");
+
+  final response = await http.delete(
+    Uri.parse(url),
+    headers: headers,
+    body: jsonEncode(body), // 👈 important (some APIs need body)
+  );
+
+  /// 🔥 RESPONSE LOG
+  print("📥 ============== DELETE RETURN ITEMS RESPONSE =============");
+  print("⬅️ STATUS CODE: ${response.statusCode}");
+  print("⬅️ BODY: ${response.body}");
+  print("📥 ========================================================");
+
+  if (response.statusCode == 200 || response.statusCode == 204) {
+    print("✅ Return items deleted successfully");
+
+    await getReturns(); // refresh list
+    return true;
+  } else {
+    print("❌ Failed to delete return items");
+    return false;
+  }
+}
+
+Future<void> getRecentInvoices() async {
+
+    isLoading = true;
+    update();
+
+    final url = "$baseUrl/returns/recent-invoices";
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Content-Type": "application/json",
+      },
+    );
+    if (response.statusCode == 200) {
+
+      final List data = jsonDecode(response.body);
+
+      recentInvoices =
+          data.map((e) => RecentInvoiceModel.fromJson(e)).toList();
+
+    } else {
+      recentInvoices = [];
+    }
+
+    isLoading = false;
+    update();
+  }
+  
 }

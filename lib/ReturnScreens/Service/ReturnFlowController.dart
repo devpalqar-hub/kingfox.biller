@@ -15,7 +15,7 @@ class ReturnFlowController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getRecentInvoices();
+   
   }
 
   void startReturn() {
@@ -28,31 +28,5 @@ class ReturnFlowController extends GetxController {
     update();
   }
 
-  Future<void> getRecentInvoices() async {
-
-    isLoading = true;
-    update();
-
-    final url = "$baseUrl/returns/recent-invoices";
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-
-      final List data = jsonDecode(response.body);
-
-      recentInvoices =
-          data.map((e) => InvoiceModel.fromJson(e)).toList();
-
-    } else {
-      recentInvoices = [];
-    }
-
-    isLoading = false;
-    update();
-  }
+  
 }

@@ -8,13 +8,23 @@ import 'package:kinfox_biller/OrderCompleteDailogue/Views/PaymentSummaryCard.dar
 class OrderCompleteDialog extends StatelessWidget {
   final CartModel cart;
   final String invoiceNumber;
-  //final String paymentMethod;
+
+  /// ✅ ADD THESE
+  final double subtotal;
+  final double tax;
+  final double discount;
+  final double refundAmount;
+  final double total;
 
   const OrderCompleteDialog({
     super.key,
     required this.cart,
     required this.invoiceNumber,
-    //required this.paymentMethod,
+    required this.subtotal,
+    required this.tax,
+    required this.discount,
+    required this.refundAmount,
+    required this.total,
   });
 
   @override
@@ -87,18 +97,23 @@ class OrderCompleteDialog extends StatelessWidget {
                               children: [
                                 OrderDetailsCard(cart: cart),
                                 SizedBox(height: 20.h),
-                                PaymentInformationCard(
-                                 // paymentMethod: paymentMethod,
-                                  paymentDateTime: DateTime.now(),
-                                  paidAmount: cart.finalAmount,
-                                ),
+                               PaymentInformationCard(
+  paymentDateTime: DateTime.now(),
+  paidAmount: total,
+),
                               ],
                             ),
                           ),
                           SizedBox(width: 15.w),
                           SizedBox(
                             width: 320.w,
-                            child: PaymentSummaryCard(cart: cart),
+                            child:PaymentSummaryCard(
+  subtotal: subtotal,
+  tax: tax,
+  discount: discount,
+  refundAmount: refundAmount,
+  total: total,
+),
                           ),
                         ],
                       ),

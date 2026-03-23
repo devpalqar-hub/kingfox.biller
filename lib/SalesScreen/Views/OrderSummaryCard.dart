@@ -6,8 +6,9 @@ class OrderSummaryCard extends StatelessWidget {
   final double tax;
   final double exchangeCredit;
   final double coupon;
-  final double storeDiscount;
+  final double appliedReturnDiscount;
   final double grandTotal;
+  final double refundAmount;
   final VoidCallback onPrint;
 
   const OrderSummaryCard({
@@ -16,8 +17,9 @@ class OrderSummaryCard extends StatelessWidget {
     required this.tax,
     required this.exchangeCredit,
     required this.coupon,
-    required this.storeDiscount,
+    required this.appliedReturnDiscount,
     required this.grandTotal,
+     required this.refundAmount,
     required this.onPrint,
   });
 
@@ -57,7 +59,9 @@ class OrderSummaryCard extends StatelessWidget {
 
           _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
           _row("Coupon Deduction", coupon, isNegative: true),
-          _row("Store Discount", storeDiscount, isNegative: true),
+          _row("Return Amount", appliedReturnDiscount, isNegative: true),
+          _row("Refund Amount", refundAmount, isNegative: true),
+
 
           SizedBox(height: 3.h),
 

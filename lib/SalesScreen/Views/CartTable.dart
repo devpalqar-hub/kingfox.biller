@@ -1,13 +1,15 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:kinfox_biller/ReturnHistoryScreen/ReturnHistoryScreen.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
+
 
 class CartTableWidget extends StatelessWidget {
   final CartModel cart;
   final Function(int variantId) onIncrease;
   final Function(int variantId) onDecrease;
-  final Function(int variantId) onDelete;
+  final Function(int variantId, bool isReturn) onDelete;
 
   const CartTableWidget({
     super.key,
@@ -19,11 +21,7 @@ class CartTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   
-    final List<dynamic> rows = [
-      ...cart.items,
-      ...cart.returnItems,
-    ];
+    final List<dynamic> rows = [...cart.items, ...cart.returnItems];
 
     return Container(
       height: 500.h,
@@ -42,59 +40,41 @@ class CartTableWidget extends StatelessWidget {
               minWidth: 900,
               headingRowHeight: 45.h,
               dataRowHeight: 70.h,
-              headingRowColor:
-                  WidgetStateProperty.all(Colors.grey.shade100),
+              headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
               columns: [
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _headerText("ITEM DETAILS"),
-                  ),
+                  label: _headerText("ITEM DETAILS"),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: Align(
-                    alignment: Alignment.centerRight,
-                    child: _headerText("PRICE"),
-                  ),
+                  label: _headerText("PRICE"),
                 ),
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: Align(
-                    alignment: Alignment.center,
-                    child: _headerText("QTY"),
-                  ),
+                  label: _headerText("QTY"),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: Align(
-                    alignment: Alignment.center,
-                    child: _headerText("TOTAL"),
-                  ),
+                  label: _headerText("TOTAL"),
                 ),
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: Align(
-                    alignment: Alignment.center,
-                    child: _headerText("ACTION"),
-                  ),
+                  label: _headerText("ACTION"),
                 ),
               ],
 
-              /// ✅ ROWS
               rows: List.generate(rows.length, (index) {
                 final row = rows[index];
                 final bool isReturn = row is ReturnItemModel;
 
-              
-                final String name =
-                    isReturn ? "Returned Item" : row.productName;
+                final String name = isReturn
+                    ? (row.productName ?? "Returned Item")
+                    : (row.productName ?? "");
 
-                final String sku =
-                    isReturn ? "" : row.sku;
+                final String sku = isReturn ? (row.sku ?? "") : (row.sku ?? "");
 
                 final double price =
                     isReturn ? row.creditPerUnit : row.price;
@@ -108,6 +88,14 @@ class CartTableWidget extends StatelessWidget {
                 final int variantId = row.variantId;
 
                 return DataRow(
+                  color: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (isReturn) {
+                        return Colors.red.withOpacity(0.08);
+                      }
+                      return Colors.transparent;
+                    },
+                  ),
                   cells: [
                     /// ITEM DETAILS
                     DataCell(
@@ -122,9 +110,8 @@ class CartTableWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
-                              color: isReturn
-                                  ? Colors.red
-                                  : Colors.black,
+                              color:
+                                  isReturn ? Colors.red : Colors.black,
                             ),
                           ),
                           if (!isReturn)
@@ -162,8 +149,7 @@ class CartTableWidget extends StatelessWidget {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _qtyBtn(
-                                      "-", () => onDecrease(variantId)),
+                                  _qtyBtn("-", () => onDecrease(variantId)),
                                   SizedBox(width: 8.w),
                                   Text(
                                     "$qty",
@@ -172,8 +158,7 @@ class CartTableWidget extends StatelessWidget {
                                     ),
                                   ),
                                   SizedBox(width: 8.w),
-                                  _qtyBtn(
-                                      "+", () => onIncrease(variantId)),
+                                  _qtyBtn("+", () => onIncrease(variantId)),
                                 ],
                               ),
                       ),
@@ -190,18 +175,19 @@ class CartTableWidget extends StatelessWidget {
                       ),
                     ),
 
-                  
-                   DataCell(
-  Center(
-    child: IconButton(
-      onPressed: () => onDelete(variantId),
-      icon: Icon(
-        Icons.delete_outline,
-        color: isReturn ? Colors.red : Colors.red,
-      ),
-    ),
-  ),
-),
+                    /// DELETE
+                    DataCell(
+                      Center(
+                        child: IconButton(
+                          onPressed: () =>
+                              onDelete(variantId, isReturn),
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }),
@@ -209,19 +195,23 @@ class CartTableWidget extends StatelessWidget {
           ),
 
           Divider(),
-          _footer(rows.length),
+
+          _footer(context, rows.length),
         ],
       ),
     );
   }
 
   Widget _headerText(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 13.sp,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey,
+        ),
       ),
     );
   }
@@ -250,16 +240,13 @@ class CartTableWidget extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
-  Widget _footer(int count) {
+  Widget _footer(BuildContext context, int count) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
@@ -273,16 +260,33 @@ class CartTableWidget extends StatelessWidget {
             children: [
               Icon(Icons.refresh, size: 16.sp, color: Colors.blue),
               SizedBox(width: 4.w),
-              Text(
-                "View Recent Transactions",
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
+
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReturnHistoryScreen(),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(4.w),
+                    child: Text(
+                      "View Recent Transactions",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
-              )
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
