@@ -142,7 +142,7 @@ class AddProductController extends GetxController {
         isLoading = false;
         update();
 
-        showTopSnackbar("This coupon is not valid or expired");
+        //showTopSnackbar("This coupon is not valid or expired");
 
         return false;
       }
@@ -152,7 +152,7 @@ class AddProductController extends GetxController {
       return true;
     } else {
       cart = null;
-      showTopSnackbar("Failed to apply coupon");
+      //showTopSnackbar("Failed to apply coupon");
       isLoading = false;
       update();
       return false;
@@ -211,29 +211,29 @@ class AddProductController extends GetxController {
     ///  ---------------- VALIDATIONS ----------------
 
     if (cart == null || cart!.items.isEmpty) {
-      showTopSnackbar("Cart is empty");
+      //showTopSnackbar("Cart is empty");
       return false;
     }
 
     if ((customerName ?? "").trim().isEmpty) {
-      showTopSnackbar("Please enter customer name");
+      //showTopSnackbar("Please enter customer name");
       return false;
     }
 
     final phone = (customerPhone ?? "").trim();
     if (phone.isEmpty) {
-      showTopSnackbar("Please enter phone number");
+      //showTopSnackbar("Please enter phone number");
       return false;
     }
 
     if (phone.length != 10) {
-      showTopSnackbar("Phone number must be 10 digits");
+      //showTopSnackbar("Phone number must be 10 digits");
       return false;
     }
 
     if (campaignId != null) {
       if (voucherCount == null || voucherCount <= 0) {
-        showTopSnackbar("Enter valid voucher count");
+        //showTopSnackbar("Enter valid voucher count");
         return false;
       }
     }
@@ -269,8 +269,8 @@ class AddProductController extends GetxController {
       body: jsonEncode(body),
     );
 
-    print("STATUS CODE: ${response.statusCode}");
-    print(" BODY: ${response.body}");
+    //print("STATUS CODE: ${response.statusCode}");
+    //print(" BODY: ${response.body}");
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -281,13 +281,13 @@ class AddProductController extends GetxController {
       clearAllTextControllers();
       clearVoucherSelection();
 
-      Get.snackbar(
-        "",
-        "Checkout completed successfully",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      //Get.snackbar(
+        //"",
+        //"Checkout completed successfully",
+        //snackPosition: SnackPosition.TOP,
+        //backgroundColor: Colors.green,
+        //colorText: Colors.white,
+      //);
 
       isLoading = false;
       update();
@@ -312,7 +312,7 @@ class AddProductController extends GetxController {
       errorMessage = "Something went wrong";
     }
 
-    showTopSnackbar(errorMessage);
+    //showTopSnackbar(errorMessage);
 
     isLoading = false;
     update();

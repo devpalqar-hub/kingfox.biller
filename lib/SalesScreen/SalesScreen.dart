@@ -22,7 +22,21 @@ class SalesScreen extends StatefulWidget {
 
 class _SalesScreenState extends State<SalesScreen> {
   final TextEditingController scanController = TextEditingController();
-  final AddProductController controller = Get.put(AddProductController());
+  late AddProductController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controller with permanent flag to prevent disposal on config changes
+    controller = Get.put(AddProductController(), permanent: true);
+  }
+
+  @override
+  void dispose() {
+    // Only dispose the local scanController, not the permanent AddProductController
+    scanController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

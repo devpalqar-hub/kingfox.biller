@@ -111,6 +111,7 @@ Row(
       );
 
       if (confirm == true) {
+        controller.resetTab();
         await authController.logout();
       }
     }

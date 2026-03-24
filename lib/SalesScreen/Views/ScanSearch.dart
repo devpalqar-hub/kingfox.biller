@@ -78,10 +78,11 @@ class ScanSearch extends StatelessWidget {
     decoration: InputDecoration(
       border: InputBorder.none,
       hintText: "Scan barcode or search products",
-
-      /// ❌ REMOVE THESE (cause issue)
-      // isCollapsed: true,
-      // isDense: true,
+      hintStyle: TextStyle(fontSize: 15.sp),
+     
+      
+      isCollapsed: true,
+       isDense: true,
 
       contentPadding: EdgeInsets.symmetric(vertical: 14.h), // ✅ FIX
 

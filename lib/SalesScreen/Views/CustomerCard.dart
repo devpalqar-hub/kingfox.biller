@@ -49,6 +49,7 @@ class CustomerCard extends StatelessWidget {
                 child: _buildTextField(
                   controller: nameController,
                   hint: "Enter customer name",
+                  
                 ),
               ),
 
@@ -68,48 +69,57 @@ class CustomerCard extends StatelessWidget {
       ),
     );
   }
+Widget _buildTextField({
+  required TextEditingController controller,
+  required String hint,
+  bool isPhone = false,
+}) {
+  return SizedBox(
+    height: 45.h,
+    child: TextField(
+      controller: controller,
 
-  /// 🔥 COMMON TEXTFIELD BUILDER
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    bool isPhone = false,
-  }) {
-    return Container(
-      height: 45.h,
-      padding: EdgeInsets.symmetric(horizontal: 14.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      alignment: Alignment.center,
-      child: TextField(
-        controller: controller,
+      keyboardType:
+          isPhone ? TextInputType.number : TextInputType.text,
 
-        /// ✅ Keyboard type
-        keyboardType:
-            isPhone ? TextInputType.number : TextInputType.text,
+      inputFormatters: isPhone
+          ? [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ]
+          : [],
 
-        /// ✅ Only numbers allowed (strong restriction)
-        inputFormatters: isPhone
-            ? [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ]
-            : [],
+      /// ✅ Vertically center text & hint
+      textAlignVertical: TextAlignVertical.center,
 
-        /// ✅ Keep text centered (no jump issue)
-        textAlignVertical: TextAlignVertical.center,
+      style: TextStyle(fontSize: 14.sp),
 
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-          hintStyle: TextStyle(fontSize: 14.sp),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(fontSize: 14.sp),
 
-          /// ✅ Stable padding (fix UI issues)
-          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+        /// ✅ Perfect vertical centering
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(
+  vertical: (45.h - 14.sp) / 2, // dynamic centering
+          horizontal: 14.w,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: BorderSide(color: Colors.blue),
         ),
       ),
-    );
-  }
-}
+    ),
+  );
+}}

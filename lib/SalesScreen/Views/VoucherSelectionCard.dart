@@ -44,7 +44,7 @@ class VoucherSelectionCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Container(
-                          height: 38.h,
+                          height: 45.h,
                           padding: EdgeInsets.symmetric(horizontal: 14.w),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14.r),
@@ -98,10 +98,15 @@ class VoucherSelectionCard extends StatelessWidget {
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     alignment: Alignment.center,
-                    child: TextField(
+                    child:  TextField(
   controller: controller.voucherCountController,
+
   textAlign: TextAlign.center,
+  textAlignVertical: TextAlignVertical.center,
+
   keyboardType: TextInputType.number,
+
+  style: TextStyle(fontSize: 14.sp),
 
   onChanged: (value) {
     if (value.isEmpty || value == "0") {
@@ -113,7 +118,17 @@ class VoucherSelectionCard extends StatelessWidget {
     }
   },
 
-  decoration: const InputDecoration(border: InputBorder.none),
+  decoration: InputDecoration(
+    isDense: true,
+    hintText: "1",
+    hintStyle: TextStyle(fontSize: 14.sp),
+
+    contentPadding: EdgeInsets.symmetric(
+      vertical: (45.h - 14.sp) / 2,
+    ),
+
+    border: InputBorder.none,
+  ),
 ),
                   ),
           
@@ -123,7 +138,7 @@ class VoucherSelectionCard extends StatelessWidget {
                   GestureDetector(
                     onTap: controller.updateVoucherCount,
                     child: Container(
-                      height: 38.h,
+                      height: 45.h,
                       width: 44.h,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14.r),
@@ -153,17 +168,27 @@ class VoucherSelectionCard extends StatelessWidget {
                           Icon(Icons.search, size: 18.sp),
                           SizedBox(width: 6.w),
                           Expanded(
-                            child: TextField(
-                              controller: controller.couponController,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: "Coupon Code",
-                                hintStyle: TextStyle(fontSize: 12.sp),
-                                isCollapsed: true,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
+  child: TextField(
+    controller: controller.couponController,
+
+    textAlignVertical: TextAlignVertical.center,
+
+    style: TextStyle(fontSize: 14.sp),
+
+    decoration: InputDecoration(
+      hintText: "Coupon Code",
+      hintStyle: TextStyle(fontSize: 12.sp),
+
+      isDense: true,
+
+      contentPadding: EdgeInsets.symmetric(
+        vertical: (45.h - 14.sp) / 2,
+      ),
+
+      border: InputBorder.none,
+    ),
+  ),
+),
                         ],
                       ),
                     ),

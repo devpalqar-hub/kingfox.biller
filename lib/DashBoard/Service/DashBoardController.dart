@@ -17,6 +17,6 @@ class DashboardController extends GetxController {
 
   void resetTab() {
     currentTab = 0;
-    update();
+    // update();
   }
 }

@@ -23,7 +23,7 @@ void main() async {
 class KingfoxBiller extends StatelessWidget {
   KingfoxBiller({super.key});
 
-  final AuthController controller = Get.put(AuthController());
+  final AuthController controller = Get.put(AuthController(),permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +32,9 @@ class KingfoxBiller extends StatelessWidget {
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(fontFamily: "Inter"),
-
-        /// Loader first
         home: const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         ),
-
-        /// Run token check
-        builder: (context, child) {
-          Future.microtask(() => controller.checkLogin());
-          return child!;
-        },
       ),
     );
   }

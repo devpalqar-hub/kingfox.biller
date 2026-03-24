@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,7 @@ import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 
 class AuthController extends GetxController {
   bool isLoading = false;
+  bool _loginCheckCompleted = false;
 
   String userId = "";
   String userName = "";
@@ -16,14 +18,22 @@ class AuthController extends GetxController {
 
   @override
   void onInit() async {
+    super.onInit();
+    
     final prefs = await SharedPreferences.getInstance();
 
     userId = prefs.getString("userId") ?? "";
     userName = prefs.getString("userName") ?? "";
     
+    // Perform login check only once, after first frame is rendered
+    if (!_loginCheckCompleted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await checkLogin();
+        _loginCheckCompleted = true;
+      });
+    }
+    
     update();
-
-    super.onInit();
   }
 
 
