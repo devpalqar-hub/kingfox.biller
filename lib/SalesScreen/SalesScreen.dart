@@ -4,9 +4,9 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
-import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
-import 'package:kinfox_biller/ReturnScreens/ProcessItemReturnDailogue.dart';
-import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/ReturnScreen/Service/ReturnController.dart';
+import 'package:kinfox_biller/ReturnScreen/ProcessItemReturnDailogue.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/BillSummaryCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CartTable.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
@@ -66,24 +66,28 @@ class _SalesScreenState extends State<SalesScreen> {
             ),
                                
                               if (controller.searchProductsList.isNotEmpty)
-                                Container(
-                                  constraints: BoxConstraints(maxHeight: 300.h),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(14.r),
-                                  ),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount:
-                                        controller.searchProductsList.length,
-                                    itemBuilder: (context, index) {
-                                      final product =
-                                          controller.searchProductsList[index];
-                                      return _buildProductItem(
-                                        product,
-                                        controller,
-                                      );
-                                    },
+                                Padding(
+                                  padding:  EdgeInsets.only(top:10.h),
+                                  child: Container(
+                                    
+                                    constraints: BoxConstraints(maxHeight: 300.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14.r),
+                                    ),
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          controller.searchProductsList.length,
+                                      itemBuilder: (context, index) {
+                                        final product =
+                                            controller.searchProductsList[index];
+                                        return _buildProductItem(
+                                          product,
+                                          controller,
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
 

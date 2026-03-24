@@ -12,8 +12,20 @@ class AuthController extends GetxController {
 
   String userId = "";
   String userName = "";
-  String userEmail = "";
-  String userRole = "";
+
+
+  @override
+  void onInit() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    userId = prefs.getString("userId") ?? "";
+    userName = prefs.getString("userName") ?? "";
+    
+    update();
+
+    super.onInit();
+  }
+
 
   Future<void> login(String email, String password) async {
     isLoading = true;
@@ -37,11 +49,14 @@ class AuthController extends GetxController {
 
       userId = data["user"]["id"].toString();
       userName = data["user"]["name"] ?? "";
-      userEmail = data["user"]["email"] ?? "";
-      userRole = data["user"]["role"] ?? "";
-
+    
       final prefs = await SharedPreferences.getInstance();
+
+      /// ✅ STORE EVERYTHING
       await prefs.setString("accessToken", accessToken!);
+      await prefs.setString("userId", userId);
+      await prefs.setString("userName", userName);
+      
 
       Get.offAll(() => Dashboardscreen());
     } else {
@@ -64,26 +79,39 @@ class AuthController extends GetxController {
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
-
     String? savedToken = prefs.getString("accessToken");
 
-    if (savedToken != null && savedToken.isNotEmpty) {
-      accessToken = savedToken;
+    if (savedToken == null || savedToken.isEmpty) {
+      Get.offAll(() => LoginScreen());
+      return;
+    }
+
+    accessToken = savedToken;
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/auth/profile"),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
       Get.offAll(() => Dashboardscreen());
     } else {
-      Get.offAll(() => LoginScreen());
+      await logout();
     }
   }
+
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.remove("accessToken");
-
+    await prefs.clear();
     accessToken = null;
 
     Get.offAll(() => LoginScreen());
   }
+
 
   void handleUnauthorized(int statusCode) {
     if (statusCode == 401) {

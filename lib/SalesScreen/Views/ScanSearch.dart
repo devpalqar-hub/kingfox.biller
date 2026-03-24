@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/ScanPage.dart';
 
 class ScanSearch extends StatelessWidget {
@@ -54,47 +54,54 @@ class ScanSearch extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 10.w),
+                     Expanded(
+  child: TextField(
+    controller: controller,
+    textAlignVertical: TextAlignVertical.center, // ✅ FIX
+    onChanged: (value) {
+      if (value.isNotEmpty) {
+        productController.searchProducts(value);
+      } else {
+        productController.searchProductsList.clear();
+        productController.update();
+      }
+    },
+    onSubmitted: (value) {
+      if (value.isNotEmpty) {
+        productController.scanAndAddProduct(value, 5);
+        controller.clear();
 
-                      Expanded(
-                        child: TextField(
-                          controller: controller,
-                          onChanged: (value) {
-                            if (value.length >= 1) {
-                              productController.searchProducts(value);
-                            } else if (value.isEmpty) {
-                              productController.searchProductsList.clear();
-                              productController.update();
-                            }
-                          },
-                          onSubmitted: (value) {
-                            if (value.isNotEmpty) {
-                              productController.scanAndAddProduct(value, 5);
-                              controller.clear();
+        productController.searchProductsList.clear();
+        productController.update();
+      }
+    },
+    decoration: InputDecoration(
+      border: InputBorder.none,
+      hintText: "Scan barcode or search products",
 
-                              productController.searchProductsList.clear();
-                              productController.update();
-                            }
-                          },
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Scan barcode or search products",
-                            isCollapsed: true,
-                            isDense: true,
-                            suffixIcon: controller.text.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () {
-                                      controller.clear();
+      /// ❌ REMOVE THESE (cause issue)
+      // isCollapsed: true,
+      // isDense: true,
 
-                                      productController.searchProductsList
-                                          .clear();
-                                      productController.update();
-                                    },
-                                  )
-                                : null,
-                          ),
-                        ),
-                      ),
+      contentPadding: EdgeInsets.symmetric(vertical: 14.h), // ✅ FIX
+
+      /// ✅ KEEP SIZE CONSTANT
+      suffixIcon: SizedBox(
+        width: 30.w,
+        child: controller.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                onPressed: () {
+                  controller.clear();
+                  productController.searchProductsList.clear();
+                  productController.update();
+                },
+              )
+            : const SizedBox(),
+      ),
+    ),
+  ),
+)
                     ],
                   ),
                 ),

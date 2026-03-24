@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
-import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/OrderSummaryCard.dart';
@@ -94,7 +94,7 @@ class _BillSummaryCardState extends State<BillSummaryCard> {
 
                   cartController.update();
                 } else {
-                  Get.snackbar("Error", "Checkout Failed");
+                 // Get.snackbar("Error", "Checkout Failed");
                 }
               },
             ),

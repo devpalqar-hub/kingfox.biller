@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
-import 'package:kinfox_biller/ReturnHistoryScreen/Model/ReturnModel.dart';
-import 'package:kinfox_biller/ReturnScreens/Model/InvoiceModel.dart';
-import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
+import 'package:kinfox_biller/ReturnScreen/Model/ReturnModel.dart';
+import 'package:kinfox_biller/ReturnHistoryScreens/Model/InvoiceModel.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 import 'package:kinfox_biller/main.dart';
 
 class ReturnsController extends GetxController {
@@ -15,7 +15,7 @@ class ReturnsController extends GetxController {
   Map<int, int> returnQty = {};
 
   InvoiceModel? invoice;
-List<RecentInvoiceModel> recentInvoices = [];
+
 
  String? selectedReason;
 
@@ -357,32 +357,32 @@ Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
   }
 }
 
-Future<void> getRecentInvoices() async {
+// Future<void> getRecentInvoices() async {
 
-    isLoading = true;
-    update();
+//     isLoading = true;
+//     update();
 
-    final url = "$baseUrl/returns/recent-invoices";
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
+//     final url = "$baseUrl/returns/recent-invoices";
+//     final response = await http.get(
+//       Uri.parse(url),
+//       headers: {
+//         "Authorization": "Bearer $accessToken",
+//         "Content-Type": "application/json",
+//       },
+//     );
+//     if (response.statusCode == 200) {
 
-      final List data = jsonDecode(response.body);
+//       final List data = jsonDecode(response.body);
 
-      recentInvoices =
-          data.map((e) => RecentInvoiceModel.fromJson(e)).toList();
+//       recentInvoices =
+//           data.map((e) => RecentInvoiceModel.fromJson(e)).toList();
 
-    } else {
-      recentInvoices = [];
-    }
+//     } else {
+//       recentInvoices = [];
+//     }
 
-    isLoading = false;
-    update();
-  }
+//     isLoading = false;
+//     update();
+//   }
   
 }

@@ -10,7 +10,7 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthController authController = Get.put(AuthController());
+final AuthController authController = Get.find<AuthController>();
 
     return GetBuilder<DashboardController>(
       builder: (controller) {
@@ -39,7 +39,7 @@ class Header extends StatelessWidget {
               _tab(controller, "Sales", 0),
               _tab(controller, "Overview & History", 1),
               _tab(controller, "Inventory", 2),
-              _tab(controller, "Returns", 3),
+            
 
                   const Spacer(),
 
@@ -84,35 +84,59 @@ Row(
 
     SizedBox(width: 12.w), 
                   PopupMenuButton<String>(
-      onSelected: (value) async {
-        if (value == "logout") {
-
-          
-          await authController.logout();
-
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: "logout",
-          child: Row(
-            children: [
-              Icon(Icons.logout, size: 18.sp, color: Colors.red),
-              SizedBox(width: 8.w),
-              const Text("Logout"),
+  onSelected: (value) async {
+    if (value == "logout") {
+      // Show confirmation dialog
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Logout"),
+            content: const Text("Are you sure you want to logout?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  "Logout",
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             ],
-          ),
-        ),
-      ],
-      child: CircleAvatar(
-        radius: 20.r,
-        backgroundColor: Colors.grey.shade300,
-        child: Icon(
-          Icons.person,
-          size: 22.sp,
-          color: Colors.white,
-        ),
-      ),),
+          );
+        },
+      );
+
+      if (confirm == true) {
+        await authController.logout();
+      }
+    }
+  },
+  itemBuilder: (context) => [
+    PopupMenuItem(
+      value: "logout",
+      child: Row(
+        children: [
+          Icon(Icons.logout, size: 18.sp, color: Colors.red),
+          SizedBox(width: 8.w),
+          const Text("Logout"),
+        ],
+      ),
+    ),
+  ],
+  child: CircleAvatar(
+    radius: 20.r,
+    backgroundColor: Colors.grey.shade300,
+    child: Icon(
+      Icons.person,
+      size: 22.sp,
+      color: Colors.white,
+    ),
+  ),
+),
   ],
 ),
               

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/services.dart';
 
 class CustomerCard extends StatelessWidget {
   final TextEditingController nameController;
@@ -14,7 +15,6 @@ class CustomerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
       padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -27,7 +27,7 @@ class CustomerCard extends StatelessWidget {
           /// HEADER
           Row(
             children: [
-              Icon(Icons.person_2_outlined),
+              const Icon(Icons.person_2_outlined),
               SizedBox(width: 10.w),
               Text(
                 "Customer Selection",
@@ -47,8 +47,8 @@ class CustomerCard extends StatelessWidget {
               /// NAME FIELD
               Expanded(
                 child: _buildTextField(
-                  nameController,
-                  "Enter customer name",
+                  controller: nameController,
+                  hint: "Enter customer name",
                 ),
               ),
 
@@ -57,8 +57,9 @@ class CustomerCard extends StatelessWidget {
               /// PHONE FIELD
               Expanded(
                 child: _buildTextField(
-                  phoneController,
-                  "Enter phone number",
+                  controller: phoneController,
+                  hint: "Enter phone number",
+                  isPhone: true,
                 ),
               ),
             ],
@@ -68,7 +69,12 @@ class CustomerCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint) {
+  /// 🔥 COMMON TEXTFIELD BUILDER
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    bool isPhone = false,
+  }) {
     return Container(
       height: 45.h,
       padding: EdgeInsets.symmetric(horizontal: 14.w),
@@ -79,12 +85,29 @@ class CustomerCard extends StatelessWidget {
       alignment: Alignment.center,
       child: TextField(
         controller: controller,
+
+        /// ✅ Keyboard type
+        keyboardType:
+            isPhone ? TextInputType.number : TextInputType.text,
+
+        /// ✅ Only numbers allowed (strong restriction)
+        inputFormatters: isPhone
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ]
+            : [],
+
+        /// ✅ Keep text centered (no jump issue)
+        textAlignVertical: TextAlignVertical.center,
+
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hint,
           hintStyle: TextStyle(fontSize: 14.sp),
-          isCollapsed: true,
-          isDense: true,
+
+          /// ✅ Stable padding (fix UI issues)
+          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
         ),
       ),
     );

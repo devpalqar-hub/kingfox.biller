@@ -8,7 +8,7 @@ class NoProductsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 600.h,
+      height: 500.h,
       decoration: BoxDecoration(
         color:  Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -21,38 +21,40 @@ class NoProductsCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 140.w,
-              height: 140.w,
+              width: 100.w,
+              height: 100.w,
               decoration: BoxDecoration(
                 color: const Color(0xFFEAEAEA),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.add_shopping_cart_outlined,
-                size: 60.sp,
+                size: 45.sp,
                 color: const Color(0xFF9CA3AF),
               ),
             ),
 
-            SizedBox(height: 32.h),
+            SizedBox(height: 20.h),
 
-            Text(
-              "No products added",
-              style: TextStyle(
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1F2937),
+            Center(
+              child: Text(
+                "No products added",
+                style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1F2937),
+                ),
               ),
             ),
 
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 120.w),
               child: Text(
                 "Start scanning items or use the search\nbar to populate the customer's cart.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 22.sp,
+                  fontSize: 18.sp,
                   height: 1.6,
                   color: const Color(0xFF667085),
                 ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:kinfox_biller/ReturnHistoryScreen/Service/ReturnController.dart';
+import 'package:kinfox_biller/ReturnScreen/Service/ReturnController.dart';
 
 class ProcessItemReturnDialog extends StatelessWidget {
   ProcessItemReturnDialog({super.key});
@@ -97,10 +97,10 @@ TextEditingController internalNoteController = TextEditingController();
                 child: TextField(
                   controller: invoiceController,
 
-                  /// ❌ REMOVE onChanged logic completely
+               
 
                   decoration: InputDecoration(
-                    hintText: "2345",
+                    hintText: "XXXX",
                     prefixText: "INV-", // ✅ only UI prefix
                     border: InputBorder.none,
                     isDense: true,
@@ -207,7 +207,7 @@ TextEditingController internalNoteController = TextEditingController();
                 GetBuilder<ReturnsController>(
             builder: (controller) {
               return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: EdgeInsets.symmetric(horizontal: 5.w),
                 child: Row(
           children: [
             /// DROPDOWN
@@ -548,30 +548,16 @@ Widget _qtyBtn(IconData icon) {
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
+            dropdownColor: Colors.white,
             value: controller.selectedReason,
-
-            hint: const Text("Select reason"), // ✅ DEFAULT TEXT
-
+            hint: const Text("Select reason"),
             isExpanded: true,
-
-            items: [
-              /// 🔥 ADD PLACEHOLDER ITEM
-              const DropdownMenuItem<String>(
-                value: null,
-                child: Text(
-                  "Select reason",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-
-              ...controller.returnReasons.map((reason) {
-                return DropdownMenuItem(
-                  value: reason,
-                  child: Text(reason),
-                );
-              }).toList(),
-            ],
-
+            items: controller.returnReasons.map((reason) {
+              return DropdownMenuItem(
+                value: reason,
+                child: Text(reason),
+              );
+            }).toList(),
             onChanged: (value) {
               controller.selectedReason = value;
               controller.update();

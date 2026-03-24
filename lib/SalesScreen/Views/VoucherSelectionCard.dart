@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 
-import 'package:kinfox_biller/SalesScreen/Service/SalesController.dart';
 
 class VoucherSelectionCard extends StatelessWidget {
 
@@ -55,6 +55,7 @@ class VoucherSelectionCard extends StatelessWidget {
                           child: DropdownButton<int>(
                             isExpanded: true,
                             underline: const SizedBox(),
+                            dropdownColor: Colors.white,
                             hint: Text(
                               "Select Voucher",
                               style: TextStyle(fontSize: 12.sp),
@@ -98,11 +99,22 @@ class VoucherSelectionCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: TextField(
-                      controller: controller.voucherCountController,
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(border: InputBorder.none),
-                    ),
+  controller: controller.voucherCountController,
+  textAlign: TextAlign.center,
+  keyboardType: TextInputType.number,
+
+  onChanged: (value) {
+    if (value.isEmpty || value == "0") {
+      controller.voucherCountController.text = "1";
+      controller.voucherCountController.selection =
+          TextSelection.fromPosition(
+        TextPosition(offset: controller.voucherCountController.text.length),
+      );
+    }
+  },
+
+  decoration: const InputDecoration(border: InputBorder.none),
+),
                   ),
           
                   SizedBox(width: 8.w),
@@ -161,24 +173,32 @@ class VoucherSelectionCard extends StatelessWidget {
           
                   /// APPLY BUTTON
                   GestureDetector(
-                    onTap: () async {
-                      final coupon = controller.couponController.text.trim();
-          
-                      if (controller.cart == null ||
-                          controller.cart!.items.isEmpty) {
-                        Get.snackbar("Error", "Cart is empty");
-                        return;
-                      }
-          
-                      controller.appliedCoupon = coupon;
-          
-                      await controller.getCart(couponCode: coupon);
-          
-                      Get.snackbar(
-                        "Success",
-                        coupon.isEmpty ? "Cart Updated" : "Coupon Applied",
-                      );
-                    },
+                   onTap: () async {
+  final coupon = controller.couponController.text.trim();
+
+
+  if (controller.cart == null || controller.cart!.items.isEmpty) {
+    
+    return;
+  }
+
+  /// ✅ Call API and wait result
+  final success = await controller.getCart(couponCode: coupon);
+
+  /// ❌ If failed → DON'T show success
+  if (!success) {
+    controller.couponController.clear(); // optional
+    return;
+  }
+
+  /// ✅ Only success case
+  Get.snackbar(
+    "Success",
+    coupon.isEmpty ? "Cart Updated" : "Coupon Applied",
+    backgroundColor: Colors.green,
+    colorText: Colors.white,
+  );
+},
                     child: Container(
                       height: 38.h,
                       width: 100.w,

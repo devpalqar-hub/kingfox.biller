@@ -26,7 +26,6 @@ class AddProductController extends GetxController {
 
   String appliedCoupon = "";
 
-  /// text controllers
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final voucherCountController = TextEditingController();
@@ -39,13 +38,13 @@ class AddProductController extends GetxController {
     couponController.clear();
   }
 
-  void clearVoucherSelection(){
+  void clearVoucherSelection() {
     campaigns.clear();
     selectedCampaign = null;
   }
 
-  void resetVoucherSelection(){
-    if(campaigns.isEmpty){
+  void resetVoucherSelection() {
+    if (campaigns.isEmpty) {
       fetchCampaigns();
     }
   }
@@ -66,8 +65,10 @@ class AddProductController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    voucherCountController.text = "1";
     fetchCampaigns();
     getCart();
+
   }
 
   @override
@@ -107,64 +108,66 @@ class AddProductController extends GetxController {
     update();
   }
 
-  Future<void> getCart({String? couponCode}) async {
-  isLoading = true;
-  update();
+  Future<bool> getCart({String? couponCode}) async {
+    isLoading = true;
+    update();
 
-  final applied = couponCode ?? appliedCoupon;
+    final applied = couponCode ?? appliedCoupon;
 
-  final queryParams = <String, String>{};
+    final queryParams = <String, String>{};
 
-  if (applied.isNotEmpty) {
-    queryParams['couponCode'] = applied;
+    if (applied.isNotEmpty) {
+      queryParams['couponCode'] = applied;
+    }
+
+    final uri = Uri.parse(
+      "$baseUrl/billing/cart",
+    ).replace(queryParameters: queryParams);
+
+    final headers = {
+      "Authorization": "Bearer $accessToken",
+      "Content-Type": "application/json",
+    };
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      cart = CartModel.fromJson(data);
+
+      appliedCoupon = applied;
+
+      if (applied.isNotEmpty && (cart?.couponDiscountAmount ?? 0) == 0) {
+        isLoading = false;
+        update();
+
+        showTopSnackbar("This coupon is not valid or expired");
+
+        return false;
+      }
+
+      isLoading = false;
+      update();
+      return true;
+    } else {
+      cart = null;
+      showTopSnackbar("Failed to apply coupon");
+      isLoading = false;
+      update();
+      return false;
+    }
   }
-
-  final uri = Uri.parse("$baseUrl/billing/cart")
-      .replace(queryParameters: queryParams);
-
-  final headers = {
-    "Authorization": "Bearer $accessToken",
-    "Content-Type": "application/json",
-  };
-
-  /// 🔥 REQUEST LOG
-  print("\n📤 GET CART REQUEST");
-  print("➡️ URL: $uri");
-  print("➡️ HEADERS: $headers");
-
-  final response = await http.get(uri, headers: headers);
-
-  /// 🔥 RESPONSE LOG
-  print("\n📥 GET CART RESPONSE");
-  print("⬅️ STATUS CODE: ${response.statusCode}");
-  print("⬅️ BODY: ${response.body}");
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-
-    print("🔍 PARSED DATA: $data");
-
-    cart = CartModel.fromJson(data);
-
-    appliedCoupon = applied;
-  } else {
-    print("❌ GET CART FAILED");
-    cart = null;
-  }
-
-  isLoading = false;
-  update();
-}
 
   Future searchProducts(String query) async {
     if (query.isEmpty) {
       searchProductsList.clear();
-      update();
+      
       return;
     }
 
     isLoading = true;
-    update();
+  
 
     final url = "$baseUrl/billing/product-search?q=$query";
 
@@ -176,7 +179,6 @@ class AddProductController extends GetxController {
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
 
-      
       List data = [];
 
       if (decoded is List) {
@@ -188,8 +190,6 @@ class AddProductController extends GetxController {
       searchProductsList = data
           .map((e) => ProductVariantModel.fromJson(e))
           .toList();
-
-     
     } else {
       searchProductsList = [];
     }
@@ -208,6 +208,36 @@ class AddProductController extends GetxController {
     int? campaignId,
     int? voucherCount,
   }) async {
+    ///  ---------------- VALIDATIONS ----------------
+
+    if (cart == null || cart!.items.isEmpty) {
+      showTopSnackbar("Cart is empty");
+      return false;
+    }
+
+    if ((customerName ?? "").trim().isEmpty) {
+      showTopSnackbar("Please enter customer name");
+      return false;
+    }
+
+    final phone = (customerPhone ?? "").trim();
+    if (phone.isEmpty) {
+      showTopSnackbar("Please enter phone number");
+      return false;
+    }
+
+    if (phone.length != 10) {
+      showTopSnackbar("Phone number must be 10 digits");
+      return false;
+    }
+
+    if (campaignId != null) {
+      if (voucherCount == null || voucherCount <= 0) {
+        showTopSnackbar("Enter valid voucher count");
+        return false;
+      }
+    }
+
     isLoading = true;
     update();
 
@@ -215,65 +245,74 @@ class AddProductController extends GetxController {
 
     final Map<String, dynamic> body = {
       "paymentMethod": paymentMethod.toUpperCase(),
-      "customerName": customerName ?? "",
-      "customerPhone": customerPhone ?? "",
+      "customerName": customerName,
+      "customerPhone": customerPhone,
       "customerEmail": customerEmail ?? "",
       "customerAddress": customerAddress ?? "",
     };
 
-    /// ✅ Add coupon ONLY if exists
     if (couponCode != null && couponCode.isNotEmpty) {
       body["couponCode"] = couponCode;
     }
 
-    /// ✅ Add voucher ONLY if campaign exists
     if (campaignId != null) {
       body["campaignId"] = campaignId;
-
-      if (voucherCount != null && voucherCount > 0) {
-        body["voucherCount"] = voucherCount;
-      }
+      body["voucherCount"] = voucherCount;
     }
-
-    final headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    };
-
 
     final response = await http.post(
       Uri.parse(url),
-      headers: headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
       body: jsonEncode(body),
     );
 
-    /// 🔥 RESPONSE LOG
-    print("📥 ================= CHECKOUT RESPONSE =================");
-    print("⬅️ STATUS CODE: ${response.statusCode}");
-    print("⬅️ BODY: ${response.body}");
-    print("📥 =====================================================");
+    print("STATUS CODE: ${response.statusCode}");
+    print(" BODY: ${response.body}");
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      clearAllTextControllers();
-      clearVoucherSelection();
-
-      /// 🔍 PARSED LOG
-      print("🔍 PARSED DATA: $data");
 
       completedOrder = CartModel.fromJson(data["data"] ?? data);
       invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
 
-      print("✅ Checkout Success");
-      print("🧾 Invoice Number: $invoiceNumber");
+      clearAllTextControllers();
+      clearVoucherSelection();
+
+      Get.snackbar(
+        "",
+        "Checkout completed successfully",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
       isLoading = false;
       update();
       return true;
     }
 
-    /// ❌ ERROR LOG
-    print("❌ Checkout Failed");
+    final data = jsonDecode(response.body);
+
+    String errorMessage = "";
+
+    if (data is Map) {
+      if (data["message"] != null &&
+          data["message"].toString().trim().isNotEmpty) {
+        errorMessage = data["message"];
+      } else if (data["error"] != null &&
+          data["error"].toString().trim().isNotEmpty) {
+        errorMessage = data["error"];
+      }
+    }
+
+    if (errorMessage.isEmpty) {
+      errorMessage = "Something went wrong";
+    }
+
+    showTopSnackbar(errorMessage);
 
     isLoading = false;
     update();
@@ -361,8 +400,19 @@ class AddProductController extends GetxController {
       }
 
       update();
-    } catch (e) {
-   
-    }
+    } catch (e) {}
   }
+}
+
+void showTopSnackbar(String message, {bool isError = true}) {
+  Get.snackbar(
+    "",
+    message,
+    snackPosition: SnackPosition.TOP,
+    backgroundColor: Colors.black,
+    colorText: Colors.white,
+    margin: const EdgeInsets.all(12),
+    borderRadius: 8,
+    duration: const Duration(seconds: 2),
+  );
 }

@@ -15,24 +15,17 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GetBuilder<AuthController>(
-        init: AuthController(),
         builder: (authController) {
           return Row(
             children: [
               Expanded(
                 child: Container(
-                  color: Colors.black,
-                  child: Center(
-                    child: Image.asset(
-                      "assets/biller.png",
-                    
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Image.asset("assets/biller.png", fit: BoxFit.cover),
                 ),
               ),
 
-            
               Expanded(
                 child: Container(
                   color: const Color(0xffF1F5F9),
@@ -103,8 +96,9 @@ class LoginScreen extends StatelessWidget {
                               prefixIcon: Icon(Icons.person_outline),
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding:
-                                  EdgeInsets.symmetric(vertical: 18.h),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 18.h,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -133,8 +127,9 @@ class LoginScreen extends StatelessWidget {
                               prefixIcon: Icon(Icons.lock_outline),
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding:
-                                  EdgeInsets.symmetric(vertical: 18.h),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 18.h,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -143,10 +138,8 @@ class LoginScreen extends StatelessWidget {
 
                           SizedBox(height: 25.h),
 
-                         
                           GestureDetector(
                             onTap: () async {
-
                               await authController.login(
                                 emailController.text,
                                 passwordController.text,
@@ -155,7 +148,6 @@ class LoginScreen extends StatelessWidget {
                               if (accessToken != null) {
                                 Get.off(() => Dashboardscreen());
                               }
-
                             },
                             child: Container(
                               width: double.infinity,
@@ -183,14 +175,13 @@ class LoginScreen extends StatelessWidget {
 
                           SizedBox(height: 15.h),
 
-                          Text(
-                            "Forgot PIN?",
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              color: Color(0xff64748B),
-                            ),
-                          ),
-
+                          //  Text(
+                          ///  "Forgot PIN?",
+                          //style: TextStyle(
+                          // fontSize: 13.sp,
+                          // color: Color(0xff64748B),
+                          // ),
+                          // ),
                           SizedBox(height: 25.h),
                         ],
                       ),

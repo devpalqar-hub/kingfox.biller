@@ -1,9 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kinfox_biller/ReturnHistoryScreen/ReturnHistoryScreen.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
-
 
 class CartTableWidget extends StatelessWidget {
   final CartModel cart;
@@ -35,34 +33,35 @@ class CartTableWidget extends StatelessWidget {
         children: [
           Expanded(
             child: DataTable2(
-              columnSpacing: 12,
-              horizontalMargin: 12,
+              columnSpacing: 20,
+              horizontalMargin: 16,
               minWidth: 900,
               headingRowHeight: 45.h,
               dataRowHeight: 70.h,
               headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
+
               columns: [
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: _headerText("ITEM DETAILS"),
+                  label: _headerText("ITEM DETAILS", TextAlign.left),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: _headerText("PRICE"),
+                  label: _headerText("PRICE", TextAlign.right),
                 ),
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: _headerText("QTY"),
+                  label: _headerText("QTY", TextAlign.center),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: _headerText("TOTAL"),
+                  label: _headerText("TOTAL", TextAlign.right),
                 ),
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: _headerText("ACTION"),
+                  label: _headerText("ACTION", TextAlign.center),
                 ),
               ],
 
@@ -70,11 +69,10 @@ class CartTableWidget extends StatelessWidget {
                 final row = rows[index];
                 final bool isReturn = row is ReturnItemModel;
 
-                final String name = isReturn
-                    ? (row.productName ?? "Returned Item")
-                    : (row.productName ?? "");
+                final String name =
+                    isReturn ? (row.productName ?? "Returned Item") : (row.productName ?? "");
 
-                final String sku = isReturn ? (row.sku ?? "") : (row.sku ?? "");
+                final String sku = row.sku ?? "";
 
                 final double price =
                     isReturn ? row.creditPerUnit : row.price;
@@ -89,12 +87,9 @@ class CartTableWidget extends StatelessWidget {
 
                 return DataRow(
                   color: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (isReturn) {
-                        return Colors.red.withOpacity(0.08);
-                      }
-                      return Colors.transparent;
-                    },
+                    (states) => isReturn
+                        ? Colors.red.withOpacity(0.08)
+                        : Colors.transparent,
                   ),
                   cells: [
                     /// ITEM DETAILS
@@ -110,8 +105,7 @@ class CartTableWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
-                              color:
-                                  isReturn ? Colors.red : Colors.black,
+                              color: isReturn ? Colors.red : Colors.black,
                             ),
                           ),
                           if (!isReturn)
@@ -128,34 +122,34 @@ class CartTableWidget extends StatelessWidget {
 
                     /// PRICE
                     DataCell(
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _value(
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
                           "${isReturn ? "-₹" : "₹"}${price.toStringAsFixed(2)}",
+                          textAlign: TextAlign.right,
+                          style: TextStyle(fontSize: 13.sp),
                         ),
                       ),
                     ),
 
                     /// QTY
                     DataCell(
-                      Center(
+                      SizedBox(
+                        width: double.infinity,
                         child: isReturn
                             ? Text(
                                 "$qty",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               )
                             : Row(
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   _qtyBtn("-", () => onDecrease(variantId)),
                                   SizedBox(width: 8.w),
                                   Text(
                                     "$qty",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(width: 8.w),
                                   _qtyBtn("+", () => onIncrease(variantId)),
@@ -166,24 +160,30 @@ class CartTableWidget extends StatelessWidget {
 
                     /// TOTAL
                     DataCell(
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _value(
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
                           "${isReturn ? "-₹" : "₹"}${total.toStringAsFixed(2)}",
-                          isBold: true,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
 
-                    /// DELETE
+                    /// ACTION
                     DataCell(
-                      Center(
-                        child: IconButton(
-                          onPressed: () =>
-                              onDelete(variantId, isReturn),
-                          icon: Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
+                      SizedBox(
+                        width: double.infinity,
+                        child: Center(
+                          child: IconButton(
+                            onPressed: () => onDelete(variantId, isReturn),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
                           ),
                         ),
                       ),
@@ -196,33 +196,23 @@ class CartTableWidget extends StatelessWidget {
 
           Divider(),
 
-          _footer(context, rows.length),
+          _footer(rows.length),
         ],
       ),
     );
   }
 
-  Widget _headerText(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
+  Widget _headerText(String text, TextAlign align) {
+    return SizedBox(
+      width: double.infinity,
       child: Text(
         text,
+        textAlign: align,
         style: TextStyle(
           fontSize: 13.sp,
           fontWeight: FontWeight.w600,
           color: Colors.grey,
         ),
-      ),
-    );
-  }
-
-  Widget _value(String text, {bool isBold = false}) {
-    return Text(
-      text,
-      textAlign: TextAlign.right,
-      style: TextStyle(
-        fontSize: 13.sp,
-        fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
       ),
     );
   }
@@ -240,13 +230,16 @@ class CartTableWidget extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
   }
 
-  Widget _footer(BuildContext context, int count) {
+  Widget _footer(int count) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
@@ -255,37 +248,6 @@ class CartTableWidget extends StatelessWidget {
           Text(
             "Items Count: $count",
             style: TextStyle(fontSize: 13.sp, color: Colors.grey),
-          ),
-          Row(
-            children: [
-              Icon(Icons.refresh, size: 16.sp, color: Colors.blue),
-              SizedBox(width: 4.w),
-
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ReturnHistoryScreen(),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(4.w),
-                    child: Text(
-                      "View Recent Transactions",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),

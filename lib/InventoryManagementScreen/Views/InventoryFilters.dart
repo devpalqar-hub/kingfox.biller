@@ -1,18 +1,36 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/InventoryManagementScreen/Service/InventoryController.dart';
 
-class InventoryFilters extends StatelessWidget {
-  InventoryFilters({super.key});
+class InventoryFilters extends StatefulWidget {
+  const InventoryFilters({super.key});
 
-  final InventoryController controller = Get.put(InventoryController());
+  @override
+  State<InventoryFilters> createState() => _InventoryFiltersState();
+}
+
+class _InventoryFiltersState extends State<InventoryFilters> {
+
+  final InventoryController controller = Get.find();
+
+  final TextEditingController searchController = TextEditingController();
+
+  Timer? debounce;
 
   final List<String> filters = [
     "All",
     "Low Stock",
     "Out of Stock"
   ];
+
+  @override
+  void dispose() {
+    debounce?.cancel();
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +44,75 @@ class InventoryFilters extends StatelessWidget {
           ),
           child: Row(
             children: [
-              
-              /// 🔍 SEARCH
+
+              /// 🔍 SEARCH FIELD
               Expanded(
                 child: TextField(
+                  controller: searchController,
+
+                  onChanged: (value) {
+
+                    if (debounce?.isActive ?? false) {
+                      debounce!.cancel();
+                    }
+
+                    debounce = Timer(
+                      const Duration(milliseconds: 500),
+                      () {
+
+                        String? status;
+                        if (ctrl.selectedFilter == "Low Stock") {
+                          status = "LOW_STOCK";
+                        } else if (ctrl.selectedFilter == "Out of Stock") {
+                          status = "OUT_OF_STOCK";
+                        }
+
+                        if (value.isEmpty) {
+                          ctrl.searchQuery = "";
+                          ctrl.getInventory(
+                            refresh: true,
+                            stockStatus: status,
+                          );
+                        } else {
+                          ctrl.getInventoryBySearch(
+                            refresh: true,
+                            search: value,
+                          );
+                        }
+                      },
+                    );
+                  },
+
                   decoration: InputDecoration(
                     hintText: "Search SKU or Product",
                     prefixIcon: const Icon(Icons.search),
+
+                    /// ✅ CLEAR ONLY ON CLICK
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+
+                        /// 🔥 CLEAR TEXTFIELD ONLY HERE
+                        searchController.clear();
+
+                        /// 🔥 RESET SEARCH STATE
+                        controller.searchQuery = "";
+
+                        String? status;
+                        if (ctrl.selectedFilter == "Low Stock") {
+                          status = "LOW_STOCK";
+                        } else if (ctrl.selectedFilter == "Out of Stock") {
+                          status = "OUT_OF_STOCK";
+                        }
+
+                        /// 🔥 LOAD NORMAL INVENTORY
+                        controller.getInventory(
+                          refresh: true,
+                          stockStatus: status,
+                        );
+                      },
+                    ),
+
                     filled: true,
                     fillColor: const Color(0xffF1F5F9),
                     border: OutlineInputBorder(
@@ -40,9 +120,6 @@ class InventoryFilters extends StatelessWidget {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  onChanged: (value) {
-                    /// 👉 You can connect search API here later
-                  },
                 ),
               ),
 
@@ -56,24 +133,28 @@ class InventoryFilters extends StatelessWidget {
                   padding: EdgeInsets.only(left: 10.w),
                   child: GestureDetector(
                     onTap: () {
+
                       ctrl.selectedFilter = filter;
 
-                      /// 🔥 MAP UI FILTER → API PARAM
                       String? status;
-
                       if (filter == "Low Stock") {
                         status = "LOW_STOCK";
                       } else if (filter == "Out of Stock") {
                         status = "OUT_OF_STOCK";
-                      } else {
-                        status = null;
                       }
 
-                      /// 🔥 CALL API WITH FILTER
-                      ctrl.getInventory(
-                        refresh: true,
-                        stockStatus: status,
-                      );
+                      /// 🔥 KEEP SEARCH STATE
+                      if (ctrl.searchQuery.isEmpty) {
+                        ctrl.getInventory(
+                          refresh: true,
+                          stockStatus: status,
+                        );
+                      } else {
+                        ctrl.getInventoryBySearch(
+                          refresh: true,
+                          search: ctrl.searchQuery,
+                        );
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -87,8 +168,9 @@ class InventoryFilters extends StatelessWidget {
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color:
-                              isSelected ? Colors.white : Colors.black,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.black,
                           fontSize: 12.sp,
                         ),
                       ),

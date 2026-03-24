@@ -9,7 +9,9 @@ class InventoryList {
   InventoryList({required this.inventories});
 
   factory InventoryList.fromJson(List<dynamic> json) => InventoryList(
-      inventories: json.map((e) => InventoryModel.fromJson(e)).toList());
+        inventories:
+            json.map((e) => InventoryModel.fromJson(e)).toList(),
+      );
 }
 
 class InventoryModel {
@@ -31,15 +33,54 @@ class InventoryModel {
     this.variant,
   });
 
-  factory InventoryModel.fromJson(Map<String, dynamic> json) => InventoryModel(
+  /// ================= NORMAL API =================
+  factory InventoryModel.fromJson(Map<String, dynamic> json) =>
+      InventoryModel(
         id: json['id'],
         variantId: json['variantId'],
         branchId: json['branchId'],
         stockQuantity: json['stockQuantity'],
         updatedAt: json['updatedAt'],
-        branch: json['branch'] != null ? Branch.fromJson(json['branch']) : null,
-        variant: json['variant'] != null ? Variant.fromJson(json['variant']) : null,
+        branch: json['branch'] != null
+            ? Branch.fromJson(json['branch'])
+            : null,
+        variant: json['variant'] != null
+            ? Variant.fromJson(json['variant'])
+            : null,
       );
+
+  /// ================= SEARCH API FIX =================
+  factory InventoryModel.fromSearchJson(Map<String, dynamic> json) {
+    return InventoryModel(
+      id: json['id'],
+      variantId: json['variantId'],
+      branchId: null,
+
+      /// sometimes search API may not return stock
+      stockQuantity: json['stockQuantity'] ?? 0,
+      updatedAt: json['createdAt'],
+
+      /// ❌ branch not available in search API
+      branch: null,
+
+      /// 🔥 convert flat data → Variant
+      variant: Variant(
+        id: json['id'],
+        productId: json['product']?['id'],
+        size: json['size'],
+        color: json['color'],
+        sku: json['sku'],
+        barcode: json['barcode'],
+        costPrice: json['costPrice'],
+        sellingPrice: json['sellingPrice'],
+        createdAt: json['createdAt'],
+
+        product: json['product'] != null
+            ? Product.fromJson(json['product'])
+            : null,
+      ),
+    );
+  }
 }
 
 class Branch {
@@ -50,7 +91,14 @@ class Branch {
   String? type;
   String? createdAt;
 
-  Branch({this.id, this.name, this.phone, this.address, this.type, this.createdAt});
+  Branch({
+    this.id,
+    this.name,
+    this.phone,
+    this.address,
+    this.type,
+    this.createdAt,
+  });
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
         id: json['id'],
@@ -97,7 +145,9 @@ class Variant {
         costPrice: json['costPrice'],
         sellingPrice: json['sellingPrice'],
         createdAt: json['createdAt'],
-        product: json['product'] != null ? Product.fromJson(json['product']) : null,
+        product: json['product'] != null
+            ? Product.fromJson(json['product'])
+            : null,
       );
 }
 
@@ -109,7 +159,14 @@ class Product {
   int? categoryId;
   String? createdAt;
 
-  Product({this.id, this.name, this.description, this.brandId, this.categoryId, this.createdAt});
+  Product({
+    this.id,
+    this.name,
+    this.description,
+    this.brandId,
+    this.categoryId,
+    this.createdAt,
+  });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
         id: json['id'],
