@@ -190,103 +190,118 @@ class _SalesScreenState extends State<SalesScreen> {
       ),
     );
   }
-
-  Widget _buildProductItem(product, AddProductController controller) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 6.w),
-      padding: EdgeInsets.all(10.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 4.r, spreadRadius: 1),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 55.h,
-            width: 55.w,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(Icons.image_outlined, color: Colors.grey, size: 28.sp),
+Widget _buildProductItem(product, AddProductController controller) {
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 6.w),
+    padding: EdgeInsets.all(10.w),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14.r),
+      boxShadow: [
+        BoxShadow(color: Colors.black12, blurRadius: 4.r, spreadRadius: 1),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          height: 55.h,
+          width: 55.w,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10.r),
           ),
+          child: Icon(Icons.image_outlined, color: Colors.grey, size: 28.sp),
+        ),
 
-          SizedBox(width: 12.w),
+        SizedBox(width: 12.w),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.productName,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  "Size: ${product.size} | ${product.color}",
-                  style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "₹${product.sellingPrice}",
-                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                product.productName,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
-              SizedBox(height: 6.h),
+              SizedBox(height: 4.h),
 
-              InkWell(
-                onTap: () async {
-                  await controller.scanAndAddProduct(product.barcode, 5);
-                  controller.searchProductsList.clear();
-                  scanController.clear();
-                  controller.resetVoucherSelection();
-                },
-                borderRadius: BorderRadius.circular(8.r),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 6.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.add_shopping_cart,
-                        color: Colors.white,
-                        size: 16.sp,
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        "Add",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+              Text(
+                "Size: ${product.size} | ${product.color}",
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+              ),
+
+              SizedBox(height: 4.h),
+
+              /// ✅ STOCK DISPLAY
+              Text(
+                "Stock: ${product.stockQty} (${product.inStock ? "In Stock" : "Out of Stock"})",
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: product.inStock ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
+        ),
+
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              "₹${product.sellingPrice}",
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
+            ),
+
+            SizedBox(height: 6.h),
+
+            /// ✅ ADD BUTTON (DISABLED IF NO STOCK)
+            InkWell(
+              onTap: product.inStock
+                  ? () async {
+                      await controller.scanAndAddProduct(product.barcode, 5);
+                      controller.searchProductsList.clear();
+                      scanController.clear();
+                      controller.resetVoucherSelection();
+                    }
+                  : null,
+              borderRadius: BorderRadius.circular(8.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 6.h,
+                ),
+                decoration: BoxDecoration(
+                  color: product.inStock ? Colors.green : Colors.grey,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.add_shopping_cart,
+                      color: Colors.white,
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "Add",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}}
