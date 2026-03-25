@@ -7,6 +7,7 @@ import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:kinfox_biller/ReturnScreen/Service/ReturnController.dart';
 import 'package:kinfox_biller/ReturnScreen/ProcessItemReturnDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
+import 'package:kinfox_biller/SalesScreen/Service/CustomerController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/BillSummaryCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CartTable.dart';
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
@@ -29,6 +30,7 @@ class _SalesScreenState extends State<SalesScreen> {
     super.initState();
     // Initialize controller with permanent flag to prevent disposal on config changes
     controller = Get.put(AddProductController(), permanent: true);
+    Get.put(CustomerController(), permanent: true);
   }
 
   @override
