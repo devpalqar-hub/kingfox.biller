@@ -6,6 +6,7 @@ import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 
 import 'package:kinfox_biller/SalesScreen/Views/CustomerCard.dart';
+import 'package:kinfox_biller/SalesScreen/Views/ManualDiscountCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/OrderSummaryCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/VoucherSelectionCard.dart';
 
@@ -32,11 +33,11 @@ class _BillSummaryCardState extends State<BillSummaryCard> {
         return Column(
           children: [
         
-
-            /// ================= VOUCHER =================
+            ManualDiscountCard(),
+             SizedBox(height:5.h),
             VoucherSelectionCard(),
-
-            SizedBox(height: 15.h),
+              SizedBox(height:5.h),
+           
 
             OrderSummaryCard(
               subtotal: cart?.subtotal ?? 0,

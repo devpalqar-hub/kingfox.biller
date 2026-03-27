@@ -24,30 +24,57 @@ class Historycontroller extends GetxController {
 
   //......get analytics.....
 
-  Future<void> geAnalytics() async {
-    isLoading = true;
-    update();
+ Future<void> geAnalytics({
+  String? fromDate,
+  String? toDate,
+}) async {
+  isLoading = true;
+  update();
 
-    final response = await http.get(
-      Uri.parse("$baseUrl/billing/analytics"),
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
-      },
-    );
+  /// ✅ BUILD QUERY PARAMS
+  final queryParams = <String, String>{};
 
-    if (response.statusCode == 200) {
-      analytics = AnalyticsModel.fromJson(jsonDecode(response.body));
-    } else {
-      analytics = null;
-    }
-
-    isLoading = false;
-    update();
+  if (fromDate != null && fromDate.isNotEmpty) {
+    queryParams['from'] = fromDate;
   }
- 
+
+  if (toDate != null && toDate.isNotEmpty) {
+    queryParams['to'] = toDate;
+  }
+
+  final uri = Uri.parse(
+    "$baseUrl/billing/analytics",
+  ).replace(queryParameters: queryParams);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      "Authorization": "Bearer $accessToken",
+      "Content-Type": "application/json",
+    },
+  );
+
+  print("🟣 ANALYTICS STATUS: ${response.statusCode}");
+  print("🟣 ANALYTICS BODY: ${response.body}");
+
+  if (response.statusCode == 200) {
+    analytics = AnalyticsModel.fromJson(
+      jsonDecode(response.body),
+    );
+  } else {
+    analytics = null;
+  }
+
+  isLoading = false;
+  update();
+}
 //...get invoices.....
-Future<void> getInvoices({bool refresh = false}) async {
+Future<void> getInvoices({
+  bool refresh = false,
+  String? status,
+  String? from,
+  String? to,
+}) async {
   if (refresh) {
     page = 1;
     hasMore = true;
@@ -64,14 +91,26 @@ Future<void> getInvoices({bool refresh = false}) async {
 
   update();
 
-  final url = "$baseUrl/billing/my-invoices?page=$page&limit=$limit";
+  /// ✅ Build query params dynamically
+  final queryParams = {
+    "page": "$page",
+    "limit": "$limit",
+    if (status != null) "status": status,
+    if (from != null) "from": from,
+    if (to != null) "to": to,
+  };
+
+  final uri = Uri.parse("$baseUrl/billing/my-invoices")
+      .replace(queryParameters: queryParams);
+
   final response = await http.get(
-    Uri.parse(url),
+    uri,
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer $accessToken",
     },
   );
+
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
 
@@ -81,6 +120,7 @@ Future<void> getInvoices({bool refresh = false}) async {
     } else if (decoded is Map && decoded['data'] != null) {
       data = decoded['data'];
     }
+
     if (data.isEmpty) {
       hasMore = false;
     } else {
@@ -89,9 +129,8 @@ Future<void> getInvoices({bool refresh = false}) async {
       );
       page++;
     }
-  } else {
-   
   }
+
   isLoading = false;
   isLoadMore = false;
   update();

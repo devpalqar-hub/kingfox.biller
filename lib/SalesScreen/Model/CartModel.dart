@@ -19,6 +19,9 @@ class CartModel {
   final double couponDiscountAmount;
   final double finalAmountAfterCoupon;
   final double grandFinalTotal;
+  final double  manualDiscountAmount;
+  final double finalAmountAfterManual;
+
   final CouponModel? coupon;
 
   final List<dynamic> availableVouchers;
@@ -37,6 +40,10 @@ class CartModel {
     required this.discountedSubtotal,
     required this.availableVouchers,
     required this.grandFinalTotal,
+    required this.manualDiscountAmount,
+     required this.finalAmountAfterManual,
+    
+
 
     /// 🔥 NEW
     required this.couponDiscountAmount,
@@ -70,12 +77,14 @@ class CartModel {
           (json['discountedSubtotal'] ?? 0).toDouble(),
       gstAmount: (json['gstAmount'] ?? 0).toDouble(),
       finalAmount: (json['finalAmount'] ?? 0).toDouble(),
-
+  
       /// 🔥 NEW
       couponDiscountAmount:
           (json['couponDiscountAmount'] ?? 0).toDouble(),
       finalAmountAfterCoupon:
           (json['finalAmountAfterCoupon'] ?? 0).toDouble(),
+        manualDiscountAmount: (json['manualDiscountAmount'] ?? 0).toDouble(),
+         finalAmountAfterManual: (json['finalAmountAfterManual'] ?? 0).toDouble(),
       grandFinalTotal:
            (json['grandFinalTotal'] ?? 0).toDouble(),
       coupon: json['coupon'] != null

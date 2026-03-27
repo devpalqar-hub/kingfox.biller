@@ -13,34 +13,81 @@ class OverviewScreen extends StatefulWidget {
 }
 
 class _OverviewScreenState extends State<OverviewScreen> {
-  final Historycontroller historyController =
-      Get.put(Historycontroller());
-
+  final Historycontroller historyController = Get.put(Historycontroller());
   final ScrollController _scrollController = ScrollController();
+
+  String? selectedStatus;
+  DateTime? fromDate;
+  DateTime? toDate;
 
   @override
   void initState() {
     super.initState();
     loadData();
 
-    /// 🔥 SCROLL LISTENER (LOAD MORE)
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
-        historyController.getInvoices(); // load next page
+        historyController.getInvoices(
+          status: selectedStatus,
+          from: fromDate != null ? formatDate(fromDate!) : null,
+          to: toDate != null ? formatDate(toDate!) : null,
+        );
       }
     });
   }
 
-  void loadData() async {
-    await historyController.geAnalytics();
-    await historyController.getInvoices(refresh: true);
+  String formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
-  /// 🔥 PULL TO REFRESH
+  Future<void> loadData() async {
+    await historyController.geAnalytics(
+  fromDate: fromDate != null ? formatDate(fromDate!) : null,
+  toDate: toDate != null ? formatDate(toDate!) : null,
+);
+    await historyController.getInvoices(
+      refresh: true,
+      status: selectedStatus,
+      from: fromDate != null ? formatDate(fromDate!) : null,
+      to: toDate != null ? formatDate(toDate!) : null,
+    );
+  }
+
   Future<void> _onRefresh() async {
-    await historyController.geAnalytics();
-    await historyController.getInvoices(refresh: true);
+    await loadData();
+  }
+
+  /// ✅ 🔥 COMMON DATE PICKER (REUSABLE)
+  Future<DateTime?> _pickDate() async {
+    return await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      helpText: "Select Date",
+      cancelText: "Cancel",
+      confirmText: "Apply",
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xff3B82F6),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xff3B82F6),
+              ),
+            ),
+            dialogBackgroundColor: Colors.white,
+         
+          ),
+          child: child!,
+        );
+      },
+    );
   }
 
   @override
@@ -54,7 +101,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
             return RefreshIndicator(
               onRefresh: _onRefresh,
-
               child: SingleChildScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -65,27 +111,127 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      /// ================= HEADER =================
-                      Text(
-                        "Executive Overview",
-                        style: TextStyle(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xff1E293B),
-                        ),
-                      ),
-                      SizedBox(height: 5.h),
-                      Text(
-                        "Real-time performance metrics for FashionPOS retail outlets.",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xff64748B),
-                        ),
+                      /// HEADER + FILTER
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Executive Overview",
+                                style: TextStyle(
+                                  fontSize: 28.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xff1E293B),
+                                ),
+                              ),
+                              SizedBox(height: 5.h),
+                              Text(
+                                "Real-time performance metrics for FashionPOS retail outlets.",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: const Color(0xff64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          Row(
+                            children: [
+
+                              /// STATUS
+                              _filterBox(
+                                child: DropdownButton<String>(
+                                  dropdownColor: Colors.white,
+                                  isExpanded: false,
+                                  value: selectedStatus,
+                                  hint: Text("Status", style: TextStyle(fontSize: 12.sp)),
+                                  underline: const SizedBox(),
+                                  items: [
+                                    "DRAFT",
+                                    "COMPLETED",
+                                    "CANCELLED",
+                                    "RETURNED",
+                                    "PARTIALLY_RETURNED"
+                                  ].map((status) {
+                                    return DropdownMenuItem(
+                                      value: status,
+                                      child: Text(status),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() => selectedStatus = value);
+                                    loadData();
+                                  },
+                                ),
+                              ),
+
+                              SizedBox(width: 12.w),
+
+                              /// FROM DATE ✅ UPDATED
+                              _dateButton(
+                                label: fromDate == null
+                                    ? "From"
+                                    : formatDate(fromDate!),
+                                onTap: () async {
+                                  final picked = await _pickDate();
+                                  if (picked != null) {
+                                    setState(() => fromDate = picked);
+                                    loadData();
+                                  }
+                                },
+                              ),
+
+                              SizedBox(width: 10.w),
+
+                              /// TO DATE ✅ UPDATED
+                              _dateButton(
+                                label: toDate == null
+                                    ? "To"
+                                    : formatDate(toDate!),
+                                onTap: () async {
+                                  final picked = await _pickDate();
+                                  if (picked != null) {
+                                    setState(() => toDate = picked);
+                                    loadData();
+                                  }
+                                },
+                              ),
+
+                              SizedBox(width: 10.w),
+
+                              /// CLEAR
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedStatus = null;
+                                    fromDate = null;
+                                    toDate = null;
+                                  });
+                                  loadData();
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w, vertical: 8.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Text(
+                                    "Clear",
+                                    style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
 
                       SizedBox(height: 25.h),
 
-                      /// ================= ANALYTICS =================
+                      /// ANALYTICS
                       if (analytics == null)
                         _analyticsLoading()
                       else
@@ -103,8 +249,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                             Expanded(
                               child: AnalyticsCard(
                                 title: "TOTAL ORDERS",
-                                value:
-                                    "${analytics.summary.totalOrders}",
+                                value: "${analytics.summary.totalOrders}",
                                 color: const Color(0xff3B82F6),
                               ),
                             ),
@@ -113,7 +258,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               child: AnalyticsCard(
                                 title: "TOTAL SALES",
                                 value:
-                                   "₹${analytics.summary.totalSales.toStringAsFixed(2)}",
+                                    "₹${analytics.summary.totalSales.toStringAsFixed(2)}",
                                 color: const Color(0xff22C55E),
                               ),
                             ),
@@ -122,55 +267,25 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               child: AnalyticsCard(
                                 title: "REFUNDS",
                                 value:
-                                     "₹${analytics.summary.totalRefunds.toStringAsFixed(2)}",
+                                    "₹${analytics.summary.totalRefunds.toStringAsFixed(2)}",
                                 color: const Color(0xffEF4444),
                               ),
                             ),
                           ],
                         ),
 
-                        SizedBox(height: 20.h,),
-
-                      /// ================= BILLING HISTORY =================
-                      Text(
-                        "Billing History",
-                        style: TextStyle(
-                          fontSize: 26.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xff1E293B),
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        "Review and manage all retail transactions, refunds, and returns.",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xff64748B),
-                        ),
-                      ),
-
                       SizedBox(height: 20.h),
 
-                      /// ================= TABLE =================
+                      /// TABLE
                       BillingHistoryTable(controller: ctrl),
 
-                      /// 🔥 LOAD MORE INDICATOR (BOTTOM ONLY)
                       if (ctrl.isLoadMore)
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.h),
-                          child: Center(
-                            child: SizedBox(
-                              height: 20.h,
-                              width: 20.h,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
-
-                      SizedBox(height: 30.h),
-
-                      /// ================= BOTTOM SUMMARY =================
-                     
 
                       SizedBox(height: 40.h),
                     ],
@@ -184,6 +299,36 @@ class _OverviewScreenState extends State<OverviewScreen> {
     );
   }
 
+  Widget _filterBox({required Widget child}) {
+    return Container(
+      height: 40.h,
+      constraints: BoxConstraints(minWidth: 100.w),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _dateButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: _filterBox(
+        child: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12.sp),
+        ),
+      ),
+    );
+  }
 
   Widget _analyticsLoading() {
     return Row(

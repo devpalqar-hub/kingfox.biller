@@ -20,7 +20,7 @@ dependencies:
   mobile_scanner: ^7.2.0
   data_table_2: ^2.7.2
   intl: ^0.20.2
-  
+  flutter_thermal_printer: ^2.0.1
 
 
   cupertino_icons: ^1.0.8

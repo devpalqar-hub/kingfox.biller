@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_thermal_printer/utils/printer.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/DashBoard/Service/DashBoardController.dart';
+import 'package:kinfox_biller/DashBoard/Service/PrinterController.dart';
+import 'package:kinfox_biller/DashBoard/Views/Printers/PrinterSettingsDialog.dart';
 import 'package:kinfox_biller/LoginScreen/Service/AuthController.dart';
 
 
@@ -11,6 +14,7 @@ class Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 final AuthController authController = Get.find<AuthController>();
+final PrinterController printer = Get.put(PrinterController());
 
     return GetBuilder<DashboardController>(
       builder: (controller) {
@@ -46,7 +50,8 @@ final AuthController authController = Get.find<AuthController>();
 
 Row(
   children: [
-   
+    _PrinterPill(ctrl: printer),
+    SizedBox(width: 30.w,),
     Container(
       padding: EdgeInsets.symmetric(
         horizontal: 10.w,
@@ -78,6 +83,8 @@ Row(
               
             ],
           ),
+
+             
         ],
       ),
     ),
@@ -179,6 +186,97 @@ Row(
             color:
                 selected ? Colors.black : Color(0XFF64748B),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PrinterPill extends StatelessWidget {
+  final PrinterController ctrl;
+  const _PrinterPill({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final connected = ctrl.isConnected;
+    final hasSaved = ctrl.hasSavedDevice;
+    final name = ctrl.selectedPrinter?.name ?? ctrl.savedDeviceName;
+    final displayName = name != null
+        ? (name.length > 16 ? "${name.substring(0, 15)}…" : name)
+        : "No Printer";
+
+    final Color dotColor = connected
+        ? const Color(0xFF10B981)
+        : hasSaved
+        ? const Color(0xFFF59E0B)
+        : const Color(0xFFCBD5E1);
+    final Color bg = connected
+        ? const Color(0xFFECFDF5)
+        : hasSaved
+        ? const Color(0xFFFFFBEB)
+        : const Color(0xFFF1F5F9);
+    final Color border = connected
+        ? const Color(0xFF10B981).withOpacity(0.3)
+        : hasSaved
+        ? const Color(0xFFF59E0B).withOpacity(0.3)
+        : const Color(0xFFE2E8F0);
+    final Color textColor = connected
+        ? const Color(0xFF10B981)
+        : hasSaved
+        ? const Color(0xFFF59E0B)
+        : const Color(0xFF94A3B8);
+
+    return GestureDetector(
+      onTap: () => Get.dialog(
+        const PrinterSettingsDialog(),
+        barrierDismissible: true,
+        barrierColor: Colors.black54,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(7.r),
+          border: Border.all(color: border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 7.w,
+              height: 7.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: dotColor,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Icon(
+              ctrl.selectedPrinter?.connectionType == null
+                  ? Icons.print_outlined
+                  : ctrl.selectedPrinter!.connectionType == ConnectionType.USB
+                  ? Icons.usb_rounded
+                  : Icons.bluetooth_rounded,
+              size: 13.sp,
+              color: textColor,
+            ),
+            SizedBox(width: 5.w),
+            Text(
+              displayName,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 13.sp,
+              color: textColor.withOpacity(0.7),
+            ),
+          ],
         ),
       ),
     );
