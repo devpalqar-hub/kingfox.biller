@@ -86,26 +86,36 @@ Container(
               /// 🔥 DISCOUNT INPUT
               Row(
                 children: [
-                  Expanded(
-                    child: Container(
-                      height: 40.h,
-                      padding: EdgeInsets.symmetric(horizontal: 14.w),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14.r),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: TextField(
-                        controller: controller.discountController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(fontSize: 14.sp),
-                        decoration: InputDecoration(
-                          hintText: "Enter Discount Amount",
-                          hintStyle: TextStyle(fontSize: 12.sp),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
+                Expanded(
+  child: Container(
+    height: 42.h,
+    alignment: Alignment.center, // ✅ ensures vertical center
+    padding: EdgeInsets.symmetric(horizontal: 12.w),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(14.r),
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+    child: TextField(
+      controller: controller.discountController,
+      keyboardType: TextInputType.number,
+      textAlignVertical: TextAlignVertical.center, // ✅ center text
+      style: TextStyle(
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        isDense: true, 
+        hintText: "Enter Discount Amount",
+        hintStyle: TextStyle(
+          fontSize: 12.sp,
+          color: Colors.grey.shade500,
+        ),
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero, 
+      ),
+    ),
+  ),
+),
 
                   SizedBox(width: 10.w),
 

@@ -10,7 +10,7 @@ class VoucherSelectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350.w,
-      padding: EdgeInsets.symmetric(vertical: 15.w, horizontal: 16.h),
+      padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 14.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -22,29 +22,25 @@ class VoucherSelectionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// TITLE
-              Row(
-                children: [
-                  Icon(Icons.card_giftcard, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text(
-                    "Gift Vouchers",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              Text(
+                "Voucher Selection",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
 
-              SizedBox(height: 14.h),
+              SizedBox(height: 12.h),
 
-              /// DROPDOWN + COUNT
+              /// 🔥 DROPDOWN + COUNTER
               Row(
                 children: [
+                  /// DROPDOWN
                   Expanded(
                     child: Container(
-                      height: 40.h,
-                      padding: EdgeInsets.symmetric(horizontal: 14.w),
+                      height: 42.h,
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14.r),
                         border: Border.all(color: Colors.grey.shade300),
@@ -63,210 +59,200 @@ class VoucherSelectionCard extends StatelessWidget {
                             child: Text(
                               campaign.name,
                               style: TextStyle(fontSize: 12.sp),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           );
                         }).toList(),
                         onChanged: (value) {
                           if (value == null) return;
-
                           final selected = controller.campaigns
                               .firstWhere((c) => c.id == value);
-
                           controller.selectCampaign(selected);
                         },
                       ),
                     ),
                   ),
 
-                  SizedBox(width: 10.w),
+                  SizedBox(width: 8.w),
 
-                  /// COUNT FIELD
+                  /// ➖ MINUS
+                  GestureDetector(
+                    onTap: () {
+                      int current = int.tryParse(
+                              controller.voucherCountController.text) ??
+                          1;
+
+                      if (current > 1) {
+                        current--;
+                        controller.voucherCountController.text =
+                            current.toString();
+                        controller.update();
+                      }
+                    },
+                    child: Container(
+                      height: 42.h,
+                      width: 36.w,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Icon(Icons.remove, size: 18.sp),
+                    ),
+                  ),
+
+                  SizedBox(width: 6.w),
+
+                  /// COUNT
                   Container(
-                    width: 60.w,
-                    height: 40.h,
+                    width: 55.w,
+                    height: 42.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14.r),
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: TextField(
                       controller: controller.voucherCountController,
                       textAlign: TextAlign.center,
+                      textAlignVertical: TextAlignVertical.center,
                       keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: 14.sp),
-                      onChanged: (value) {
-                        if (value.isEmpty || value == "0") {
-                          controller.voucherCountController.text = "1";
-                          controller.voucherCountController.selection =
-                              TextSelection.fromPosition(
-                            TextPosition(
-                              offset: controller
-                                  .voucherCountController.text.length,
-                            ),
-                          );
-                        }
-                      },
-                      decoration: InputDecoration(
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: const InputDecoration(
                         isDense: true,
-                        hintText: "1",
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: (45.h - 14.sp) / 2,
-                        ),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: 6.w),
+
+                  /// ➕ PLUS
+                  GestureDetector(
+                    onTap: controller.updateVoucherCount,
+                    child: Container(
+                      height: 42.h,
+                      width: 36.w,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Icon(Icons.add, size: 18.sp),
+                    ),
+                  ),
+                ],
+              ),
+
+              /// ERROR
+              if (controller.voucherError?.isNotEmpty == true)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h, left: 4.w),
+                  child: Text(
+                    controller.voucherError!,
+                    style: TextStyle(color: Colors.red, fontSize: 11.sp),
+                  ),
+                ),
+
+              SizedBox(height: 14.h),
+
+              /// 🔥 COUPON SECTION
+              Row(
+                children: [
+                  /// INPUT
+                  Expanded(
+                    child: Container(
+                      height: 42.h,
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, size: 18.sp),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: TextField(
+                              controller: controller.couponController,
+                              textAlignVertical: TextAlignVertical.center,
+                              style: TextStyle(fontSize: 13.sp),
+                              onChanged: (value) {
+                                controller.couponError = null;
+                                controller.appliedCoupon = "";
+                                controller.update();
+                              },
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: "Coupon Code",
+                                hintStyle:
+                                    TextStyle(fontSize: 12.sp),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
 
                   SizedBox(width: 8.w),
 
-                  /// PLUS BUTTON
+                  /// APPLY BUTTON
                   GestureDetector(
-                    onTap: controller.updateVoucherCount,
+                    onTap: () async {
+                      final coupon =
+                          controller.couponController.text.trim();
+
+                      if (controller.cart == null ||
+                          controller.cart!.items.isEmpty) return;
+
+                      if (coupon.isEmpty) {
+                        controller.couponError = "Enter coupon code";
+                        controller.update();
+                        return;
+                      }
+
+                      await controller.getCart(
+                        couponCode: coupon,
+                      );
+                    },
                     child: Container(
-                      height: 40.h,
-                      width: 40.w,
+                      height: 42.h,
+                      width: 90.w,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
+                        color: const Color(0xff6CCF4F),
                         borderRadius: BorderRadius.circular(14.r),
-                        border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: const Icon(Icons.add),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 12.h),
-              if (controller.voucherError != null &&
-    controller.voucherError!.isNotEmpty)
-  Padding(
-    padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
-    child: Text(
-      controller.voucherError!,
-      style: TextStyle(
-        color: Colors.red,
-        fontSize: 11.sp,
-      ),
-    ),
-  ),
-
-              /// COUPON SECTION
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      /// INPUT
-                      Expanded(
-                        child: Container(
-                          height: 40.h,
-                          padding: EdgeInsets.symmetric(horizontal: 14.w),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14.r),
-                            border:
-                                Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.search, size: 18.sp),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: TextField(
-                                  controller:
-                                      controller.couponController,
-                                  textAlignVertical:
-                                      TextAlignVertical.center,
-
-                                  /// ✅ FIX: CLEAR ERROR + RESET COUPON
-                                  onChanged: (value) {
-                                    controller.couponError = null;
-                                    controller.appliedCoupon = "";
-                                    controller.update();
-                                  },
-
-                                  style: TextStyle(fontSize: 14.sp),
-                                  decoration: InputDecoration(
-                                    hintText: "Coupon Code",
-                                    hintStyle:
-                                        TextStyle(fontSize: 12.sp),
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    contentPadding:
-                                        EdgeInsets.symmetric(
-                                      vertical: (45.h - 14.sp) / 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(width: 10.w),
-
-                      /// APPLY BUTTON
-                      GestureDetector(
-                        onTap: () async {
-                          final coupon = controller
-                              .couponController.text
-                              .trim();
-
-                          if (controller.cart == null ||
-                              controller.cart!.items.isEmpty) {
-                            return;
-                          }
-
-                          /// ✅ EMPTY CHECK
-                          if (coupon.isEmpty) {
-                            controller.couponError =
-                                "Enter coupon code";
-                            controller.update();
-                            return;
-                          }
-
-                          /// ✅ API CALL (controller handles error)
-                          await controller.getCart(
-                            couponCode: coupon,
-                          );
-                        },
-                        child: Container(
-                          height: 38.h,
-                          width: 100.w,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: const Color(0xff6CCF4F),
-                            borderRadius:
-                                BorderRadius.circular(14.r),
-                          ),
-                          child: Text(
-                            "Apply",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  /// ERROR TEXT
-                  if (controller.couponError != null &&
-                      controller.couponError!.isNotEmpty)
-                    Padding(
-                      padding:
-                          EdgeInsets.only(top: 6.h, left: 4.w),
                       child: Text(
-                        controller.couponError!,
+                        "Apply",
                         style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 11.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.sp,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
+
+              /// COUPON ERROR
+              if (controller.couponError?.isNotEmpty == true)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h, left: 4.w),
+                  child: Text(
+                    controller.couponError!,
+                    style: TextStyle(color: Colors.red, fontSize: 11.sp),
+                  ),
+                ),
             ],
           );
         },

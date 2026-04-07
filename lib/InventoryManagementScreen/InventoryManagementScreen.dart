@@ -50,15 +50,15 @@ class _InventoryManagementScreenState
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
 
-      floatingActionButton: Container(
-        height: 60.h,
-        width: 60.h,
-        decoration: const BoxDecoration(
-          color: Color(0xff0F172A),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(Icons.add, color: Colors.white, size: 28.sp),
-      ),
+      // floatingActionButton: Container(
+      //   height: 60.h,
+      //   width: 60.h,
+      //   decoration: const BoxDecoration(
+      //     color: Color(0xff0F172A),
+      //     shape: BoxShape.circle,
+      //   ),
+      //   child: Icon(Icons.add, color: Colors.white, size: 28.sp),
+      // ),
 
       body: SafeArea(
         child: GetBuilder<InventoryController>(

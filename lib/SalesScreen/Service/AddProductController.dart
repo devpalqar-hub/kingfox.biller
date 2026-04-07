@@ -98,31 +98,39 @@ class AddProductController extends GetxController {
   }
 
   Future scanAndAddProduct(String barcode, int gstPercent) async {
-    isLoading = true;
-    update();
+  isLoading = true;
+  update();
 
-    final url = "$baseUrl/billing/cart/scan";
+  final url = "$baseUrl/billing/cart/scan";
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $accessToken",
-      },
-      body: jsonEncode({
-        "barcode": barcode,
-        "gstPercent": gstPercent.toString(),
-      }),
-    );
+  debugPrint("📡 API CALL → $url");
+  debugPrint("📦 BODY → barcode: $barcode, gst: $gstPercent");
 
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    },
+    body: jsonEncode({
+      "barcode": barcode,
+      "gstPercent": gstPercent.toString(),
+    }),
+  );
+
+  debugPrint("📥 STATUS CODE → ${response.statusCode}");
+  debugPrint("📥 RESPONSE → ${response.body}");
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
     final data = jsonDecode(response.body);
-
     cart = CartModel.fromJson(data);
-
-    isLoading = false;
-    update();
+  } else {
+    debugPrint("❌ API ERROR → ${response.body}");
   }
 
+  isLoading = false;
+  update();
+}
  Future<bool> getCart({
   String? couponCode,
   double? manualDiscountAmount, 
