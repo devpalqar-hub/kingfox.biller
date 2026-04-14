@@ -55,7 +55,7 @@ class OrderSummaryCard extends StatelessWidget {
 
           /// Rows
           _row("Subtotal", subtotal),
-          _row("Tax (8%)", tax),
+          _row("Tax ", tax),
 
           _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
           _row("Coupon Deduction", coupon, isNegative: true),

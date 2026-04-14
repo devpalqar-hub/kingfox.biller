@@ -111,13 +111,14 @@ class PickupOrdersController extends GetxController {
       await fetchAnalytics();
     } else {}
   }
+Future<void> changeStatus(String? status) async {
+  selectedStatus = status;
+  
+  orders.clear();
+  update(); 
 
-  void changeStatus(String? status) {
-    selectedStatus = status;
-    page = 1;
-    orders.clear();
-    fetchOrders();
-  }
+  await fetchOrders(); 
+}
 
   void loadMore() {
     if (page < totalPages && !isLoadMore) {

@@ -5,123 +5,141 @@ import 'package:kinfox_biller/OnlineScreen/Service/Online_order_controller.dart'
 import 'package:kinfox_biller/OnlineScreen/View/OnlineOrderTable.dart';
 import 'package:kinfox_biller/OnlineScreen/View/OrderCardRow.dart';
 
-
 class OnlineOrderScreen extends StatelessWidget {
   const OnlineOrderScreen({super.key});
 
-@override
-Widget build(BuildContext context) {
-  final controller = Get.put(PickupOrdersController()); 
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(PickupOrdersController());
 
-  return GetBuilder<PickupOrdersController>(
-    builder: (controller) {
-      return Scaffold(
-        backgroundColor: const Color(0xffF5F7FA),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 30.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+    return GetBuilder<PickupOrdersController>(
+      builder: (controller) {
+        return Scaffold(
+          backgroundColor: const Color(0xffF5F7FA),
 
-              
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 20.h,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-                    
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Online Orders",
-                            style: TextStyle(
-                              fontSize: 28.sp,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xff1E293B),
-                            ),
-                          ),
-                          SizedBox(height: 5.h),
-                          Text(
-                            "Manage and track all customer orders in real time.",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: const Color(0xff64748B),
-                            ),
-                          ),
-                        ],
-                      ),
+                    /// ================= HEADER =================
+                    Wrap(
+                      spacing: 20.w,
+                      runSpacing: 15.h,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
 
-          
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 180.w,
-                            child: _filterBox(
-                              child: DropdownButton<String>(
-                                dropdownColor: Colors.white,
-                                value: controller.selectedStatus,
-                                isExpanded: true,
-                                hint: Text(
-                                  "Status",
-                                  style: TextStyle(fontSize: 12.sp),
-                                ),
-                                underline: const SizedBox(),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: "PENDING",
-                                    child: Text("PENDING"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: "SHIPPED",
-                                    child: Text("SHIPPED"),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  controller.changeStatus(value);
-                                },
+                        /// TITLE SECTION
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Online Orders",
+                              style: TextStyle(
+                                fontSize: 24.sp, 
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xff1E293B),
                               ),
                             ),
-                          ),
+                            SizedBox(height: 5.h),
+                            SizedBox(
+                              width: 300.w,
+                              child: Text(
+                                "Manage and track all customer orders in real time.",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: const Color(0xff64748B),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
 
-                          SizedBox(width: 12.w),
+                        SizedBox(width: 650.w,),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
 
-                          GestureDetector(
-                            onTap: () {
-                              controller.changeStatus(null);
-                            },
-                            child: _clearBtn(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                           
+                            SizedBox(
+                              width: 160.w,
+                              child: _filterBox(
+                                child: DropdownButton<String>(
+                                  dropdownColor: Colors.white,
+                                  value: controller.selectedStatus,
+                                  isExpanded: true,
+                                  hint: Text(
+                                    "Status",
+                                    style: TextStyle(fontSize: 12.sp),
+                                  ),
+                                  underline: const SizedBox(),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: "CONFIRMED",
+                                      child: Text("Confirmed"),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: "DELIVERED",
+                                      child: Text("Delivered"),
+                                    ),
+                                     DropdownMenuItem(
+                                      value: "CANCELLED",
+                                      child: Text("Cancelled"),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    controller.changeStatus(value);
+                                  },
+                                ),
+                              ),
+                            ),
 
-                  SizedBox(height: 25.h),
+                            SizedBox(width: 10.w),
 
-                  const OrderCardsRow(),
+                           
+                            GestureDetector(
+                             onTap: () async {
+  await controller.changeStatus(null);
+},
+                              child: _clearBtn(),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
 
-                  SizedBox(height: 25.h),
+                    SizedBox(height: 20.h),
 
-                  const OnlineOrderTable(),
-                ],
+                    /// CARDS
+                    const OrderCardsRow(),
+
+                    SizedBox(height: 20.h),
+
+                    /// TABLE
+                    const OnlineOrderTable(),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}
-  
+        );
+      },
+    );
+  }
 
-
+  /// ================= FILTER BOX =================
   Widget _filterBox({required Widget child}) {
     return Container(
-      height: 40.h,
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      height: 38.h,
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -132,10 +150,11 @@ Widget build(BuildContext context) {
     );
   }
 
+  /// ================= CLEAR BUTTON =================
   Widget _clearBtn() {
     return Container(
-      height: 40.h,
-      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      height: 38.h,
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
         color: Colors.red.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.r),

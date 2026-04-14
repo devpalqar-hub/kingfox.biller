@@ -63,8 +63,9 @@ class OnlineOrderTable extends StatelessWidget {
     Color statusColor;
 
     switch (order.status) {
-      case "SHIPPED":
-      case "COMPLETED":
+      case "CONFIRMED":
+      statusColor = Colors.orange;
+      case "DELIVERED":
         statusColor = Colors.green;
         break;
       case "CANCELLED":
