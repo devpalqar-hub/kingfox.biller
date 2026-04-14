@@ -15,7 +15,7 @@ class CartModel {
   final double gstAmount;
   final double finalAmount;
 
-  /// 🔥 NEW FIELDS
+ 
   final double couponDiscountAmount;
   final double finalAmountAfterCoupon;
   final double grandFinalTotal;

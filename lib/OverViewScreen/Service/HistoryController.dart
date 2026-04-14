@@ -19,11 +19,6 @@ class Historycontroller extends GetxController {
   List<InvoiceModel> invoices = [];
 
   
-   
-
-
-  //......get analytics.....
-
  Future<void> geAnalytics({
   String? fromDate,
   String? toDate,
@@ -31,7 +26,7 @@ class Historycontroller extends GetxController {
   isLoading = true;
   update();
 
-  /// ✅ BUILD QUERY PARAMS
+
   final queryParams = <String, String>{};
 
   if (fromDate != null && fromDate.isNotEmpty) {
@@ -54,8 +49,6 @@ class Historycontroller extends GetxController {
     },
   );
 
-  print("🟣 ANALYTICS STATUS: ${response.statusCode}");
-  print("🟣 ANALYTICS BODY: ${response.body}");
 
   if (response.statusCode == 200) {
     analytics = AnalyticsModel.fromJson(
@@ -68,7 +61,8 @@ class Historycontroller extends GetxController {
   isLoading = false;
   update();
 }
-//...get invoices.....
+
+
 Future<void> getInvoices({
   bool refresh = false,
   String? status,
@@ -91,7 +85,7 @@ Future<void> getInvoices({
 
   update();
 
-  /// ✅ Build query params dynamically
+
   final queryParams = {
     "page": "$page",
     "limit": "$limit",

@@ -214,12 +214,12 @@ class ReturnsController extends GetxController {
 
 Future<bool> addReturnItemsToCart() async {
   if (invoice == null) {
-    print("❌ No invoice selected");
+   
     return false;
   }
 
   if (selectedItems.isEmpty) {
-    print("❌ No items selected for return");
+   
     return false;
   }
 
@@ -242,13 +242,7 @@ Future<bool> addReturnItemsToCart() async {
     "Authorization": "Bearer $accessToken",
   };
 
-  /// 🔥 REQUEST LOG
-  print("📤 ================= RETURN REQUEST =================");
-  print("➡️ URL: $url");
-  print("➡️ METHOD: POST");
-  print("➡️ HEADERS: $headers");
-  print("➡️ BODY: ${jsonEncode(body)}");
-  print("📤 ==================================================");
+  
 
   final response = await http.post(
     Uri.parse(url),
@@ -256,29 +250,21 @@ Future<bool> addReturnItemsToCart() async {
     body: jsonEncode(body),
   );
 
-  /// 🔥 RESPONSE LOG
-  print("📥 ================= RETURN RESPONSE =================");
-  print("⬅️ STATUS CODE: ${response.statusCode}");
-  print("⬅️ BODY: ${response.body}");
-  print("📥 ===================================================");
 
   if (response.statusCode == 200 || response.statusCode == 201) {
     final data = jsonDecode(response.body);
     
-    /// 🔍 PARSED DATA LOG
-    print("🔍 PARSED DATA: $data");
-
+   
     await getReturns();
-     /// 🔥 IMPORTANT: REFRESH CART
+    
     await Get.find<AddProductController>().getCart();
     clearReturnData();
 
-    print("✅ Return Items Added Successfully");
+  
 
     return true;
   } else {
-    print("❌ Failed to add return items");
-
+   
     return false;
   }
 }
@@ -311,7 +297,7 @@ Future<bool> addReturnItemsToCart() async {
 
 Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
   if (variantIds.isEmpty) {
-    print("❌ No items selected for deletion");
+   
     return false;
   }
 
@@ -326,13 +312,7 @@ Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
     "Authorization": "Bearer $accessToken",
   };
 
-  /// 🔥 REQUEST LOG
-  print("📤 ============== DELETE RETURN ITEMS REQUEST ==============");
-  print("➡️ URL: $url");
-  print("➡️ METHOD: DELETE");
-  print("➡️ HEADERS: $headers");
-  print("➡️ BODY: ${jsonEncode(body)}");
-  print("📤 ========================================================");
+  
 
   final response = await http.delete(
     Uri.parse(url),
@@ -340,19 +320,15 @@ Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
     body: jsonEncode(body), // 👈 important (some APIs need body)
   );
 
-  /// 🔥 RESPONSE LOG
-  print("📥 ============== DELETE RETURN ITEMS RESPONSE =============");
-  print("⬅️ STATUS CODE: ${response.statusCode}");
-  print("⬅️ BODY: ${response.body}");
-  print("📥 ========================================================");
+ 
 
   if (response.statusCode == 200 || response.statusCode == 204) {
-    print("✅ Return items deleted successfully");
+  
 
     await getReturns(); // refresh list
     return true;
   } else {
-    print("❌ Failed to delete return items");
+   
     return false;
   }
 }

@@ -6,49 +6,65 @@ import 'package:kinfox_biller/main.dart';
 
 class CustomerController extends GetxController {
   bool isLoading = false;
+
   List<CustomerModel> customerList = [];
 
-Future<void> searchCustomers([String query = ""]) async {
-  isLoading = true;
-  update();
+  bool isDropdownOpen = false;
 
-  final url = query.isEmpty
-      ? "$baseUrl/customers"
-      : "$baseUrl/customers?search=$query";
+  CustomerModel? selectedCustomer;
 
-  print("📡 API REQUEST → $url");
+  void toggleDropdown() {
+    isDropdownOpen = !isDropdownOpen;
 
-  final response = await http.get(
-    Uri.parse(url),
-    headers: {
-      "Authorization": "Bearer $accessToken",
-      "Content-Type": "application/json",
-    },
-  );
 
-  print("✅ STATUS CODE → ${response.statusCode}");
-  print("📦 RESPONSE BODY → ${response.body}");
-
-  customerList.clear();
-
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-
-    if (data is List) {
-      customerList = data
-          .map<CustomerModel>((e) => CustomerModel.fromJson(e))
-          .toList();
-    } else if (data['data'] != null) {
-      customerList = (data['data'] as List)
-          .map<CustomerModel>((e) => CustomerModel.fromJson(e))
-          .toList();
+    if (isDropdownOpen && customerList.isEmpty) {
+      searchCustomers();
     }
-  } else {
-    print("❌ API ERROR → ${response.statusCode}");
+
+    update();
   }
 
-  print("👥 CUSTOMERS FOUND → ${customerList.length}");
+  void closeDropdown() {
+    isDropdownOpen = false;
+    customerList.clear();
+    update();
+  }
 
-  isLoading = false;
-  update();
-}}
+  Future<void> searchCustomers([String query = ""]) async {
+    isLoading = true;
+
+    isDropdownOpen = true;
+    update();
+
+    final url = query.isEmpty
+        ? "$baseUrl/customers"
+        : "$baseUrl/customers?search=$query";
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Content-Type": "application/json",
+      },
+    );
+
+    customerList.clear();
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      if (data is List) {
+        customerList = data
+            .map<CustomerModel>((e) => CustomerModel.fromJson(e))
+            .toList();
+      } else if (data['data'] != null) {
+        customerList = (data['data'] as List)
+            .map<CustomerModel>((e) => CustomerModel.fromJson(e))
+            .toList();
+      }
+    }
+
+    isLoading = false;
+    update();
+  }
+}

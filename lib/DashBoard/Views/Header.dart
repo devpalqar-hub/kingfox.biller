@@ -43,6 +43,7 @@ final PrinterController printer = Get.put(PrinterController());
               _tab(controller, "Sales", 0),
               _tab(controller, "Overview & History", 1),
               _tab(controller, "Inventory", 2),
+               _tab(controller, "Online", 3),
             
 
                   const Spacer(),
@@ -135,15 +136,7 @@ Row(
       ),
     ),
   ],
-  child: CircleAvatar(
-    radius: 20.r,
-    backgroundColor: Colors.grey.shade300,
-    child: Icon(
-      Icons.person,
-      size: 22.sp,
-      color: Colors.white,
-    ),
-  ),
+  child:Icon(Icons.exit_to_app)
 ),
   ],
 ),

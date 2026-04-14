@@ -57,11 +57,12 @@ class AddProductController extends GetxController {
     }
   }
 
- void selectStaff(StaffModel staff) {
-  selectedStaff = staff;
-  attendedByStaffId = staff.id; 
-  update();
-}
+  void selectStaff(StaffModel staff) {
+    selectedStaff = staff;
+    attendedByStaffId = staff.id;
+    update();
+  }
+
   void disposeAllTextControllers() {
     nameController.dispose();
     phoneController.dispose();
@@ -81,9 +82,8 @@ class AddProductController extends GetxController {
     super.onInit();
     voucherCountController.text = "1";
     fetchCampaigns();
-    fetchStaff(); 
+    fetchStaff();
     getCart();
-
   }
 
   @override
@@ -98,117 +98,100 @@ class AddProductController extends GetxController {
   }
 
   Future scanAndAddProduct(String barcode, int gstPercent) async {
-  isLoading = true;
-  update();
+    isLoading = true;
+    update();
 
-  final url = "$baseUrl/billing/cart/scan";
+    final url = "$baseUrl/billing/cart/scan";
 
-  debugPrint("📡 API CALL → $url");
-  debugPrint("📦 BODY → barcode: $barcode, gst: $gstPercent");
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+      body: jsonEncode({
+        "barcode": barcode,
+        "gstPercent": gstPercent.toString(),
+      }),
+    );
 
-  final response = await http.post(
-    Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      cart = CartModel.fromJson(data);
+    } else {}
+
+    isLoading = false;
+    update();
+  }
+
+  Future<bool> getCart({
+    String? couponCode,
+    double? manualDiscountAmount,
+  }) async {
+    isLoading = true;
+    update();
+
+    final applied = couponCode ?? appliedCoupon;
+
+    final queryParams = <String, String>{};
+
+    if (applied.isNotEmpty) {
+      queryParams['couponCode'] = applied;
+    }
+
+    if (manualDiscountAmount != null && manualDiscountAmount > 0) {
+      queryParams['manualDiscountAmount'] = manualDiscountAmount.toString();
+    }
+
+    final uri = Uri.parse(
+      "$baseUrl/billing/cart",
+    ).replace(queryParameters: queryParams);
+
+    final headers = {
       "Authorization": "Bearer $accessToken",
-    },
-    body: jsonEncode({
-      "barcode": barcode,
-      "gstPercent": gstPercent.toString(),
-    }),
-  );
+      "Content-Type": "application/json",
+    };
 
-  debugPrint("📥 STATUS CODE → ${response.statusCode}");
-  debugPrint("📥 RESPONSE → ${response.body}");
+    final response = await http.get(uri, headers: headers);
 
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    final data = jsonDecode(response.body);
-    cart = CartModel.fromJson(data);
-  } else {
-    debugPrint("❌ API ERROR → ${response.body}");
-  }
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-  isLoading = false;
-  update();
-}
- Future<bool> getCart({
-  String? couponCode,
-  double? manualDiscountAmount, 
-}) async {
-  isLoading = true;
-  update();
+      cart = CartModel.fromJson(data);
+      appliedCoupon = applied;
 
-  final applied = couponCode ?? appliedCoupon;
+      if (applied.isNotEmpty && (cart?.couponDiscountAmount ?? 0) == 0) {
+        couponError = "Invalid or expired coupon";
 
-  final queryParams = <String, String>{};
+        isLoading = false;
+        update();
+        return false;
+      }
 
+      couponError = null;
 
-  if (applied.isNotEmpty) {
-    queryParams['couponCode'] = applied;
-  }
+      isLoading = false;
+      update();
+      return true;
+    } else {
+      cart = null;
 
-  
-  if (manualDiscountAmount != null && manualDiscountAmount > 0) {
-    queryParams['manualDiscountAmount'] =
-        manualDiscountAmount.toString();
-  }
-
-  final uri = Uri.parse(
-    "$baseUrl/billing/cart",
-  ).replace(queryParameters: queryParams);
-
-  final headers = {
-    "Authorization": "Bearer $accessToken",
-    "Content-Type": "application/json",
-  };
-
-  final response = await http.get(uri, headers: headers);
-
-  print("🟡 GET CART URL: $uri");
-  print("🟡 GET CART STATUS: ${response.statusCode}");
-  print("🟡 GET CART BODY: ${response.body}");
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-
-    cart = CartModel.fromJson(data);
-    appliedCoupon = applied;
-
-    /// ❌ INVALID COUPON
-    if (applied.isNotEmpty && (cart?.couponDiscountAmount ?? 0) == 0) {
-      couponError = "Invalid or expired coupon";
+      couponError = "Failed to fetch cart";
 
       isLoading = false;
       update();
       return false;
     }
-
-    /// ✅ SUCCESS
-    couponError = null;
-
-    isLoading = false;
-    update();
-    return true;
-  } else {
-    cart = null;
-
-    couponError = "Failed to fetch cart";
-
-    isLoading = false;
-    update();
-    return false;
   }
-}
 
   Future searchProducts(String query) async {
     if (query.isEmpty) {
       searchProductsList.clear();
-      
+
       return;
     }
 
     isLoading = true;
-  
 
     final url = "$baseUrl/billing/product-search?q=$query";
 
@@ -239,152 +222,128 @@ class AddProductController extends GetxController {
     update();
   }
 
-  
   Future<bool> checkoutCart({
-  required String paymentMethod,
-  String? customerName,
-  String? customerPhone,
-  String? customerEmail,
-  String? customerAddress,
-  String? couponCode,
-  int? campaignId,
-  int? voucherCount,
+    required String paymentMethod,
+    String? customerName,
+    String? customerPhone,
+    String? customerEmail,
+    String? customerAddress,
+    String? couponCode,
+    int? campaignId,
+    int? voucherCount,
 
-  /// 🔥 NEW FIELDS
-  double? manualDiscountAmount,
-  int? attendedByStaffId,
-}) async {
-  /// ✅ RESET ERRORS
-  couponError = null;
-  voucherError = null;
-
-  /// ❌ EMPTY CART
-  if (cart == null || cart!.items.isEmpty) {
-    print("❌ Checkout Error: Cart is empty");
-    return false;
-  }
-
-  /// ❌ COUPON VALIDATION
-  if (couponCode != null && couponCode.isNotEmpty) {
-    if ((cart?.couponDiscountAmount ?? 0) == 0) {
-      couponError = "Invalid or expired coupon";
-      update();
-      return false;
-    }
-  }
-
-  /// ❌ VOUCHER VALIDATION
-  if (campaignId != null && voucherCount != null) {
-    if (voucherCount <= 0) {
-      voucherError = "Invalid voucher count";
-      update();
-      return false;
-    }
-
-    if (selectedCampaign == null) {
-      voucherError = "Please select a campaign";
-      update();
-      return false;
-    }
-  }
-
-  isLoading = true;
-  update();
-
-  final url = "$baseUrl/billing/cart/checkout";
-
-  /// ✅ BASE BODY
-  final Map<String, dynamic> body = {
-    "paymentMethod": paymentMethod.toUpperCase(),
-    "customerName": customerName ?? "",
-    "customerPhone": customerPhone ?? "",
-    "customerEmail": customerEmail ?? "",
-    "customerAddress": customerAddress ?? "",
-  };
-
-  /// ✅ ADD COUPON
-  if (couponCode != null && couponCode.isNotEmpty) {
-    body["couponCode"] = couponCode;
-  }
-
-  /// ✅ ADD VOUCHER
-  if (campaignId != null && voucherCount != null) {
-    body["campaignId"] = campaignId;
-    body["voucherCount"] = voucherCount;
-  }
-
-  /// 🔥 NEW: MANUAL DISCOUNT
-  if (manualDiscountAmount != null && manualDiscountAmount > 0) {
-    body["manualDiscountAmount"] = manualDiscountAmount;
-  }
-
-  /// 🔥 NEW: STAFF ID
-  if (attendedByStaffId != null) {
-    body["attendedByStaffId"] = attendedByStaffId;
-  }
-
-  print("🟡 CHECKOUT URL: $url");
-print("🟡 CHECKOUT BODY: ${jsonEncode(body)}");
-
-
-
-  final response = await http.post(
-    Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $accessToken",
-    },
-    body: jsonEncode(body),
-  );
-
-  print("🟢 CHECKOUT STATUS: ${response.statusCode}");
-  print("🟢 CHECKOUT BODY: ${response.body}");
-
-  /// ✅ SUCCESS
-  if (response.statusCode == 201) {
+    double? manualDiscountAmount,
+    int? attendedByStaffId,
+  }) async {
     couponError = null;
     voucherError = null;
 
+    if (cart == null || cart!.items.isEmpty) {
+      return false;
+    }
+
+    if (couponCode != null && couponCode.isNotEmpty) {
+      if ((cart?.couponDiscountAmount ?? 0) == 0) {
+        couponError = "Invalid or expired coupon";
+        update();
+        return false;
+      }
+    }
+
+    if (campaignId != null && voucherCount != null) {
+      if (voucherCount <= 0) {
+        voucherError = "Invalid voucher count";
+        update();
+        return false;
+      }
+
+      if (selectedCampaign == null) {
+        voucherError = "Please select a campaign";
+        update();
+        return false;
+      }
+    }
+
+    isLoading = true;
+    update();
+
+    final url = "$baseUrl/billing/cart/checkout";
+
+    final Map<String, dynamic> body = {
+      "paymentMethod": paymentMethod.toUpperCase(),
+      "customerName": customerName ?? "",
+      "customerPhone": customerPhone ?? "",
+      "customerEmail": customerEmail ?? "",
+      "customerAddress": customerAddress ?? "",
+    };
+
+    if (couponCode != null && couponCode.isNotEmpty) {
+      body["couponCode"] = couponCode;
+    }
+
+    if (campaignId != null && voucherCount != null) {
+      body["campaignId"] = campaignId;
+      body["voucherCount"] = voucherCount;
+    }
+
+    if (manualDiscountAmount != null && manualDiscountAmount > 0) {
+      body["manualDiscountAmount"] = manualDiscountAmount;
+    }
+
+    if (attendedByStaffId != null) {
+      body["attendedByStaffId"] = attendedByStaffId;
+    }
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 201) {
+      couponError = null;
+      voucherError = null;
+
+      final data = jsonDecode(response.body);
+
+      completedOrder = CartModel.fromJson(data["data"] ?? data);
+      invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
+
+      clearAllTextControllers();
+      clearVoucherSelection();
+
+      isLoading = false;
+      update();
+
+      return true;
+    }
+
     final data = jsonDecode(response.body);
 
-    completedOrder = CartModel.fromJson(data["data"] ?? data);
-    invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
+    String errorMessage = "";
 
-    clearAllTextControllers();
-    clearVoucherSelection();
+    if (data is Map) {
+      errorMessage = data["message"] ?? data["error"] ?? "";
+    }
+
+    if (errorMessage.toLowerCase().contains("coupon")) {
+      couponError = errorMessage;
+      voucherError = null;
+    } else {
+      voucherError = errorMessage.isNotEmpty
+          ? errorMessage
+          : "Something went wrong";
+      couponError = null;
+    }
 
     isLoading = false;
     update();
 
-    return true;
+    return false;
   }
-
-  /// ❌ ERROR RESPONSE
-  final data = jsonDecode(response.body);
-
-  String errorMessage = "";
-
-  if (data is Map) {
-    errorMessage = data["message"] ?? data["error"] ?? "";
-  }
-
-  /// ✅ ERROR ROUTING
-  if (errorMessage.toLowerCase().contains("coupon")) {
-    couponError = errorMessage;
-    voucherError = null;
-  } else {
-    voucherError =
-        errorMessage.isNotEmpty ? errorMessage : "Something went wrong";
-    couponError = null;
-  }
-
-  print("❌ CHECKOUT ERROR: $errorMessage");
-
-  isLoading = false;
-  update();
-
-  return false;
-}
 
   Future<void> updateCartItemQuantity(int variantId, int quantity) async {
     if (isUpdatingQty) return;
@@ -419,62 +378,52 @@ print("🟡 CHECKOUT BODY: ${jsonEncode(body)}");
   }
 
   Future<void> fetchCampaigns() async {
-  final response = await http.get(
-    Uri.parse("$baseUrl/lucky-draw/campaigns"),
-    headers: {
-      "Authorization": "Bearer $accessToken",
-      "Content-Type": "application/json",
-    },
-  );
+    final response = await http.get(
+      Uri.parse("$baseUrl/lucky-draw/campaigns"),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Content-Type": "application/json",
+      },
+    );
 
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
 
-    List data = [];
+      List data = [];
 
-    if (decoded is List) {
-      data = decoded;
-    } else if (decoded is Map && decoded['data'] != null) {
-      data = decoded['data'];
+      if (decoded is List) {
+        data = decoded;
+      } else if (decoded is Map && decoded['data'] != null) {
+        data = decoded['data'];
+      }
+
+      campaigns = data.map((e) => LuckyDrawCampaign.fromJson(e)).toList();
+    } else {
+      campaigns = [];
     }
 
-    campaigns = data
-        .map((e) => LuckyDrawCampaign.fromJson(e))
-        .toList();
-  } else {
-    campaigns = [];
+    update();
   }
 
-  update();
-}
+  Future<void> fetchStaff() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/users?role=staff"),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Content-Type": "application/json",
+      },
+    );
 
-Future<void> fetchStaff() async {
-  final response = await http.get(
-    Uri.parse("$baseUrl/users?role=staff"),
-    headers: {
-      "Authorization": "Bearer $accessToken",
-      "Content-Type": "application/json",
-    },
-  );
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
 
-  print("🟡 STAFF STATUS: ${response.statusCode}");
-  print("🟡 STAFF BODY: ${response.body}");
+      List data = decoded is List ? decoded : decoded['data'] ?? [];
 
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
+      staffList = data.map<StaffModel>((e) => StaffModel.fromJson(e)).toList();
+    } else {
+      staffList = [];
+    }
 
-    List data = decoded is List
-        ? decoded
-        : decoded['data'] ?? [];
-
-    staffList = data
-        .map<StaffModel>((e) => StaffModel.fromJson(e))
-        .toList();
-  } else {
-    staffList = [];
+    update();
   }
-
-  update();
 }
-}
-

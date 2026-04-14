@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/SalesScreen/Service/CustomerController.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CustomerModel.dart';
-
 class CustomerCard extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
@@ -19,173 +18,150 @@ class CustomerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// HEADER
-              Row(
-                children: [
-                  const Icon(Icons.person_2_outlined),
-                  SizedBox(width: 10.w),
-                  Text(
-                    "Customer Selection",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                ],
-              ),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        controller.closeDropdown();
+        FocusScope.of(context).unfocus();
+      },
+      child: Column(
+        children: [
+          /// INPUT BOX
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 16.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.person_2_outlined),
+                    SizedBox(width: 10.w),
+                    Text("Customer Selection",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12.sp)),
+                  ],
+                ),
 
-              SizedBox(height: 12.h),
+                SizedBox(height: 12.h),
 
-              /// INPUT ROW
-              Row(
-                children: [
-                  /// 🔽 NAME FIELD (DROPDOWN)
-                  Expanded(child: _buildCustomerDropdown()),
-
-                  SizedBox(width: 10.w),
-
-                  /// PHONE FIELD
-                  Expanded(
-                    child: _buildTextField(
-                      controller: phoneController,
-                      hint: "Enter phone number",
-                      isPhone: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        /// 🔽 DROPDOWN LIST UI
-        GetBuilder<CustomerController>(
-          builder: (c) {
-            if (c.customerList.isEmpty) return const SizedBox();
-
-            return Container(
-              margin: EdgeInsets.only(top: 5.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              constraints: BoxConstraints(maxHeight: 200.h),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: c.customerList.length,
-                itemBuilder: (context, index) {
-                  final customer = c.customerList[index];
-
-                  return ListTile(
-                    title: Text(customer.name ?? ''),
-                    subtitle: Text(customer.phone ?? ''),
-                    onTap: () {
-                      /// ✅ Fill values
-                      nameController.text = customer.name ?? '';
-                      phoneController.text = customer.phone ?? '';
-
-                      /// ✅ Close dropdown
-                      c.customerList.clear();
-                      c.update();
-                    },
-                  );
-                },
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  /// 🔥 MAIN DROPDOWN FIELD
-  Widget _buildCustomerDropdown() {
-    return SizedBox(
-      height: 45.h,
-      child: TextField(
-        controller: nameController,
-
-        /// 🔽 LOAD ALL CUSTOMERS ON CLICK
-        onTap: () {
-          controller.searchCustomers();
-        },
-
-        /// 🔍 SEARCH API
-        onChanged: (value) {
-          controller.searchCustomers(value);
-        },
-
-        textAlignVertical: TextAlignVertical.center,
-        style: TextStyle(fontSize: 14.sp),
-
-        decoration: InputDecoration(
-          hintText: "Search / Enter customer",
-          prefixIcon: const Icon(Icons.arrow_drop_down),
-
-          isDense: true,
-          contentPadding: EdgeInsets.symmetric(
-            vertical: (45.h - 14.sp) / 2,
-            horizontal: 14.w,
+                Row(
+                  children: [
+                    Expanded(child: _buildCustomerField()),
+                    SizedBox(width: 10.w),
+                    Expanded(child: _buildPhoneField()),
+                  ],
+                ),
+              ],
+            ),
           ),
 
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-          ),
+          /// DROPDOWN LIST
+          GetBuilder<CustomerController>(
+            builder: (c) {
+              if (!c.isDropdownOpen || c.customerList.isEmpty) {
+                return const SizedBox();
+              }
 
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
+              return Container(
+                margin: EdgeInsets.only(top: 5.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                constraints: BoxConstraints(maxHeight: 200.h),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: c.customerList.length,
+                  itemBuilder: (context, index) {
+                    final customer = c.customerList[index];
 
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            borderSide: const BorderSide(color: Colors.blue),
+                    return ListTile(
+                      title: Text(customer.name ?? ''),
+                      subtitle: Text(customer.phone ?? ''),
+                      onTap: () {
+                        nameController.text = customer.name ?? '';
+                        phoneController.text = customer.phone ?? '';
+
+                        c.selectedCustomer = customer;
+                        c.closeDropdown();
+
+                        FocusScope.of(context).unfocus();
+                      },
+                    );
+                  },
+                ),
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
 
-  /// NORMAL TEXT FIELD
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    bool isPhone = false,
-  }) {
+  /// 🔥 FIELD WITH TOGGLE ARROW
+  Widget _buildCustomerField() {
+    return GetBuilder<CustomerController>(
+      builder: (c) {
+        return SizedBox(
+          height: 45.h,
+          child: TextField(
+            controller: nameController,
+
+            onTap: () {
+              c.toggleDropdown();
+            },
+
+            onChanged: (value) {
+              if (value.isEmpty) {
+                c.closeDropdown();
+                return;
+              }
+
+              c.searchCustomers(value);
+            },
+
+            decoration: InputDecoration(
+              hintText: "Search customer",
+
+              /// 🔥 TOGGLE ARROW
+              suffixIcon: IconButton(
+                icon: Icon(
+                  c.isDropdownOpen
+                      ? Icons.arrow_drop_up
+                      : Icons.arrow_drop_down,
+                ),
+                onPressed: () {
+                  c.toggleDropdown();
+                },
+              ),
+
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPhoneField() {
     return SizedBox(
       height: 45.h,
       child: TextField(
-        controller: controller,
-        keyboardType:
-            isPhone ? TextInputType.number : TextInputType.text,
-        inputFormatters: isPhone
-            ? [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ]
-            : [],
-        textAlignVertical: TextAlignVertical.center,
-        style: TextStyle(fontSize: 14.sp),
+        controller: phoneController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(10),
+        ],
         decoration: InputDecoration(
-          hintText: hint,
-          isDense: true,
-          contentPadding: EdgeInsets.symmetric(
-            vertical: (45.h - 14.sp) / 2,
-            horizontal: 14.w,
-          ),
+          hintText: "Phone",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14.r),
           ),

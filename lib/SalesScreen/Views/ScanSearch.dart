@@ -126,26 +126,41 @@ class ReturnButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14.r),
+      borderRadius: BorderRadius.circular(12.r),
       onTap: onTap,
       child: Container(
-        height: 53.h,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        constraints: BoxConstraints(
+          minHeight: 45.h, // ✅ prevents collapse
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: 14.w,
+          vertical: 10.h, // ✅ reduced for small screens
+        ),
         decoration: BoxDecoration(
           color: const Color(0xffFEF2F2),
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(10.r),
           border: Border.all(color: const Color(0xffFECACA)),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min, // ✅ wrap content
           children: [
-            Icon(Icons.arrow_back, color: Colors.red, size: 14.sp),
-            SizedBox(width: 8.w),
-            Text(
-              "Return Item",
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
+            Icon(
+              Icons.arrow_back,
+              color: Colors.red,
+              size: 16.sp, // slightly increased for balance
+            ),
+            SizedBox(width: 6.w),
+
+            /// ✅ Flexible text to avoid overflow
+            Flexible(
+              child: Text(
+                "Return Item",
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

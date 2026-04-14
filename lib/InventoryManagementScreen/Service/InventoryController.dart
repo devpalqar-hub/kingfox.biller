@@ -5,7 +5,6 @@ import 'package:kinfox_biller/InventoryManagementScreen/Model/InventoryAnalytiCS
 import 'package:kinfox_biller/InventoryManagementScreen/Model/InventoryModel.dart';
 import 'package:kinfox_biller/main.dart';
 
-
 class InventoryController extends GetxController {
   bool isLoading = false;
   bool isLoadMore = false;
@@ -20,58 +19,74 @@ class InventoryController extends GetxController {
   String selectedFilter = "All";
   String searchQuery = "";
 
-  /// ================= INVENTORY =================
-  Future<void> getInventory({
-    bool refresh = false,
-    String? stockStatus,
-  }) async {
+  void logMsg(String msg) {}
+
+  Future<void> getInventory({bool refresh = false, String? stockStatus}) async {
     if (refresh) {
       page = 1;
       hasMore = true;
       inventories.clear();
     }
 
-    if (isLoadMore || !hasMore) return;
+    if (isLoadMore || !hasMore) {
+      return;
+    }
 
     page == 1 ? isLoading = true : isLoadMore = true;
-  //  update();
+    update();
 
-    final queryParams = {
-      "page": "$page",
-      "limit": "$limit",
-    };
+    final queryParams = {"page": "$page", "limit": "$limit"};
 
     if (stockStatus != null && stockStatus.isNotEmpty) {
       queryParams["stockStatus"] = stockStatus;
     }
 
-    final uri =
-        Uri.parse("$baseUrl/inventory").replace(queryParameters: queryParams);
+    final uri = Uri.parse(
+      "$baseUrl/inventory",
+    ).replace(queryParameters: queryParams);
 
-    final response = await http.get(
-      uri,
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
-      },
-    );
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
 
-      List data = decoded is List
-          ? decoded
-          : (decoded['data'] ?? []);
+        List data = decoded['data'] ?? [];
+        final pagination = decoded['pagination'];
 
-      if (data.isEmpty) {
-        hasMore = false;
-      } else {
-        inventories.addAll(
-          data.map((e) => InventoryModel.fromJson(e)).toList(),
-        );
-        page++;
-      }
-    }
+        if (data.isEmpty) {
+          hasMore = false;
+        } else {
+          final newItems = data.map((e) => InventoryModel.fromJson(e)).toList();
+
+          inventories.addAll(
+            newItems.where((item) => !inventories.any((i) => i.id == item.id)),
+          );
+
+          if (pagination != null) {
+            int currentPage = pagination['page'] ?? page;
+            int totalPages = pagination['totalPages'] ?? page;
+
+            hasMore = currentPage < totalPages;
+
+            logMsg("📊 Page: $currentPage / $totalPages");
+          } else {
+            /// fallback
+            if (data.length < limit) {
+              hasMore = false;
+            }
+          }
+
+          page++;
+        }
+      } else {}
+    } catch (e) {}
 
     isLoading = false;
     isLoadMore = false;
@@ -80,92 +95,102 @@ class InventoryController extends GetxController {
 
   /// ================= SEARCH =================
   Future<void> getInventoryBySearch({
-  bool refresh = false,
-  String? search,
-}) async {
-  if (refresh) {
-    page = 1;
-    hasMore = true;
-    inventories.clear();
-  }
+    bool refresh = false,
+    String? search,
+  }) async {
+    if (refresh) {
+      logMsg("🔄 Refreshing search...");
+      page = 1;
+      hasMore = true;
+      inventories.clear();
+    }
 
-  if (isLoadMore || !hasMore) return;
+    if (isLoadMore || !hasMore) return;
 
-  page == 1 ? isLoading = true : isLoadMore = true;
-  update();
+    page == 1 ? isLoading = true : isLoadMore = true;
+    update();
 
-  if (search != null) {
-    searchQuery = search;
-  }
+    if (search != null) {
+      searchQuery = search;
+    }
 
-  if (searchQuery.isEmpty) {
+    if (searchQuery.isEmpty) {
+      isLoading = false;
+      isLoadMore = false;
+      update();
+      return;
+    }
+
+    final queryParams = {
+      "search": searchQuery,
+      "page": "$page",
+      "limit": "$limit",
+    };
+
+    if (selectedFilter == "Low Stock") {
+      queryParams["stockStatus"] = "LOW_STOCK";
+    } else if (selectedFilter == "Out of Stock") {
+      queryParams["stockStatus"] = "OUT_OF_STOCK";
+    }
+
+    final uri = Uri.parse(
+      "$baseUrl/inventory",
+    ).replace(queryParameters: queryParams);
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        List data = decoded is List ? decoded : (decoded['data'] ?? []);
+
+        if (data.isEmpty) {
+          hasMore = false;
+        } else {
+          final newItems = data
+              .map((e) => InventoryModel.fromSearchJson(e))
+              .toList();
+
+          inventories.addAll(
+            newItems.where((item) => !inventories.any((i) => i.id == item.id)),
+          );
+
+          if (data.length < limit) {
+            hasMore = false;
+          }
+
+          page++;
+        }
+      } else {}
+    } catch (e) {}
+
     isLoading = false;
     isLoadMore = false;
     update();
-    return;
   }
-
-  final queryParams = {
-    "search": searchQuery,
-    "page": "$page",
-    "limit": "$limit",
-  };
-
-  /// 🔥 OPTIONAL FILTER SUPPORT
-  if (selectedFilter == "Low Stock") {
-    queryParams["stockStatus"] = "LOW_STOCK";
-  } else if (selectedFilter == "Out of Stock") {
-    queryParams["stockStatus"] = "OUT_OF_STOCK";
-  }
-
-  final uri = Uri.parse("$baseUrl/products/variants")
-      .replace(queryParameters: queryParams);
-
-  final response = await http.get(
-    uri,
-    headers: {
-      "Authorization": "Bearer $accessToken",
-      "Content-Type": "application/json",
-    },
-  );
-
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-
-    List data = decoded is List
-        ? decoded
-        : (decoded['data'] ?? []);
-
-    if (data.isEmpty) {
-      hasMore = false;
-    } else {
-      inventories.addAll(
-        data.map((e) => InventoryModel.fromSearchJson(e)).toList(),
-      );
-      page++;
-    }
-  }
-
-  isLoading = false;
-  isLoadMore = false;
-  update();
-}
 
   /// ================= ANALYTICS =================
   Future<void> getInventoryAnalytics() async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/inventory/analytics"),
-      headers: {
-        "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      analytics = InventoryAnalyticsModel.fromJson(
-        jsonDecode(response.body),
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/inventory/analytics"),
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
       );
-    }
+
+      if (response.statusCode == 200) {
+        analytics = InventoryAnalyticsModel.fromJson(jsonDecode(response.body));
+      } else {}
+    } catch (e) {}
 
     update();
   }

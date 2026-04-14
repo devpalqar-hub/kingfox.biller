@@ -46,30 +46,49 @@ class VoucherSelectionCard extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: DropdownButton<int>(
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        hint: Text(
-                          "Select Voucher",
-                          style: TextStyle(fontSize: 12.sp),
-                        ),
-                        value: controller.selectedCampaign?.id,
-                        items: controller.campaigns.map((campaign) {
-                          return DropdownMenuItem<int>(
-                            value: campaign.id,
-                            child: Text(
-                              campaign.name,
-                              style: TextStyle(fontSize: 12.sp),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value == null) return;
-                          final selected = controller.campaigns
-                              .firstWhere((c) => c.id == value);
-                          controller.selectCampaign(selected);
-                        },
-                      ),
+  isExpanded: true,
+  underline: const SizedBox(),
+  hint: Text(
+    "Select Voucher",
+    style: TextStyle(fontSize: 12.sp),
+  ),
+  value: controller.selectedCampaign?.id,
+
+  /// ✅ ADD THIS FIRST ITEM (CLEAR OPTION)
+  items: [
+    const DropdownMenuItem<int>(
+      value: null,
+      child: Text("None"),
+    ),
+
+    /// 🔥 EXISTING ITEMS
+    ...controller.campaigns.map((campaign) {
+      return DropdownMenuItem<int>(
+        value: campaign.id,
+        child: Text(
+          campaign.name,
+          style: TextStyle(fontSize: 12.sp),
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }).toList(),
+  ],
+
+  onChanged: (value) {
+    /// ✅ HANDLE CLEAR
+    if (value == null) {
+      controller.selectedCampaign = null;
+      controller.voucherCountController.text = "1";
+      controller.update();
+      return;
+    }
+
+    /// ✅ NORMAL SELECTION
+    final selected =
+        controller.campaigns.firstWhere((c) => c.id == value);
+    controller.selectCampaign(selected);
+  },
+),
                     ),
                   ),
 
@@ -218,7 +237,7 @@ class VoucherSelectionCard extends StatelessWidget {
                         controller.update();
                         return;
                       }
-
+                         
                       await controller.getCart(
                         couponCode: coupon,
                       );

@@ -50,8 +50,20 @@ TextEditingController internalNoteController = TextEditingController();
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: Row(
                         children: [
-                          Icon(Icons.arrow_back,
-                              size: 20.sp, color: Colors.white),
+                        InkWell(
+  onTap: () {
+    Navigator.of(context).pop();
+  },
+  borderRadius: BorderRadius.circular(20.r),
+  child: Padding(
+    padding: EdgeInsets.all(4.w),
+    child: Icon(
+      Icons.arrow_back,
+      size: 20.sp,
+      color: Colors.white,
+    ),
+  ),
+),
                           SizedBox(width: 10.w),
                           Text(
                             "Process Item Return",

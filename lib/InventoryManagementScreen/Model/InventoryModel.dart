@@ -3,6 +3,16 @@ import 'dart:convert';
 InventoryList inventoryListFromJson(String str) =>
     InventoryList.fromJson(json.decode(str));
 
+/// ================= SAFE HELPERS =================
+String? safeString(dynamic v) => v?.toString();
+
+int? safeInt(dynamic v) =>
+    v == null ? null : int.tryParse(v.toString());
+
+double? safeDouble(dynamic v) =>
+    v == null ? null : double.tryParse(v.toString());
+
+/// ================= INVENTORY LIST =================
 class InventoryList {
   List<InventoryModel> inventories;
 
@@ -14,6 +24,7 @@ class InventoryList {
       );
 }
 
+/// ================= INVENTORY MODEL =================
 class InventoryModel {
   int? id;
   int? variantId;
@@ -33,47 +44,46 @@ class InventoryModel {
     this.variant,
   });
 
-  /// ================= NORMAL API =================
-  factory InventoryModel.fromJson(Map<String, dynamic> json) =>
-      InventoryModel(
-        id: json['id'],
-        variantId: json['variantId'],
-        branchId: json['branchId'],
-        stockQuantity: json['stockQuantity'],
-        updatedAt: json['updatedAt'],
-        branch: json['branch'] != null
-            ? Branch.fromJson(json['branch'])
-            : null,
-        variant: json['variant'] != null
-            ? Variant.fromJson(json['variant'])
-            : null,
-      );
+  /// 🔥 NORMAL API
+  factory InventoryModel.fromJson(Map<String, dynamic> json) {
+    return InventoryModel(
+      id: safeInt(json['id']),
+      variantId: safeInt(json['variantId']),
+      branchId: safeInt(json['branchId']),
+      stockQuantity: safeInt(json['stockQuantity']),
+      updatedAt: safeString(json['updatedAt']),
+      branch:
+          json['branch'] != null ? Branch.fromJson(json['branch']) : null,
+      variant:
+          json['variant'] != null ? Variant.fromJson(json['variant']) : null,
+    );
+  }
 
-  /// ================= SEARCH API FIX =================
+  /// 🔥 SEARCH API (FLAT → NESTED)
   factory InventoryModel.fromSearchJson(Map<String, dynamic> json) {
     return InventoryModel(
-      id: json['id'],
-      variantId: json['variantId'],
+      id: safeInt(json['id']),
+      variantId: safeInt(json['variantId']),
       branchId: null,
 
-      /// sometimes search API may not return stock
-      stockQuantity: json['stockQuantity'] ?? 0,
-      updatedAt: json['createdAt'],
+      stockQuantity: safeInt(json['stockQuantity']) ?? 0,
+      updatedAt: safeString(json['createdAt']),
 
-      /// ❌ branch not available in search API
       branch: null,
 
-      /// 🔥 convert flat data → Variant
       variant: Variant(
-        id: json['id'],
-        productId: json['product']?['id'],
-        size: json['size'],
-        color: json['color'],
-        sku: json['sku'],
-        barcode: json['barcode'],
-        costPrice: json['costPrice'],
-        sellingPrice: json['sellingPrice'],
-        createdAt: json['createdAt'],
+        id: safeInt(json['id']),
+        productId: safeInt(json['product']?['id']),
+
+        size: safeString(json['size']),
+        color: safeString(json['color']),
+        sku: safeString(json['sku']),
+        barcode: safeString(json['barcode']),
+
+        costPrice: safeString(json['costPrice']),
+        sellingPrice: safeString(json['sellingPrice']),
+
+        createdAt: safeString(json['createdAt']),
 
         product: json['product'] != null
             ? Product.fromJson(json['product'])
@@ -83,6 +93,7 @@ class InventoryModel {
   }
 }
 
+/// ================= BRANCH =================
 class Branch {
   int? id;
   String? name;
@@ -101,15 +112,16 @@ class Branch {
   });
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
-        id: json['id'],
-        name: json['name'],
-        phone: json['phone'],
-        address: json['address'],
-        type: json['type'],
-        createdAt: json['createdAt'],
+        id: safeInt(json['id']),
+        name: safeString(json['name']),
+        phone: safeString(json['phone']),
+        address: safeString(json['address']),
+        type: safeString(json['type']),
+        createdAt: safeString(json['createdAt']),
       );
 }
 
+/// ================= VARIANT =================
 class Variant {
   int? id;
   int? productId;
@@ -136,21 +148,22 @@ class Variant {
   });
 
   factory Variant.fromJson(Map<String, dynamic> json) => Variant(
-        id: json['id'],
-        productId: json['productId'],
-        size: json['size'],
-        color: json['color'],
-        sku: json['sku'],
-        barcode: json['barcode'],
-        costPrice: json['costPrice'],
-        sellingPrice: json['sellingPrice'],
-        createdAt: json['createdAt'],
+        id: safeInt(json['id']),
+        productId: safeInt(json['productId']),
+        size: safeString(json['size']),
+        color: safeString(json['color']),
+        sku: safeString(json['sku']),
+        barcode: safeString(json['barcode']),
+        costPrice: safeString(json['costPrice']),
+        sellingPrice: safeString(json['sellingPrice']),
+        createdAt: safeString(json['createdAt']),
         product: json['product'] != null
             ? Product.fromJson(json['product'])
             : null,
       );
 }
 
+/// ================= PRODUCT =================
 class Product {
   int? id;
   String? name;
@@ -169,11 +182,11 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['id'],
-        name: json['name'],
-        description: json['description'],
-        brandId: json['brandId'],
-        categoryId: json['categoryId'],
-        createdAt: json['createdAt'],
+        id: safeInt(json['id']),
+        name: safeString(json['name']),
+        description: safeString(json['description']),
+        brandId: safeInt(json['brandId']),
+        categoryId: safeInt(json['categoryId']),
+        createdAt: safeString(json['createdAt']),
       );
 }

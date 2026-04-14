@@ -62,7 +62,7 @@ class AuthController extends GetxController {
     
       final prefs = await SharedPreferences.getInstance();
 
-      /// ✅ STORE EVERYTHING
+      
       await prefs.setString("accessToken", accessToken!);
       await prefs.setString("userId", userId);
       await prefs.setString("userName", userName);
@@ -79,8 +79,7 @@ class AuthController extends GetxController {
           errorMessage = data["message"].toString();
         }
       }
-
-      Get.snackbar("Error", errorMessage);
+ Get.snackbar("Error", errorMessage);
     }
 
     isLoading = false;
@@ -127,10 +126,7 @@ class AuthController extends GetxController {
     if (statusCode == 401) {
       logout();
 
-      Get.snackbar(
-        "Session Expired",
-        "Please login again",
-      );
+     
     }
   }
 }

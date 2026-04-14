@@ -47,9 +47,7 @@ class _BillSummaryCardState extends State<BillSummaryCard> {
               coupon: cart?.couponDiscountAmount ?? 0,
               appliedReturnDiscount: cart?.appliedReturnDiscount ?? 0,
               refundAmount: cart?.refundAmount ?? 0,
-              grandTotal: (cart?.couponDiscountAmount ?? 0) > 0
-                  ? cart!.finalAmountAfterCoupon
-                  : cart?.finalAmount ?? 0,
+            grandTotal: cart?.grandFinalTotal ?? 0,
 
               onPrint: () async {
                 if (cart == null) {
