@@ -61,6 +61,7 @@ Widget build(BuildContext context) {
                             width: 180.w,
                             child: _filterBox(
                               child: DropdownButton<String>(
+                                dropdownColor: Colors.whiteg,
                                 value: controller.selectedStatus,
                                 isExpanded: true,
                                 hint: Text(

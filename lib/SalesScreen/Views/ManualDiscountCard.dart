@@ -21,7 +21,7 @@ class ManualDiscountCard extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Title
+             
               Row(
                 children: [
                   Icon(Icons.discount, size: 20.sp),
@@ -38,7 +38,7 @@ class ManualDiscountCard extends StatelessWidget {
 
               SizedBox(height: 10.h),
 
-              /// 🔥 STAFF DROPDOWN (attendedByStaffId)
+             
 Container(
   height: 40.h,
   padding: EdgeInsets.symmetric(horizontal: 14.w),
@@ -47,17 +47,18 @@ Container(
     border: Border.all(color: Colors.grey.shade300),
   ),
   child: DropdownButton<int>(
+    dropdownColor: Colors.white,
     isExpanded: true,
     underline: const SizedBox(),
     hint: Text(
       "Select Staff",
-      style: TextStyle(fontSize: 12.sp),
+      style: TextStyle(fontSize: 12.sp,color: Colors.black),
     ),
 
-    /// ✅ SELECTED VALUE
+    
     value: controller.selectedStaff?.id,
 
-    /// ✅ STAFF LIST
+    
     items: controller.staffList.map((staff) {
       return DropdownMenuItem<int>(
         value: staff.id,
@@ -68,7 +69,6 @@ Container(
       );
     }).toList(),
 
-    /// ✅ ON CHANGE
     onChanged: (value) {
       if (value == null) return;
 
@@ -83,13 +83,13 @@ Container(
 
               SizedBox(height: 12.h),
 
-              /// 🔥 DISCOUNT INPUT
+             
               Row(
                 children: [
                 Expanded(
   child: Container(
     height: 42.h,
-    alignment: Alignment.center, // ✅ ensures vertical center
+    alignment: Alignment.center, 
     padding: EdgeInsets.symmetric(horizontal: 12.w),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(14.r),
@@ -98,7 +98,7 @@ Container(
     child: TextField(
       controller: controller.discountController,
       keyboardType: TextInputType.number,
-      textAlignVertical: TextAlignVertical.center, // ✅ center text
+      textAlignVertical: TextAlignVertical.center, 
       style: TextStyle(
         fontSize: 13.sp,
         fontWeight: FontWeight.w500,
@@ -108,7 +108,7 @@ Container(
         hintText: "Enter Discount Amount",
         hintStyle: TextStyle(
           fontSize: 12.sp,
-          color: Colors.grey.shade500,
+          color: Colors.black,
         ),
         border: InputBorder.none,
         contentPadding: EdgeInsets.zero, 
@@ -119,7 +119,7 @@ Container(
 
                   SizedBox(width: 10.w),
 
-                  /// 🔥 APPLY BUTTON (NO API CALL)
+                
                   GestureDetector(
                     onTap: () async {
                       if (controller.cart == null ||
@@ -129,21 +129,19 @@ Container(
 
                       final input = controller.discountController.text.trim();
 
-                      /// ❌ EMPTY CHECK
+                     
                       if (input.isEmpty) {
-                        Get.snackbar("Error", "Enter discount amount");
+                       
                         return;
                       }
 
                       final discount = int.tryParse(input);
 
-                      /// ❌ INVALID NUMBER
+                      
                       if (discount == null || discount <= 0) {
-                        Get.snackbar("Error", "Invalid discount amount");
-                        return;
+                     return;
                       }
 
-                      /// ✅ CALL API WITH DISCOUNT
                       await controller.getCart(
                         manualDiscountAmount: discount.toDouble(),
                       );
@@ -154,7 +152,7 @@ Container(
                       width: 100.w,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xff6CCF4F),
+                        color:  Color(0xff6CCF4F),
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                       child: Text(
@@ -170,7 +168,7 @@ Container(
                 ],
               ),
 
-              /// 🔥 SHOW APPLIED VALUE (optional but useful)
+       
             ],
           );
         },

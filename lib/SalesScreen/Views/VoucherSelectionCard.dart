@@ -24,10 +24,7 @@ class VoucherSelectionCard extends StatelessWidget {
               /// TITLE
               Text(
                 "Voucher Selection",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
               ),
 
               SizedBox(height: 12.h),
@@ -46,65 +43,65 @@ class VoucherSelectionCard extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: DropdownButton<int>(
-  isExpanded: true,
-  underline: const SizedBox(),
-  hint: Text(
-    "Select Voucher",
-    style: TextStyle(fontSize: 12.sp),
-  ),
-  value: controller.selectedCampaign?.id,
+                        dropdownColor: Colors.white,
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        hint: Text(
+                          "Select Voucher",
+                          style: TextStyle(fontSize: 12.sp),
+                        ),
+                        value: controller.selectedCampaign?.id,
 
-  /// ✅ ADD THIS FIRST ITEM (CLEAR OPTION)
-  items: [
-    const DropdownMenuItem<int>(
-      value: null,
-      child: Text("None"),
-    ),
+                        items: [
+                           DropdownMenuItem<int>(
+                            value: null,
+                            child: Text("None",style: TextStyle(fontSize: 12.sp ),),
+                          ),
 
-    /// 🔥 EXISTING ITEMS
-    ...controller.campaigns.map((campaign) {
-      return DropdownMenuItem<int>(
-        value: campaign.id,
-        child: Text(
-          campaign.name,
-          style: TextStyle(fontSize: 12.sp),
-          overflow: TextOverflow.ellipsis,
-        ),
-      );
-    }).toList(),
-  ],
+                         
+                          ...controller.campaigns.map((campaign) {
+                            return DropdownMenuItem<int>(
+                              value: campaign.id,
+                              child: Text(
+                                campaign.name,
+                                style: TextStyle(fontSize: 12.sp),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                        ],
 
-  onChanged: (value) {
-    /// ✅ HANDLE CLEAR
-    if (value == null) {
-      controller.selectedCampaign = null;
-      controller.voucherCountController.text = "1";
-      controller.update();
-      return;
-    }
+                        onChanged: (value) {
+                          if (value == null) {
+                            controller.selectedCampaign = null;
+                            controller.voucherCountController.text = "1";
+                            controller.update();
+                            return;
+                          }
 
-    /// ✅ NORMAL SELECTION
-    final selected =
-        controller.campaigns.firstWhere((c) => c.id == value);
-    controller.selectCampaign(selected);
-  },
-),
+                          final selected = controller.campaigns.firstWhere(
+                            (c) => c.id == value,
+                          );
+                          controller.selectCampaign(selected);
+                        },
+                      ),
                     ),
                   ),
 
                   SizedBox(width: 8.w),
 
-                  /// ➖ MINUS
                   GestureDetector(
                     onTap: () {
-                      int current = int.tryParse(
-                              controller.voucherCountController.text) ??
+                      int current =
+                          int.tryParse(
+                            controller.voucherCountController.text,
+                          ) ??
                           1;
 
                       if (current > 1) {
                         current--;
-                        controller.voucherCountController.text =
-                            current.toString();
+                        controller.voucherCountController.text = current
+                            .toString();
                         controller.update();
                       }
                     },
@@ -179,10 +176,10 @@ class VoucherSelectionCard extends StatelessWidget {
 
               SizedBox(height: 14.h),
 
-              /// 🔥 COUPON SECTION
+            
               Row(
                 children: [
-                  /// INPUT
+              
                   Expanded(
                     child: Container(
                       height: 42.h,
@@ -209,8 +206,8 @@ class VoucherSelectionCard extends StatelessWidget {
                               decoration: InputDecoration(
                                 isDense: true,
                                 hintText: "Coupon Code",
-                                hintStyle:
-                                    TextStyle(fontSize: 12.sp),
+                                hintStyle: TextStyle(fontSize: 12.sp,color: Colors.black),
+                              
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
                               ),
@@ -223,24 +220,22 @@ class VoucherSelectionCard extends StatelessWidget {
 
                   SizedBox(width: 8.w),
 
-                  /// APPLY BUTTON
+                 
                   GestureDetector(
                     onTap: () async {
-                      final coupon =
-                          controller.couponController.text.trim();
+                      final coupon = controller.couponController.text.trim();
 
                       if (controller.cart == null ||
-                          controller.cart!.items.isEmpty) return;
+                          controller.cart!.items.isEmpty)
+                        return;
 
                       if (coupon.isEmpty) {
                         controller.couponError = "Enter coupon code";
                         controller.update();
                         return;
                       }
-                         
-                      await controller.getCart(
-                        couponCode: coupon,
-                      );
+
+                      await controller.getCart(couponCode: coupon);
                     },
                     child: Container(
                       height: 42.h,
@@ -263,7 +258,7 @@ class VoucherSelectionCard extends StatelessWidget {
                 ],
               ),
 
-              /// COUPON ERROR
+              
               if (controller.couponError?.isNotEmpty == true)
                 Padding(
                   padding: EdgeInsets.only(top: 6.h, left: 4.w),

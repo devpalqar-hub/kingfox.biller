@@ -10,28 +10,28 @@ import 'package:flutter_thermal_printer/utils/printer.dart';
 
 
 class PrinterController extends GetxController {
-  // ── Plugin instance ───────────────────────────────────────────────────────
+
   final _plugin = FlutterThermalPrinter.instance;
 
-  // ── Observable state ──────────────────────────────────────────────────────
+  
   List<Printer> availableDevices = [];
   Printer? selectedPrinter;
   bool isScanning = false;
   bool isPrinting = false;
-  bool mockMode = false; // ← Toggle for receipt preview without hardware
+  bool mockMode = false; 
   String? savedDeviceAddress;
   String? savedDeviceName;
   ConnectionType savedConnectionType = ConnectionType.BLE;
 
   StreamSubscription<List<Printer>>? _scanSub;
 
-  // ── SharedPreferences keys ────────────────────────────────────────────────
+  
   static const _kAddress = 'tp_address';
   static const _kName = 'tp_name';
   static const _kConnType = 'tp_conn_type';
   static const _kMock = 'tp_mock_mode';
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  
   @override
   void onInit() {
     super.onInit();
@@ -47,7 +47,7 @@ class PrinterController extends GetxController {
     super.onClose();
   }
 
-  // ── Mock mode ─────────────────────────────────────────────────────────────
+  
   Future<void> toggleMockMode() async {
     mockMode = !mockMode;
     final p = await SharedPreferences.getInstance();
@@ -56,7 +56,7 @@ class PrinterController extends GetxController {
     _snack(mockMode ? "Mock printer enabled" : "Mock printer disabled");
   }
 
-  // ── Persistence ───────────────────────────────────────────────────────────
+
   Future<void> _loadSaved() async {
     final p = await SharedPreferences.getInstance();
     savedDeviceAddress = p.getString(_kAddress);
