@@ -7,27 +7,28 @@ import 'package:kinfox_biller/InventoryManagementScreen/InventoryManagementScree
 import 'package:kinfox_biller/OnlineScreen/OnlineOrderScreen.dart';
 import 'package:kinfox_biller/OverViewScreen/OverViewScreen.dart';
 import 'package:kinfox_biller/SalesScreen/SalesScreen.dart';
+import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart';
 
 class Dashboardscreen extends StatelessWidget {
   Dashboardscreen({super.key});
 
-  final DashboardController controller = Get.put(DashboardController(), permanent: true);
-
+  final DashboardController controller = Get.put(
+    DashboardController(),
+    permanent: true,
+  );
+  final PrinterController pctrl = Get.put(PrinterController());
   final pages = [
     SalesScreen(),
     const OverviewScreen(),
     const InventoryManagementScreen(),
-     const OnlineOrderScreen(),
+    const OnlineOrderScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-
- 
     return Scaffold(
       body: Column(
         children: [
-
           const Header(),
 
           Expanded(

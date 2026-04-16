@@ -3,18 +3,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_thermal_printer/utils/printer.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/DashBoard/Service/DashBoardController.dart';
-import 'package:kinfox_biller/DashBoard/Service/PrinterController.dart';
-import 'package:kinfox_biller/DashBoard/Views/Printers/PrinterSettingsDialog.dart';
 import 'package:kinfox_biller/LoginScreen/Service/AuthController.dart';
-
+import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart';
+import 'package:kinfox_biller/SalesScreen/Views/PrinterSettingView.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
 
   @override
   Widget build(BuildContext context) {
-final AuthController authController = Get.find<AuthController>();
-final PrinterController printer = Get.put(PrinterController());
+    final AuthController authController = Get.find<AuthController>();
+    final PrinterController printer = Get.find();
 
     return GetBuilder<DashboardController>(
       builder: (controller) {
@@ -24,18 +23,11 @@ final PrinterController printer = Get.put(PrinterController());
           color: Colors.white,
           child: Row(
             children: [
-              Image.asset(
-                  "assets/logo.png", 
-                  height: 30.h,
-                  fit: BoxFit.contain,
-                ),
+              Image.asset("assets/logo.png", height: 30.h, fit: BoxFit.contain),
               SizedBox(width: 20.w),
               Text(
                 "KingFox",
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
               ),
 
               SizedBox(width: 40.w),
@@ -43,104 +35,98 @@ final PrinterController printer = Get.put(PrinterController());
               _tab(controller, "Sales", 0),
               _tab(controller, "Overview & History", 1),
               _tab(controller, "Inventory", 2),
-               _tab(controller, "Online", 3),
-            
+              _tab(controller, "Online", 3),
 
-                  const Spacer(),
+              const Spacer(),
 
+              Row(
+                children: [
+                  _PrinterPill(ctrl: printer),
+                  SizedBox(width: 30.w),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 8.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xffEEF2EE),
+                      borderRadius: BorderRadius.circular(24.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, size: 18.sp, color: Colors.black),
+                        SizedBox(width: 8.w),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              authController.userName,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
 
-Row(
-  children: [
-    _PrinterPill(ctrl: printer),
-    SizedBox(width: 30.w,),
-    Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 10.w,
-        vertical: 8.h,
-      ),
-      decoration: BoxDecoration(
-        color: Color(0xffEEF2EE),
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Row(
-        children: [
-             Icon(
-              Icons.person,
-              size: 18.sp,
-              color: Colors.black,
-            ),
-          SizedBox(width: 8.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                authController.userName,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              
-            ],
-          ),
-
-             
-        ],
-      ),
-    ),
-
-    SizedBox(width: 12.w), 
+                  SizedBox(width: 12.w),
                   PopupMenuButton<String>(
-  onSelected: (value) async {
-    if (value == "logout") {
-      // Show confirmation dialog
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Logout"),
-            content: const Text("Are you sure you want to logout?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text("Cancel"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  "Logout",
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          );
-        },
-      );
+                    onSelected: (value) async {
+                      if (value == "logout") {
+                        // Show confirmation dialog
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Logout"),
+                              content: const Text(
+                                "Are you sure you want to logout?",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text(
+                                    "Logout",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-      if (confirm == true) {
-        controller.resetTab();
-        await authController.logout();
-      }
-    }
-  },
-  itemBuilder: (context) => [
-    PopupMenuItem(
-      value: "logout",
-      child: Row(
-        children: [
-          Icon(Icons.logout, size: 18.sp, color: Colors.red),
-          SizedBox(width: 8.w),
-          const Text("Logout"),
-        ],
-      ),
-    ),
-  ],
-  child:Icon(Icons.exit_to_app)
-),
-  ],
-),
-              
+                        if (confirm == true) {
+                          controller.resetTab();
+                          await authController.logout();
+                        }
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: "logout",
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 18.sp, color: Colors.red),
+                            SizedBox(width: 8.w),
+                            const Text("Logout"),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Icon(Icons.exit_to_app),
+                  ),
+                ],
+              ),
             ],
           ),
         );
@@ -148,11 +134,7 @@ Row(
     );
   }
 
-  Widget _tab(
-      DashboardController controller,
-      String title,
-      int index,
-      ) {
+  Widget _tab(DashboardController controller, String title, int index) {
     final selected = controller.currentTab == index;
 
     return GestureDetector(
@@ -163,10 +145,7 @@ Row(
         decoration: selected
             ? const BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: Colors.black,
-                    width: 2,
-                  ),
+                  bottom: BorderSide(color: Colors.black, width: 2),
                 ),
               )
             : null,
@@ -174,10 +153,8 @@ Row(
           title,
           style: TextStyle(
             fontSize: 15.sp,
-            fontWeight:
-                selected ? FontWeight.w600 : FontWeight.w400,
-            color:
-                selected ? Colors.black : Color(0XFF64748B),
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected ? Colors.black : Color(0XFF64748B),
           ),
         ),
       ),

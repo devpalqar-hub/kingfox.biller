@@ -1,0 +1,194 @@
+class CheckoutData {
+  final int? cartId;
+  final double? gstPercent;
+  final int? returnInvoiceId;
+  final double? returnCredit;
+  final double? appliedReturnDiscount;
+  final double? refundAmount;
+  final List<ReturnItem> returnItems;
+  final List<CartItem> items;
+  final double? subtotal;
+  final double? discountedSubtotal;
+  final double? gstAmount;
+  final double? finalAmount;
+  final double? grandFinalTotal;
+  final String? invoiceNumber;
+  final List<Payment> payments;
+  final Customer? customer;
+  final List<String> issuedVoucherCodes;
+  final List<Voucher> availableVouchers;
+
+  const CheckoutData({
+    this.cartId,
+    this.gstPercent,
+    this.returnInvoiceId,
+    this.returnCredit,
+    this.appliedReturnDiscount,
+    this.refundAmount,
+    this.returnItems = const [],
+    this.items = const [],
+    this.subtotal,
+    this.discountedSubtotal,
+    this.gstAmount,
+    this.finalAmount,
+    this.grandFinalTotal,
+    this.invoiceNumber,
+    this.payments = const [],
+    this.customer,
+    this.issuedVoucherCodes = const [],
+    this.availableVouchers = const [],
+  });
+
+  factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
+    cartId: j['cartId'],
+    gstPercent: (j['gstPercent'] as num?)?.toDouble(),
+    returnInvoiceId: j['returnInvoiceId'],
+    returnCredit: (j['returnCredit'] as num?)?.toDouble(),
+    appliedReturnDiscount: (j['appliedReturnDiscount'] as num?)?.toDouble(),
+    refundAmount: (j['refundAmount'] as num?)?.toDouble(),
+    returnItems: (j['returnItems'] as List? ?? [])
+        .map((e) => ReturnItem.fromJson(e))
+        .toList(),
+    items: (j['items'] as List? ?? [])
+        .map((e) => CartItem.fromJson(e))
+        .toList(),
+    subtotal: (j['subtotal'] as num?)?.toDouble(),
+    discountedSubtotal: (j['discountedSubtotal'] as num?)?.toDouble(),
+    gstAmount: (j['gstAmount'] as num?)?.toDouble(),
+    finalAmount: (j['finalAmount'] as num?)?.toDouble(),
+    grandFinalTotal: (j['grandFinalTotal'] as num?)?.toDouble(),
+    invoiceNumber: j['invoiceNumber'],
+    payments: (j['payments'] as List? ?? [])
+        .map((e) => Payment.fromJson(e))
+        .toList(),
+    customer: j['customer'] != null ? Customer.fromJson(j['customer']) : null,
+    issuedVoucherCodes: List<String>.from(j['issuedVoucherCodes'] ?? []),
+    availableVouchers: (j['availableVouchers'] as List? ?? [])
+        .map((e) => Voucher.fromJson(e))
+        .toList(),
+  );
+}
+
+class ReturnItem {
+  final int? quantity;
+  final int? variantId;
+  final double? creditPerUnit;
+  final String? productName;
+  final String? size;
+  final String? color;
+
+  const ReturnItem({
+    this.quantity,
+    this.variantId,
+    this.creditPerUnit,
+    this.productName,
+    this.size,
+    this.color,
+  });
+
+  factory ReturnItem.fromJson(Map<String, dynamic> j) => ReturnItem(
+    quantity: j['quantity'],
+    variantId: j['variantId'],
+    creditPerUnit: (j['creditPerUnit'] as num?)?.toDouble(),
+    productName: j['productName'],
+    size: j['size'],
+    color: j['color'],
+  );
+}
+
+class CartItem {
+  final int? variantId;
+  final String? sku;
+  final String? barcode;
+  final String? size;
+  final String? color;
+  final double? sellingPrice;
+  final String? productName;
+  final String? category;
+  final double? price;
+  final int? quantity;
+  final double? lineTotal;
+
+  const CartItem({
+    this.variantId,
+    this.sku,
+    this.barcode,
+    this.size,
+    this.color,
+    this.sellingPrice,
+    this.productName,
+    this.category,
+    this.price,
+    this.quantity,
+    this.lineTotal,
+  });
+
+  factory CartItem.fromJson(Map<String, dynamic> j) => CartItem(
+    variantId: j['variantId'],
+    sku: j['sku'],
+    barcode: j['barcode'],
+    size: j['size'],
+    color: j['color'],
+    sellingPrice: (j['sellingPrice'] as num?)?.toDouble(),
+    productName: j['productName'],
+    category: j['category'],
+    price: (j['price'] as num?)?.toDouble(),
+    quantity: j['quantity'],
+    lineTotal: (j['lineTotal'] as num?)?.toDouble(),
+  );
+}
+
+class Payment {
+  final int? id;
+  final String? paymentMethod;
+  final double? amount;
+  final String? paidAt;
+
+  const Payment({this.id, this.paymentMethod, this.amount, this.paidAt});
+
+  factory Payment.fromJson(Map<String, dynamic> j) => Payment(
+    id: j['id'],
+    paymentMethod: j['paymentMethod'],
+    amount: double.tryParse(j['amount']?.toString() ?? ''),
+    paidAt: j['paidAt'],
+  );
+}
+
+class Customer {
+  final int? id;
+  final String? name;
+  final String? phone;
+  final String? email;
+  final String? address;
+
+  const Customer({this.id, this.name, this.phone, this.email, this.address});
+
+  factory Customer.fromJson(Map<String, dynamic> j) => Customer(
+    id: j['id'],
+    name: j['name'],
+    phone: j['phone'],
+    email: j['email'],
+    address: j['address'],
+  );
+}
+
+class Voucher {
+  final String? voucherCode;
+  final String? campaignName;
+  final String? campaignDescription;
+  final String? campaignEndDate;
+
+  const Voucher({
+    this.voucherCode,
+    this.campaignName,
+    this.campaignDescription,
+    this.campaignEndDate,
+  });
+
+  factory Voucher.fromJson(Map<String, dynamic> j) => Voucher(
+    voucherCode: j['voucherCode'],
+    campaignName: j['campaignName'],
+    campaignDescription: j['campaignDescription'],
+    campaignEndDate: j['campaignEndDate'],
+  );
+}
