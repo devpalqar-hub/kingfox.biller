@@ -3,6 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
 
+class _RowModel {
+  String? productName;
+  double? price;
+  double? lineTotal;
+  int? qty;
+  String? sku;
+  int? varientId;
+  bool? isReturn;
+  String? size;
+  String? color;
+
+  _RowModel({
+    this.productName,
+    this.isReturn,
+    this.price,
+    this.qty,
+    this.sku,
+    this.varientId,
+    this.lineTotal,
+    this.color,
+    this.size,
+  });
+}
+
 class CartTableWidget extends StatelessWidget {
   final CartModel cart;
   final Function(int variantId) onIncrease;
@@ -19,171 +43,211 @@ class CartTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> rows = [...cart.items, ...cart.returnItems];
+    final List<_RowModel> rows = [];
+    for (var data in cart.items) {
+      rows.add(
+        _RowModel(
+          productName: data.productName,
+          qty: data.quantity,
+          price: data.price,
+          isReturn: false,
+          sku: data.sku,
+          varientId: data.variantId,
+          color: data.color,
+          size: data.size,
+          lineTotal: data.lineTotal,
+        ),
+      );
+    }
 
+    for (var data in cart.returnItems) {
+      rows.add(
+        _RowModel(
+          productName: data.productName,
+          qty: data.quantity,
+          price: data.creditPerUnit,
+          isReturn: true,
+          sku: data.sku,
+          varientId: data.variantId,
+          lineTotal: data.creditPerUnit * data.quantity,
+        ),
+      );
+    }
     return Container(
-      height: 500.h,
-      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
           Expanded(
             child: DataTable2(
-              columnSpacing: 20,
-              horizontalMargin: 16,
-              minWidth: 900,
-              headingRowHeight: 45.h,
-              dataRowHeight: 70.h,
-              headingRowColor: WidgetStateProperty.all(Colors.grey.shade100),
-
+              columnSpacing: 12,
+              horizontalMargin: 12,
+              minWidth: 700,
+              headingRowHeight: 36.h,
+              dataRowHeight: 56.h,
+              headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
               columns: [
                 DataColumn2(
                   size: ColumnSize.L,
-                  label: _headerText("ITEM DETAILS", TextAlign.left),
+                  label: _header('Item', TextAlign.left),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: _headerText("PRICE", TextAlign.right),
+                  label: _header('Price', TextAlign.right),
                 ),
                 DataColumn2(
-                  size: ColumnSize.L,
-                  label: _headerText("QTY", TextAlign.center),
+                  size: ColumnSize.M,
+                  label: _header('Qty', TextAlign.center),
                 ),
                 DataColumn2(
                   size: ColumnSize.S,
                   numeric: true,
-                  label: _headerText("TOTAL", TextAlign.right),
+                  label: _header('Total', TextAlign.right),
                 ),
                 DataColumn2(
-                  size: ColumnSize.L,
-                  label: _headerText("ACTION", TextAlign.center),
+                  size: ColumnSize.S,
+                  label: _header('', TextAlign.center),
                 ),
               ],
-
-              rows: List.generate(rows.length, (index) {
-                final row = rows[index];
-                final bool isReturn = row is ReturnItemModel;
-
-                final String name =
-                    isReturn ? (row.productName ?? "Returned Item") : (row.productName ?? "");
-
-                final String sku = row.sku ?? "";
-
-                final double price =
-                    isReturn ? row.creditPerUnit : row.price;
-
-                final int qty = row.quantity;
-
-                final double total = isReturn
-                    ? row.creditPerUnit * row.quantity
-                    : row.lineTotal;
-
-                final int variantId = row.variantId;
+              rows: List.generate(rows.length, (i) {
+                final row = rows[i];
+                final name = row.productName ?? "";
+                final price = row.price;
+                final qty = row.qty ?? 0;
+                final total = (row.lineTotal ?? 0).toStringAsFixed(0);
+                final variantId = row.varientId ?? 0;
+                final isReturn = row.isReturn ?? false;
 
                 return DataRow(
                   color: WidgetStateProperty.resolveWith<Color?>(
-                    (states) => isReturn
-                        ? Colors.red.withOpacity(0.08)
-                        : Colors.transparent,
+                    (s) =>
+                        isReturn ? const Color(0xFFFFF1F2) : Colors.transparent,
                   ),
                   cells: [
-                    /// ITEM DETAILS
+                    // Item
                     DataCell(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: isReturn ? Colors.red : Colors.black,
-                            ),
+                          Row(
+                            children: [
+                              if (isReturn)
+                                Container(
+                                  margin: EdgeInsets.only(right: 6.w),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 5.w,
+                                    vertical: 1.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEE2E2),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    'RET',
+                                    style: TextStyle(
+                                      fontSize: 9.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFFDC2626),
+                                    ),
+                                  ),
+                                ),
+                              Flexible(
+                                child: Text(
+                                  name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: isReturn
+                                        ? const Color(0xFFDC2626)
+                                        : const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           if (!isReturn)
                             Text(
-                              "SKU: $sku",
+                              'SKU: ${row.sku ?? '—'}',
                               style: TextStyle(
-                                fontSize: 11.sp,
-                                color: Colors.grey,
+                                fontSize: 10.sp,
+                                color: const Color(0xFF94A3B8),
                               ),
                             ),
                         ],
                       ),
                     ),
-
-                    /// PRICE
+                    // Price
                     DataCell(
-                      SizedBox(
-                        width: double.infinity,
+                      Align(
+                        alignment: Alignment.centerRight,
                         child: Text(
-                          "${isReturn ? "-₹" : "₹"}${price.toStringAsFixed(2)}",
-                          textAlign: TextAlign.right,
-                          style: TextStyle(fontSize: 13.sp),
+                          '${isReturn ? '−₹' : '₹'}${price}',
+                          style: TextStyle(fontSize: 12.sp),
                         ),
                       ),
                     ),
-
-                    /// QTY
+                    // Qty
                     DataCell(
-                      SizedBox(
-                        width: double.infinity,
-                        child: isReturn
-                            ? Text(
-                                "$qty",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _qtyBtn("-", () => onDecrease(variantId)),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    "$qty",
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  _qtyBtn("+", () => onIncrease(variantId)),
-                                ],
+                      isReturn
+                          ? Center(
+                              child: Text(
+                                '$qty',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                      ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _qtyBtn('−', () => onDecrease(variantId)),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w,
+                                  ),
+                                  child: Text(
+                                    '$qty',
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                _qtyBtn('+', () => onIncrease(variantId)),
+                              ],
+                            ),
                     ),
-
-                    /// TOTAL
+                    // Total
                     DataCell(
-                      SizedBox(
-                        width: double.infinity,
+                      Align(
+                        alignment: Alignment.centerRight,
                         child: Text(
-                          "${isReturn ? "-₹" : "₹"}${total.toStringAsFixed(2)}",
-                          textAlign: TextAlign.right,
+                          '${isReturn ? '−₹' : '₹'}${total}',
                           style: TextStyle(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
-
-                    /// ACTION
+                    // Delete
                     DataCell(
-                      SizedBox(
-                        width: double.infinity,
-                        child: Center(
-                          child: IconButton(
-                            onPressed: () => onDelete(variantId, isReturn),
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
+                      Center(
+                        child: IconButton(
+                          iconSize: 16.sp,
+                          padding: EdgeInsets.zero,
+                          onPressed: () => onDelete(variantId, isReturn),
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            color: Color(0xFFEF4444),
                           ),
                         ),
                       ),
@@ -193,63 +257,60 @@ class CartTableWidget extends StatelessWidget {
               }),
             ),
           ),
-
-          Divider(),
-
-          _footer(rows.length),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: const Color(0xFFE2E8F0))),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  '${rows.length} item${rows.length == 1 ? '' : 's'}',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _headerText(String text, TextAlign align) {
+  Widget _header(String label, TextAlign align) {
     return SizedBox(
       width: double.infinity,
       child: Text(
-        text,
+        label.toUpperCase(),
         textAlign: align,
         style: TextStyle(
-          fontSize: 13.sp,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w600,
-          color: Colors.grey,
+          color: const Color(0xFF94A3B8),
+          letterSpacing: 0.6,
         ),
       ),
     );
   }
 
-  Widget _qtyBtn(String text, VoidCallback onTap) {
+  Widget _qtyBtn(String symbol, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 26.w,
-        height: 26.w,
+        width: 22.w,
+        height: 22.w,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(6.r),
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(4.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-          ),
+          symbol,
+          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700),
         ),
-      ),
-    );
-  }
-
-  Widget _footer(int count) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Items Count: $count",
-            style: TextStyle(fontSize: 13.sp, color: Colors.grey),
-          ),
-        ],
       ),
     );
   }

@@ -444,7 +444,9 @@ class PrinterController extends GetxController {
         styles: const PosStyles(align: PosAlign.center),
       );
       bytes += generator.barcode(
-        Barcode.code128(data.invoiceNumber!.codeUnits),
+        Barcode.code128(
+          data.invoiceNumber!.replaceAll("INV-", "").characters.toList(),
+        ),
         height: 64,
         textPos: BarcodeText.below,
       );
@@ -461,8 +463,7 @@ class PrinterController extends GetxController {
     );
     bytes += generator.feed(2);
     bytes += generator.cut();
-    print(bytes);
-    print(selectedPrinter);
+
     // ── Send ───────────────────────────────────────────────────────────────
     if (mockMode) {
       _showMockPreview(data, bytes);

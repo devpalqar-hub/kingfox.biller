@@ -62,7 +62,7 @@ class LuckyDrawCampaign {
       id: json['id'],
       name: json['name'],
       description: json['description'],
-      image: json['image'],
+      image: json['image'] ?? "",
       totalVouchersLimit: json['totalVouchersLimit'],
       vouchersIssued: json['vouchersIssued'],
       startDate: json['startDate'],

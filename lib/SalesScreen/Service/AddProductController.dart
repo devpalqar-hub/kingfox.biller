@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
@@ -39,6 +41,35 @@ class AddProductController extends GetxController {
   final voucherCountController = TextEditingController();
   final couponController = TextEditingController();
   final discountController = TextEditingController();
+
+  DateTime? _lastHardwareScanAt;
+  String _lastHardwareScanBarcode = '';
+
+  String _normalizeBarcode(String raw) {
+    final compact = raw.trim().replaceAll(RegExp(r'\s+'), '');
+    return compact.replaceAll(RegExp(r'[^A-Za-z0-9\-_.]'), '');
+  }
+
+  Future<void> scanFromKeyboard(String rawBarcode, {int gstPercent = 5}) async {
+    final barcode = _normalizeBarcode(rawBarcode);
+
+    // Ignore accidental key noise that is too short to be a real barcode.
+    if (barcode.length < 4) return;
+
+    final now = DateTime.now();
+    if (_lastHardwareScanBarcode == barcode &&
+        _lastHardwareScanAt != null &&
+        now.difference(_lastHardwareScanAt!).inMilliseconds < 900) {
+      return;
+    }
+
+    if (isLoading) return;
+
+    _lastHardwareScanBarcode = barcode;
+    _lastHardwareScanAt = now;
+
+    await scanAndAddProduct(barcode, gstPercent);
+  }
 
   void clearAllTextControllers() {
     nameController.clear();
@@ -86,6 +117,7 @@ class AddProductController extends GetxController {
     fetchCampaigns();
     fetchStaff();
     getCart();
+    checkPorts();
   }
 
   @override
@@ -94,12 +126,37 @@ class AddProductController extends GetxController {
     super.onClose();
   }
 
+  void checkPorts() {
+    final List<String> availablePortNames = SerialPort.availablePorts;
+
+    if (availablePortNames.isEmpty) {
+      print("No Serial Devices Found. Check your scanner mode!");
+      return;
+    }
+
+    for (String name in availablePortNames) {
+      try {
+        final port = SerialPort(name);
+        print('--- Port Found ---');
+        print('Name: $name');
+        print('Manufacturer: ${port.manufacturer ?? "Unknown"}');
+        print('Product: ${port.productName ?? "Unknown"}');
+        // If the scanner is in Serial Mode, one of these will likely say "Barcode" or "USB Serial"
+      } catch (e) {
+        print('Could not open metadata for $name');
+      }
+    }
+  }
+
   void selectCampaign(LuckyDrawCampaign campaign) {
     selectedCampaign = campaign;
     update();
   }
 
   Future scanAndAddProduct(String barcode, int gstPercent) async {
+    final cleanedBarcode = _normalizeBarcode(barcode);
+    if (cleanedBarcode.isEmpty) return;
+
     isLoading = true;
     update();
 
@@ -112,7 +169,7 @@ class AddProductController extends GetxController {
         "Authorization": "Bearer $accessToken",
       },
       body: jsonEncode({
-        "barcode": barcode,
+        "barcode": cleanedBarcode,
         "gstPercent": gstPercent.toString(),
       }),
     );
@@ -370,11 +427,8 @@ class AddProductController extends GetxController {
     if (isUpdatingQty) return;
 
     isUpdatingQty = true;
-
     final url = "$baseUrl/billing/cart/item/$variantId";
-
     final body = {"quantity": quantity};
-
     final headers = {
       "Content-Type": "application/json",
       "Authorization": "Bearer $accessToken",
@@ -387,11 +441,7 @@ class AddProductController extends GetxController {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-
       cart = CartModel.fromJson(data);
-
-      for (var item in cart!.items) {}
-
       update();
     } else {}
 
@@ -409,15 +459,12 @@ class AddProductController extends GetxController {
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-
       List data = [];
-
       if (decoded is List) {
         data = decoded;
       } else if (decoded is Map && decoded['data'] != null) {
         data = decoded['data'];
       }
-
       campaigns = data.map((e) => LuckyDrawCampaign.fromJson(e)).toList();
     } else {
       campaigns = [];
@@ -437,9 +484,7 @@ class AddProductController extends GetxController {
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-
       List data = decoded is List ? decoded : decoded['data'] ?? [];
-
       staffList = data.map<StaffModel>((e) => StaffModel.fromJson(e)).toList();
     } else {
       staffList = [];

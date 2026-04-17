@@ -8,60 +8,42 @@ class NoProductsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 500.h,
       decoration: BoxDecoration(
-        color:  Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100.w,
-              height: 100.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAEAEA),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.add_shopping_cart_outlined,
-                size: 45.sp,
-                color: const Color(0xFF9CA3AF),
-              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 64.w,
+            height: 64.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1F5F9),
+              shape: BoxShape.circle,
             ),
-
-            SizedBox(height: 20.h),
-
-            Center(
-              child: Text(
-                "No products added",
-                style: TextStyle(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1F2937),
-                ),
-              ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 28.sp,
+              color: const Color(0xFF94A3B8),
             ),
-
-            SizedBox(height: 12.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 120.w),
-              child: Text(
-                "Start scanning items or use the search\nbar to populate the customer's cart.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  height: 1.6,
-                  color: const Color(0xFF667085),
-                ),
-              ),
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            'Cart is empty',
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1E293B),
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Scan a barcode or search to add items',
+            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+          ),
+        ],
       ),
     );
   }

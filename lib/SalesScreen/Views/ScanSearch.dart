@@ -17,150 +17,136 @@ class ScanSearch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AddProductController>(
-      builder: (productController) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14.r),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 50.h,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffE5E7EB),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          final barcode = await Get.to(() => const ScanPage());
-
-                          if (barcode != null) {
-                            productController.scanAndAddProduct(
-                              barcode,
-                              5,
-                            );
-                          }
-                        },
+      builder: (ctrl) {
+        return Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 42.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        final barcode = await Get.to(() => const ScanPage());
+                        if (barcode != null) {
+                          ctrl.scanAndAddProduct(barcode, 5);
+                        }
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w),
                         child: Icon(
                           Icons.qr_code_scanner,
-                          size: 20.sp,
-                          color: Colors.black54,
+                          size: 19.sp,
+                          color: const Color(0xFF64748B),
                         ),
                       ),
-                      SizedBox(width: 10.w),
-                     Expanded(
-  child: TextField(
-    controller: controller,
-    textAlignVertical: TextAlignVertical.center, // ✅ FIX
-    onChanged: (value) {
-      if (value.isNotEmpty) {
-        productController.searchProducts(value);
-      } else {
-        productController.searchProductsList.clear();
-        productController.update();
-      }
-    },
-    onSubmitted: (value) {
-      if (value.isNotEmpty) {
-        productController.scanAndAddProduct(value, 5);
-        controller.clear();
-
-        productController.searchProductsList.clear();
-        productController.update();
-      }
-    },
-    decoration: InputDecoration(
-      border: InputBorder.none,
-      hintText: "Scan barcode or search products",
-      hintStyle: TextStyle(fontSize: 15.sp),
-     
-      
-      isCollapsed: true,
-       isDense: true,
-
-      contentPadding: EdgeInsets.symmetric(vertical: 14.h), // ✅ FIX
-
-      /// ✅ KEEP SIZE CONSTANT
-      suffixIcon: SizedBox(
-        width: 30.w,
-        child: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () {
-                  controller.clear();
-                  productController.searchProductsList.clear();
-                  productController.update();
-                },
-              )
-            : const SizedBox(),
-      ),
-    ),
-  ),
-)
-                    ],
-                  ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 22.h,
+                      color: const Color(0xFFE2E8F0),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: TextStyle(fontSize: 13.sp),
+                        onChanged: (v) {
+                          if (v.isNotEmpty) {
+                            ctrl.searchProducts(v);
+                          } else {
+                            ctrl.searchProductsList.clear();
+                            ctrl.update();
+                          }
+                        },
+                        onSubmitted: (v) {
+                          if (v.isNotEmpty) {
+                            ctrl.scanAndAddProduct(v, 5);
+                            controller.clear();
+                            ctrl.searchProductsList.clear();
+                            ctrl.update();
+                          }
+                        },
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          isCollapsed: true,
+                          isDense: true,
+                          hintText: 'Scan barcode or search products…',
+                          hintStyle: TextStyle(
+                            fontSize: 13.sp,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 11.h),
+                          suffixIcon: controller.text.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () {
+                                    controller.clear();
+                                    ctrl.searchProductsList.clear();
+                                    ctrl.update();
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 16.sp,
+                                    color: const Color(0xFF94A3B8),
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                  ],
                 ),
               ),
-
-              SizedBox(width: 15.w),
-              ReturnButton(onTap: onReturnTap),
-            ],
-          ),
+            ),
+            SizedBox(width: 8.w),
+            _ReturnButton(onTap: onReturnTap),
+          ],
         );
       },
     );
   }
 }
 
-class ReturnButton extends StatelessWidget {
+class _ReturnButton extends StatelessWidget {
   final VoidCallback onTap;
 
-  const ReturnButton({super.key, required this.onTap});
+  const _ReturnButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12.r),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(10.r),
       child: Container(
-        constraints: BoxConstraints(
-          minHeight: 45.h, // ✅ prevents collapse
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: 14.w,
-          vertical: 10.h, // ✅ reduced for small screens
-        ),
+        height: 42.h,
+        padding: EdgeInsets.symmetric(horizontal: 14.w),
         decoration: BoxDecoration(
-          color: const Color(0xffFEF2F2),
+          color: const Color(0xFFFFF1F2),
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: const Color(0xffFECACA)),
+          border: Border.all(color: const Color(0xFFFECACA)),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min, // ✅ wrap content
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.arrow_back,
-              color: Colors.red,
-              size: 16.sp, // slightly increased for balance
+              Icons.undo_rounded,
+              size: 15.sp,
+              color: const Color(0xFFDC2626),
             ),
-            SizedBox(width: 6.w),
-
-            /// ✅ Flexible text to avoid overflow
-            Flexible(
-              child: Text(
-                "Return Item",
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            SizedBox(width: 5.w),
+            Text(
+              'Return',
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFDC2626),
               ),
             ),
           ],

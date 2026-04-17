@@ -9,68 +9,150 @@ class OrderDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 730.w,
-      height: 320.h,
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Header
-          Row(
-            children: [
-              Icon(Icons.shopping_bag_outlined,
-                  size: 20.sp, color: const Color(0xFF1D2939)),
-              SizedBox(width: 10.w),
-              Text(
-                "Order Details",
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1D2939),
+          /// Table header row
+          Container(
+            color: const Color(0xFFF8FAFC),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 9,
+                  child: Text('PRODUCT', style: _headerStyle()),
                 ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 24.h),
-
-          /// Table headers
-          Row(
-            children: [
-              SizedBox(width: 200.w, child: Text("ITEM", style: _headerStyle())),
-              SizedBox(width: 120.w, child: Text("SIZE", style: _headerStyle())),
-              SizedBox(width: 80.w, child: Text("QTY", style: _headerStyle())),
-              SizedBox(width: 120.w, child: Text("PRICE", style: _headerStyle())),
-              SizedBox(width: 120.w, child: Text("TOTAL", style: _headerStyle())),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          /// Items list
-          Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: cart.items.length,
-              itemBuilder: (context, index) {
-                final item = cart.items[index];
-
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 16.h),
-                  child: _CartItem(
-                    title: item.productName,
-                    sku: "SKU: ${item.sku}",
-                    size: item.size,
-                    qty: item.quantity.toString(),
-                    price: "₹${item.price}",
-                    total: "₹${item.lineTotal}",
+                SizedBox(
+                  width: 48.w,
+                  child: Text(
+                    'SIZE',
+                    style: _headerStyle(),
+                    textAlign: TextAlign.right,
                   ),
-                );
-              },
+                ),
+                SizedBox(
+                  width: 34.w,
+                  child: Text(
+                    'QTY',
+                    style: _headerStyle(),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                SizedBox(
+                  width: 64.w,
+                  child: Text(
+                    'RATE',
+                    style: _headerStyle(),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                SizedBox(
+                  width: 72.w,
+                  child: Text(
+                    'AMOUNT',
+                    style: _headerStyle(),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 0.5, thickness: 0.5, color: Color(0xFFE2E8F0)),
+
+          /// Item rows
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: cart.items.length,
+            separatorBuilder: (_, __) => const Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: Color(0xFFE2E8F0),
+            ),
+            itemBuilder: (context, index) {
+              final item = cart.items[index];
+              return _ItemRow(
+                name: item.productName,
+                sku: 'SKU: ${item.sku}',
+                size: item.size,
+                qty: item.quantity.toString(),
+                rate: '₹${item.price}',
+                amount: '₹${item.lineTotal}',
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ItemRow({
+    required String name,
+    required String sku,
+    required String size,
+    required String qty,
+    required String rate,
+    required String amount,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 9,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  sku,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 48.w,
+            child: Text(size, style: _valueStyle(), textAlign: TextAlign.right),
+          ),
+          SizedBox(
+            width: 34.w,
+            child: Text(qty, style: _valueStyle(), textAlign: TextAlign.right),
+          ),
+          SizedBox(
+            width: 64.w,
+            child: Text(rate, style: _valueStyle(), textAlign: TextAlign.right),
+          ),
+          SizedBox(
+            width: 72.w,
+            child: Text(
+              amount,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF15803D),
+              ),
             ),
           ),
         ],
@@ -78,91 +160,16 @@ class OrderDetailsCard extends StatelessWidget {
     );
   }
 
-  Widget _CartItem({
-    required String title,
-    required String sku,
-    required String size,
-    required String qty,
-    required String price,
-    required String total,
-  }) {
-    return Row(
-      children: [
-        /// ITEM
-        SizedBox(
-          width: 200.w,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1D2939),
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                sku,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF667085),
-                ),
-              ),
-            ],
-          ),
-        ),
+  TextStyle _headerStyle() => TextStyle(
+    fontSize: 10.sp,
+    fontWeight: FontWeight.w500,
+    color: const Color(0xFF94A3B8),
+    letterSpacing: 0.6,
+  );
 
-        /// SIZE
-        SizedBox(
-          width: 120.w,
-          child: Text(size, style: _valueStyle()),
-        ),
-
-        /// QTY
-        SizedBox(
-          width: 80.w,
-          child: Text(qty, style: _valueStyle()),
-        ),
-
-        /// PRICE
-        SizedBox(
-          width: 120.w,
-          child: Text(price, style: _valueStyle()),
-        ),
-
-        /// TOTAL
-        SizedBox(
-          width: 120.w,
-          child: Text(
-            total,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF2E9F4B),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  TextStyle _headerStyle() {
-    return TextStyle(
-      fontSize: 12.sp,
-      fontWeight: FontWeight.w600,
-      color: const Color(0xFF667085),
-    );
-  }
-
-  TextStyle _valueStyle() {
-    return TextStyle(
-      fontSize: 16.sp,
-      fontWeight: FontWeight.w400,
-      color: const Color(0xFF1D2939),
-    );
-  }
+  TextStyle _valueStyle() => TextStyle(
+    fontSize: 12.sp,
+    fontWeight: FontWeight.w400,
+    color: const Color(0xFF334155),
+  );
 }

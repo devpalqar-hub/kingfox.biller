@@ -19,7 +19,7 @@ class OrderSummaryCard extends StatelessWidget {
     required this.coupon,
     required this.appliedReturnDiscount,
     required this.grandTotal,
-     required this.refundAmount,
+    required this.refundAmount,
     required this.onPrint,
   });
 
@@ -27,7 +27,7 @@ class OrderSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350.w,
-     padding: EdgeInsets.symmetric(vertical:18.w,horizontal: 16.h),
+      padding: EdgeInsets.symmetric(vertical: 18.w, horizontal: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -42,11 +42,7 @@ class OrderSummaryCard extends StatelessWidget {
               SizedBox(width: 10.w),
               Text(
                 "Order Summary",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.bold,
-                  
-                ),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -62,15 +58,10 @@ class OrderSummaryCard extends StatelessWidget {
           _row("Return Amount", appliedReturnDiscount, isNegative: true),
           _row("Refund Amount", refundAmount, isNegative: true),
 
-
           SizedBox(height: 3.h),
 
           /// Divider
-          Divider(
-            color: Colors.grey.shade300,
-            thickness: 1,
-            height: 20.h,
-          ),
+          Divider(color: Colors.grey.shade300, thickness: 1, height: 20.h),
 
           SizedBox(height: 5.h),
 
@@ -81,7 +72,7 @@ class OrderSummaryCard extends StatelessWidget {
               fontSize: 12.sp,
               letterSpacing: 2,
               fontWeight: FontWeight.w600,
-              color:  Color(0xff64748B),
+              color: Color(0xff64748B),
             ),
           ),
 
@@ -89,7 +80,7 @@ class OrderSummaryCard extends StatelessWidget {
 
           /// Amount
           Text(
-            "\$${grandTotal.toStringAsFixed(2)}",
+            "₹${grandTotal.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 32.sp,
               fontWeight: FontWeight.bold,
@@ -101,48 +92,52 @@ class OrderSummaryCard extends StatelessWidget {
 
           /// Print Button
           GestureDetector(
-  onTap: onPrint,
-   // 👈 CALL HERE
-  child: Container(
-    height: 42.h,
-    width: 300.w,
-    decoration: BoxDecoration(
-      color: const Color(0xff1D4ED8),
-      borderRadius: BorderRadius.circular(12.r),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.15),
-          blurRadius: 12,
-          offset: const Offset(0, 6),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.print, color: Colors.white, size: 22.sp),
-        SizedBox(width: 10.w),
-        Text(
-          "PRINT ( F1 )",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
+            onTap: onPrint,
+            // 👈 CALL HERE
+            child: Container(
+              height: 42.h,
+              width: 300.w,
+              decoration: BoxDecoration(
+                color: const Color(0xff1D4ED8),
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.print, color: Colors.white, size: 22.sp),
+                  SizedBox(width: 10.w),
+                  Text(
+                    "PRINT ( F1 )",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
-    ),
-  ),
-)
         ],
       ),
     );
   }
 
   /// Row Widget
-  Widget _row(String title, double amount,
-      {bool isNegative = false, bool red = false}) {
+  Widget _row(
+    String title,
+    double amount, {
+    bool isNegative = false,
+    bool red = false,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
@@ -152,20 +147,20 @@ class OrderSummaryCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 12.sp,
-              color:  Color(0xff64748B),
+              color: Color(0xff64748B),
               fontWeight: FontWeight.w500,
             ),
           ),
           Text(
-            "${isNegative ? '-' : ''}\$${amount.toStringAsFixed(2)}",
+            "${isNegative ? '-' : ''}₹${amount.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: red
                   ? Colors.red
                   : isNegative
-                      ? Colors.green
-                      : const Color(0xff1D2939),
+                  ? Colors.green
+                  : const Color(0xff1D2939),
             ),
           ),
         ],

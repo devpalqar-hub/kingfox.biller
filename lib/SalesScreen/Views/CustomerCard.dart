@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/SalesScreen/Service/CustomerController.dart';
-import 'package:kinfox_biller/SalesScreen/Model/CustomerModel.dart';
+
 class CustomerCard extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
@@ -14,134 +14,188 @@ class CustomerCard extends StatelessWidget {
     required this.phoneController,
   });
 
-  final CustomerController controller = Get.put(CustomerController());
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        controller.closeDropdown();
-        FocusScope.of(context).unfocus();
-      },
-      child: Column(
-        children: [
-          /// INPUT BOX
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 16.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.person_2_outlined),
-                    SizedBox(width: 10.w),
-                    Text("Customer Selection",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12.sp)),
-                  ],
-                ),
-
-                SizedBox(height: 12.h),
-
-                Row(
-                  children: [
-                    Expanded(child: _buildCustomerField()),
-                    SizedBox(width: 10.w),
-                    Expanded(child: _buildPhoneField()),
-                  ],
-                ),
-              ],
-            ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-
-          /// DROPDOWN LIST
-          GetBuilder<CustomerController>(
-            builder: (c) {
-              if (!c.isDropdownOpen || c.customerList.isEmpty) {
-                return const SizedBox();
-              }
-
-              return Container(
-                margin: EdgeInsets.only(top: 5.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10.r),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                constraints: BoxConstraints(maxHeight: 200.h),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: c.customerList.length,
-                  itemBuilder: (context, index) {
-                    final customer = c.customerList[index];
-
-                    return ListTile(
-                      title: Text(customer.name ?? ''),
-                      subtitle: Text(customer.phone ?? ''),
-                      onTap: () {
-                        nameController.text = customer.name ?? '';
-                        phoneController.text = customer.phone ?? '';
-
-                        c.selectedCustomer = customer;
-                        c.closeDropdown();
-
-                        FocusScope.of(context).unfocus();
-                      },
-                    );
-                  },
-                ),
-              );
-            },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.person_outline_rounded,
+                    size: 15.sp,
+                    color: const Color(0xFF64748B),
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Customer',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF64748B),
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  Expanded(child: _nameField()),
+                  SizedBox(width: 8.w),
+                  SizedBox(width: 130.w, child: _phoneField()),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        GetBuilder<CustomerController>(
+          builder: (c) {
+            if (!c.isDropdownOpen || c.customerList.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            return Positioned(
+              top: 64.h,
+              left: 12.w,
+              right: 12.w + 138.w,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  constraints: BoxConstraints(maxHeight: 220.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.09),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    itemCount: c.customerList.length,
+                    separatorBuilder: (_, __) =>
+                        Divider(height: 1, color: const Color(0xFFF1F5F9)),
+                    itemBuilder: (ctx, i) {
+                      final customer = c.customerList[i];
+                      final initial = customer.name.isNotEmpty
+                          ? customer.name[0]
+                          : '?';
+                      return ListTile(
+                        dense: true,
+                        visualDensity: const VisualDensity(
+                          vertical: -2,
+                          horizontal: 0,
+                        ),
+                        leading: CircleAvatar(
+                          radius: 14.r,
+                          backgroundColor: const Color(0xFFEFF6FF),
+                          child: Text(
+                            initial.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF2563EB),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          customer.name,
+                          style: TextStyle(fontSize: 13.sp),
+                        ),
+                        subtitle: Text(
+                          customer.phone,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        onTap: () {
+                          nameController.text = customer.name;
+                          phoneController.text = customer.phone;
+                          c.selectedCustomer = customer;
+                          c.closeDropdown();
+                          FocusScope.of(ctx).unfocus();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
-  /// 🔥 FIELD WITH TOGGLE ARROW
-  Widget _buildCustomerField() {
+  Widget _nameField() {
     return GetBuilder<CustomerController>(
       builder: (c) {
         return SizedBox(
-          height: 45.h,
+          height: 38.h,
           child: TextField(
             controller: nameController,
-
-            onTap: () {
-              c.toggleDropdown();
-            },
-
-            onChanged: (value) {
-              if (value.isEmpty) {
+            style: TextStyle(fontSize: 13.sp),
+            onTap: c.toggleDropdown,
+            onChanged: (v) {
+              if (v.isEmpty) {
                 c.closeDropdown();
-                return;
+              } else {
+                c.searchCustomers(v);
               }
-
-              c.searchCustomers(value);
             },
-
             decoration: InputDecoration(
-              hintText: "Search customer",
-
-              /// 🔥 TOGGLE ARROW
-              suffixIcon: IconButton(
-                icon: Icon(
-                  c.isDropdownOpen
-                      ? Icons.arrow_drop_up
-                      : Icons.arrow_drop_down,
-                ),
-                onPressed: () {
-                  c.toggleDropdown();
-                },
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 10.h,
               ),
-
+              hintText: 'Search customer…',
+              hintStyle: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFF94A3B8),
+              ),
+              suffixIcon: Icon(
+                c.isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                size: 18.sp,
+                color: const Color(0xFF94A3B8),
+              ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                  width: 1,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                  width: 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: const BorderSide(
+                  color: Color(0xFF2563EB),
+                  width: 1,
+                ),
               ),
             ),
           ),
@@ -150,20 +204,36 @@ class CustomerCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _phoneField() {
     return SizedBox(
-      height: 45.h,
+      height: 38.h,
       child: TextField(
         controller: phoneController,
         keyboardType: TextInputType.number,
+        style: TextStyle(fontSize: 13.sp),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(10),
         ],
         decoration: InputDecoration(
-          hintText: "Phone",
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 12.w,
+            vertical: 10.h,
+          ),
+          hintText: 'Phone',
+          hintStyle: TextStyle(fontSize: 12.sp, color: const Color(0xFF94A3B8)),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1),
           ),
         ),
       ),
