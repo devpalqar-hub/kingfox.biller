@@ -16,11 +16,9 @@ class ReturnsController extends GetxController {
 
   InvoiceModel? invoice;
 
+  String? selectedReason;
 
- String? selectedReason;
-
-  final TextEditingController internalNoteController =
-      TextEditingController();
+  final TextEditingController internalNoteController = TextEditingController();
 
   /// ================= REASONS =================
   List<String> returnReasons = [
@@ -41,19 +39,18 @@ class ReturnsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-   selectedReason = null;
+    selectedReason = null;
     update();
   }
 
   void clearReturnData() {
-  selectedItems.clear();
-  returnQty.clear();
-  selectedReason = null;
-  invoice = null;
-  internalNoteController.clear();
-  update(); 
-}
-  
+    selectedItems.clear();
+    returnQty.clear();
+    selectedReason = null;
+    invoice = null;
+    internalNoteController.clear();
+    update();
+  }
 
   void toggleItemSelection(int variantId) {
     if (selectedItems.contains(variantId)) {
@@ -70,16 +67,13 @@ class ReturnsController extends GetxController {
     return selectedItems.contains(variantId);
   }
 
-  
-
   double get totalReturnAmount {
     double total = 0.0;
 
     if (invoice == null) return 0.0;
 
     for (var variantId in selectedItems) {
-      final item = invoice!.items
-          .firstWhere((e) => e.variantId == variantId);
+      final item = invoice!.items.firstWhere((e) => e.variantId == variantId);
 
       final qty = returnQty[variantId] ?? 1;
       final price = double.tryParse(item.price.toString()) ?? 0.0;
@@ -89,7 +83,6 @@ class ReturnsController extends GetxController {
 
     return total;
   }
-
 
   void increaseQty(int variantId, int maxQty) {
     if (maxQty <= 0) return;
@@ -128,146 +121,61 @@ class ReturnsController extends GetxController {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      returnsList =
-          (data as List).map((e) => ReturnModel.fromJson(e)).toList();
+      returnsList = (data as List).map((e) => ReturnModel.fromJson(e)).toList();
     }
 
     isLoading = false;
     update();
   }
 
-  /// ================= CREATE RETURN =================
-  ///Future createReturn({
-    //required int invoiceId,
-    //required int variantId,
-    //required int quantity,
-    //required String returnType,
-    //required String reason,
-  //}) async {
-    //isLoading = true;
-    //update();
+  bool addingItemLoading = false;
 
-    
-    //if (selectedReason == null) {
-      //Get.snackbar("Error", "Please select return reason");
-      //isLoading = false;
-      //update();
-      //return;
-   // }
+  Future<bool> addReturnItemsToCart() async {
+    if (addingItemLoading) {
+      return false;
+    }
+    addingItemLoading = true;
 
-    //if (selectedReason == "Other" &&
-      //  internalNoteController.text.trim().isEmpty) {
-      //Get.snackbar("Error", "Please enter internal note");
-      //isLoading = false;
-     // update();
-      //return;
-    //}
+    if (invoice == null) {
+      return false;
+    }
 
-    //final url = "$baseUrl/billing/return"; 
-    //final finalReason = selectedReason == "Other"
-      //  ? internalNoteController.text.trim()
-        //: selectedReason!;
+    if (selectedItems.isEmpty) {
+      return false;
+    }
 
-    //final body = {
-      //"returnType": returnType,
-     // "invoiceId": invoiceId,
-     // "onlineOrderId": null,
-     // "reason": finalReason,
-     // "items": [
-       // {
-         // "variantId": variantId,
-          //"quantity": quantity,
-       // }
-     // ]
-    //};
+    final items = selectedItems.map((variantId) {
+      return {"variantId": variantId, "quantity": returnQty[variantId] ?? 1};
+    }).toList();
 
-    //final headers = {
-      //"Content-Type": "application/json",
-      //"Authorization": "Bearer $accessToken",
-    //};
+    final url = "$baseUrl/billing/cart/return-items";
 
-   
+    final body = {"originalInvoiceId": invoice!.id, "items": items};
 
-   // final response = await http.post(
-     // Uri.parse(url),
-     // headers: headers,
-     // body: jsonEncode(body),
-    //);
-
-   
-
-    //if (response.statusCode == 200 || response.statusCode == 201) {
-     // await getReturns();
-
-    
-     // clearReturnData();
-
-    
-      //}
-    //} else {
-      
-   // }
-
-    //isLoading = false;
-    //update();
- // }
-
-Future<bool> addReturnItemsToCart() async {
-  if (invoice == null) {
-   
-    return false;
-  }
-
-  if (selectedItems.isEmpty) {
-   
-    return false;
-  }
-
-  final items = selectedItems.map((variantId) {
-    return {
-      "variantId": variantId,
-      "quantity": returnQty[variantId] ?? 1,
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
     };
-  }).toList();
 
-  final url = "$baseUrl/billing/cart/return-items";
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    addingItemLoading = false;
 
-  final body = {
-    "originalInvoiceId": invoice!.id,
-    "items": items,
-  };
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
 
-  final headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer $accessToken",
-  };
+      await getReturns();
 
-  
-
-  final response = await http.post(
-    Uri.parse(url),
-    headers: headers,
-    body: jsonEncode(body),
-  );
-
-
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    final data = jsonDecode(response.body);
-    
-   
-    await getReturns();
-    
-    await Get.find<AddProductController>().getCart();
-    clearReturnData();
-
-  
-
-    return true;
-  } else {
-   
-    return false;
+      await Get.find<AddProductController>().getCart();
+      clearReturnData();
+      return true;
+    } else {
+      return false;
+    }
   }
-}
 
   /// ================= GET INVOICE =================
   Future<void> getInvoice(String invoiceId) async {
@@ -295,70 +203,33 @@ Future<bool> addReturnItemsToCart() async {
     update();
   }
 
-Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
-  if (variantIds.isEmpty) {
-   
-    return false;
+  Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
+    if (variantIds.isEmpty) {
+      return false;
+    }
+
+    final url = "$baseUrl/billing/cart/return-items";
+
+    final body = {
+      "variantIds": variantIds, // 👈 send list of ids to delete
+    };
+
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+
+    final response = await http.delete(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body), // 👈 important (some APIs need body)
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      await getReturns(); // refresh list
+      return true;
+    } else {
+      return false;
+    }
   }
-
-  final url = "$baseUrl/billing/cart/return-items";
-
-  final body = {
-    "variantIds": variantIds, // 👈 send list of ids to delete
-  };
-
-  final headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer $accessToken",
-  };
-
-  
-
-  final response = await http.delete(
-    Uri.parse(url),
-    headers: headers,
-    body: jsonEncode(body), // 👈 important (some APIs need body)
-  );
-
- 
-
-  if (response.statusCode == 200 || response.statusCode == 204) {
-  
-
-    await getReturns(); // refresh list
-    return true;
-  } else {
-   
-    return false;
-  }
-}
-
-// Future<void> getRecentInvoices() async {
-
-//     isLoading = true;
-//     update();
-
-//     final url = "$baseUrl/returns/recent-invoices";
-//     final response = await http.get(
-//       Uri.parse(url),
-//       headers: {
-//         "Authorization": "Bearer $accessToken",
-//         "Content-Type": "application/json",
-//       },
-//     );
-//     if (response.statusCode == 200) {
-
-//       final List data = jsonDecode(response.body);
-
-//       recentInvoices =
-//           data.map((e) => RecentInvoiceModel.fromJson(e)).toList();
-
-//     } else {
-//       recentInvoices = [];
-//     }
-
-//     isLoading = false;
-//     update();
-//   }
-  
 }

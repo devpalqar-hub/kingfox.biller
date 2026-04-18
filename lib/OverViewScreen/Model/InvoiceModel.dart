@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-
 class Product {
   final int id;
   final String name;
@@ -19,15 +18,14 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['id'] ?? 0,
-        name: json['name'] ?? '-',
-        description: json['description'] ?? '-',
-        brandId: json['brandId'] ?? 0,
-        categoryId: json['categoryId'] ?? 0,
-        createdAt: json['createdAt'] ?? '',
-      );
+    id: json['id'] ?? 0,
+    name: json['name'] ?? '-',
+    description: json['description'] ?? '-',
+    brandId: json['brandId'] ?? 0,
+    categoryId: json['categoryId'] ?? 0,
+    createdAt: json['createdAt'] ?? '',
+  );
 }
-
 
 class Variant {
   final int id;
@@ -55,17 +53,17 @@ class Variant {
   });
 
   factory Variant.fromJson(Map<String, dynamic> json) => Variant(
-        id: json['id'] ?? 0,
-        productId: json['productId'] ?? 0,
-        size: json['size'] ?? '-',
-        color: json['color'] ?? '-',
-        sku: json['sku'] ?? '-',
-        barcode: json['barcode'] ?? '-',
-        costPrice: json['costPrice'] ?? '0',
-        sellingPrice: json['sellingPrice'] ?? '0',
-        createdAt: json['createdAt'] ?? '',
-        product: Product.fromJson(json['product'] ?? {}),
-      );
+    id: json['id'] ?? 0,
+    productId: json['productId'] ?? 0,
+    size: json['size'] ?? '-',
+    color: json['color'] ?? '-',
+    sku: json['sku'] ?? '-',
+    barcode: json['barcode'] ?? '-',
+    costPrice: json['costPrice'] ?? '0',
+    sellingPrice: json['sellingPrice'] ?? '0',
+    createdAt: json['createdAt'] ?? '',
+    product: Product.fromJson(json['product'] ?? {}),
+  );
 }
 
 class InvoiceItem {
@@ -76,6 +74,7 @@ class InvoiceItem {
   final String price;
   final String subtotal;
   final Variant variant;
+  final int returnedQuantity;
 
   InvoiceItem({
     required this.id,
@@ -85,17 +84,19 @@ class InvoiceItem {
     required this.price,
     required this.subtotal,
     required this.variant,
+    required this.returnedQuantity,
   });
 
   factory InvoiceItem.fromJson(Map<String, dynamic> json) => InvoiceItem(
-        id: json['id'] ?? 0,
-        invoiceId: json['invoiceId'] ?? 0,
-        variantId: json['variantId'] ?? 0,
-        quantity: json['quantity'] ?? 0,
-        price: json['price'] ?? '0',
-        subtotal: json['subtotal'] ?? '0',
-        variant: Variant.fromJson(json['variant'] ?? {}),
-      );
+    id: json['id'] ?? 0,
+    invoiceId: json['invoiceId'] ?? 0,
+    variantId: json['variantId'] ?? 0,
+    quantity: json['quantity'] ?? 0,
+    price: json['price'] ?? '0',
+    subtotal: json['subtotal'] ?? '0',
+    returnedQuantity: json["returnedQuantity"] ?? 0,
+    variant: Variant.fromJson(json['variant'] ?? {}),
+  );
 }
 
 class Customer {
@@ -116,15 +117,14 @@ class Customer {
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
-        id: json['id'] ?? 0,
-        name: json['name'] ?? '-',
-        phone: json['phone'] ?? '-',
-        email: json['email'] ?? '-',
-        address: json['address'] ?? '-',
-        createdAt: json['createdAt'] ?? '',
-      );
+    id: json['id'] ?? 0,
+    name: json['name'] ?? '-',
+    phone: json['phone'] ?? '-',
+    email: json['email'] ?? '-',
+    address: json['address'] ?? '-',
+    createdAt: json['createdAt'] ?? '',
+  );
 }
-
 
 class User {
   final int id;
@@ -132,10 +132,8 @@ class User {
 
   User({required this.id, required this.name});
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] ?? 0,
-        name: json['name'] ?? '-',
-      );
+  factory User.fromJson(Map<String, dynamic> json) =>
+      User(id: json['id'] ?? 0, name: json['name'] ?? '-');
 }
 
 class Coupon {
@@ -158,14 +156,14 @@ class Coupon {
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) => Coupon(
-        id: json['id'] ?? 0,
-        code: json['code'] ?? '-',
-        description: json['description'] ?? '-',
-        discountType: json['discountType'] ?? '-',
-        discountValue: json['discountValue'] ?? '0',
-        startDate: json['startDate'] ?? '',
-        endDate: json['endDate'] ?? '',
-      );
+    id: json['id'] ?? 0,
+    code: json['code'] ?? '-',
+    description: json['description'] ?? '-',
+    discountType: json['discountType'] ?? '-',
+    discountValue: json['discountValue'] ?? '0',
+    startDate: json['startDate'] ?? '',
+    endDate: json['endDate'] ?? '',
+  );
 }
 
 class Payment {
@@ -184,12 +182,12 @@ class Payment {
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
-        id: json['id'] ?? 0,
-        invoiceId: json['invoiceId'] ?? 0,
-        paymentMethod: json['paymentMethod'] ?? '-',
-        amount: json['amount'] ?? '0',
-        paidAt: json['paidAt'] ?? '',
-      );
+    id: json['id'] ?? 0,
+    invoiceId: json['invoiceId'] ?? 0,
+    paymentMethod: json['paymentMethod'] ?? '-',
+    amount: json['amount'] ?? '0',
+    paidAt: json['paidAt'] ?? '',
+  );
 }
 
 class InvoiceModel {
@@ -232,39 +230,40 @@ class InvoiceModel {
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
-        id: json['id'] ?? 0,
-        invoiceNumber: json['invoiceNumber'] ?? '-',
-        customerId: json['customerId'],
-        branchId: json['branchId'] ?? 0,
-        userId: json['userId'] ?? 0,
-        subtotal: json['subtotal'] ?? '0',
-        discount: json['discount'] ?? '0',
-        tax: json['tax'] ?? '0',
-        returnCredit: json['returnCredit'] ?? '0',
-        finalAmount: json['finalAmount'] ?? '0',
-        status: json['status'] ?? '-',
-        createdAt: json['createdAt'] ?? '',
-        customer: json['customer'] != null
-            ? Customer.fromJson(json['customer'])
-            : null,
-        user: json['user'] != null
-            ? User.fromJson(json['user'])
-            : User(id: 0, name: '-'),
-        coupon: json['coupon'] != null ? Coupon.fromJson(json['coupon']) : null,
-        items: (json['items'] as List<dynamic>?)
-                ?.map((e) => InvoiceItem.fromJson(e))
-                .toList() ??
-            [],
-        payments: (json['payments'] as List<dynamic>?)
-                ?.map((e) => Payment.fromJson(e))
-                .toList() ??
-            [],
-      );
+    id: json['id'] ?? 0,
+    invoiceNumber: json['invoiceNumber'] ?? '-',
+    customerId: json['customerId'],
+    branchId: json['branchId'] ?? 0,
+    userId: json['userId'] ?? 0,
+    subtotal: json['subtotal'] ?? '0',
+    discount: json['discount'] ?? '0',
+    tax: json['tax'] ?? '0',
+    returnCredit: json['returnCredit'] ?? '0',
+    finalAmount: json['finalAmount'] ?? '0',
+    status: json['status'] ?? '-',
+    createdAt: json['createdAt'] ?? '',
+    customer: json['customer'] != null
+        ? Customer.fromJson(json['customer'])
+        : null,
+    user: json['user'] != null
+        ? User.fromJson(json['user'])
+        : User(id: 0, name: '-'),
+    coupon: json['coupon'] != null ? Coupon.fromJson(json['coupon']) : null,
+    items:
+        (json['items'] as List<dynamic>?)
+            ?.map((e) => InvoiceItem.fromJson(e))
+            .toList() ??
+        [],
+    payments:
+        (json['payments'] as List<dynamic>?)
+            ?.map((e) => Payment.fromJson(e))
+            .toList() ??
+        [],
+  );
 }
-
 
 List<InvoiceModel> invoiceListFromJson(String str) =>
     (json.decode(str)['data'] as List<dynamic>?)
-            ?.map((e) => InvoiceModel.fromJson(e))
-            .toList() ??
-        [];
+        ?.map((e) => InvoiceModel.fromJson(e))
+        .toList() ??
+    [];

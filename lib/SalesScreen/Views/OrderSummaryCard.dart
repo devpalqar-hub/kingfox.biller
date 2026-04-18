@@ -42,7 +42,7 @@ class OrderSummaryCard extends StatelessWidget {
               SizedBox(width: 10.w),
               Text(
                 "Order Summary",
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -51,7 +51,8 @@ class OrderSummaryCard extends StatelessWidget {
 
           /// Rows
           _row("Subtotal", subtotal),
-          _row("Tax ", tax),
+          _row("CGST ", (tax / 2)),
+          _row("SGST ", (tax / 2)),
 
           _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
           _row("Coupon Deduction", coupon, isNegative: true),
@@ -69,7 +70,7 @@ class OrderSummaryCard extends StatelessWidget {
           Text(
             "GRAND TOTAL",
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               letterSpacing: 2,
               fontWeight: FontWeight.w600,
               color: Color(0xff64748B),
@@ -146,15 +147,15 @@ class OrderSummaryCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               color: Color(0xff64748B),
               fontWeight: FontWeight.w500,
             ),
           ),
           Text(
-            "${isNegative ? '-' : ''}₹${amount.toStringAsFixed(2)}",
+            "₹${amount.toStringAsFixed(2)}",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
               color: red
                   ? Colors.red

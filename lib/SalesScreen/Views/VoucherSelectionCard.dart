@@ -24,7 +24,7 @@ class VoucherSelectionCard extends StatelessWidget {
               /// TITLE
               Text(
                 "Voucher Selection",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
 
               SizedBox(height: 12.h),
@@ -53,18 +53,17 @@ class VoucherSelectionCard extends StatelessWidget {
                         value: controller.selectedCampaign?.id,
 
                         items: [
-                           DropdownMenuItem<int>(
+                          DropdownMenuItem<int>(
                             value: null,
-                            child: Text("None",style: TextStyle(fontSize: 12.sp ),),
+                            child: Text("None", style: TextStyle(fontSize: 12)),
                           ),
 
-                         
                           ...controller.campaigns.map((campaign) {
                             return DropdownMenuItem<int>(
                               value: campaign.id,
                               child: Text(
                                 campaign.name,
-                                style: TextStyle(fontSize: 12.sp),
+                                style: TextStyle(fontSize: 12),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             );
@@ -128,21 +127,28 @@ class VoucherSelectionCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: TextField(
-                      controller: controller.voucherCountController,
-                      textAlign: TextAlign.center,
-                      textAlignVertical: TextAlignVertical.center,
-                      keyboardType: TextInputType.number,
+                    child: Text(
+                      controller.voucherCountController.text,
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
                     ),
+                    //  TextField(
+                    //   controller: controller.voucherCountController,
+                    //   textAlign: TextAlign.center,
+                    //   textAlignVertical: TextAlignVertical.center,
+                    //   keyboardType: TextInputType.number,
+                    //   style: TextStyle(
+                    //     fontSize: 13,
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    //   decoration: const InputDecoration(
+                    //     isDense: true,
+                    //     border: InputBorder.none,
+                    //     contentPadding: EdgeInsets.zero,
+                    //   ),
+                    // ),
                   ),
 
                   SizedBox(width: 6.w),
@@ -176,10 +182,8 @@ class VoucherSelectionCard extends StatelessWidget {
 
               SizedBox(height: 14.h),
 
-            
               Row(
                 children: [
-              
                   Expanded(
                     child: Container(
                       height: 42.h,
@@ -191,13 +195,13 @@ class VoucherSelectionCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search, size: 18.sp),
+                          Icon(Icons.search, size: 16),
                           SizedBox(width: 6.w),
                           Expanded(
                             child: TextField(
                               controller: controller.couponController,
                               textAlignVertical: TextAlignVertical.center,
-                              style: TextStyle(fontSize: 13.sp),
+                              style: TextStyle(fontSize: 13),
                               onChanged: (value) {
                                 controller.couponError = null;
                                 controller.appliedCoupon = "";
@@ -205,9 +209,13 @@ class VoucherSelectionCard extends StatelessWidget {
                               },
                               decoration: InputDecoration(
                                 isDense: true,
+                                isCollapsed: true,
                                 hintText: "Coupon Code",
-                                hintStyle: TextStyle(fontSize: 12.sp,color: Colors.black),
-                              
+                                hintStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black,
+                                ),
+
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
                               ),
@@ -220,7 +228,6 @@ class VoucherSelectionCard extends StatelessWidget {
 
                   SizedBox(width: 8.w),
 
-                 
                   GestureDetector(
                     onTap: () async {
                       final coupon = controller.couponController.text.trim();
@@ -250,7 +257,7 @@ class VoucherSelectionCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
-                          fontSize: 13.sp,
+                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -258,7 +265,6 @@ class VoucherSelectionCard extends StatelessWidget {
                 ],
               ),
 
-              
               if (controller.couponError?.isNotEmpty == true)
                 Padding(
                   padding: EdgeInsets.only(top: 6.h, left: 4.w),

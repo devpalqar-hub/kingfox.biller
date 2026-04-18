@@ -303,6 +303,7 @@ class ProcessItemReturnDialog extends StatelessWidget {
                 item.quantity.toString(),
                 "₹${item.subtotal}",
                 item.variantId,
+                item.returnedQuantity,
               );
             }).toList(),
           ],
@@ -333,6 +334,7 @@ class ProcessItemReturnDialog extends StatelessWidget {
     String qty,
     String price,
     int variantId,
+    int returnedQuantity,
   ) {
     final selected = controller.isItemSelected(variantId);
 
@@ -355,13 +357,24 @@ class ProcessItemReturnDialog extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                controller.toggleItemSelection(variantId);
+                if (qty != returnedQuantity.toString())
+                  controller.toggleItemSelection(variantId);
                 maxQty:
-                int.parse(qty);
+                int.parse(qty) - returnedQuantity;
               },
               child: Text(
-                selected ? "Selected" : "Add to Return",
-                style: TextStyle(color: selected ? Colors.green : Colors.blue),
+                (qty == returnedQuantity.toString())
+                    ? "Full Returned"
+                    : selected
+                    ? "Selected"
+                    : "Add to Return",
+                style: TextStyle(
+                  color: (qty == returnedQuantity.toString())
+                      ? Colors.red
+                      : selected
+                      ? Colors.green
+                      : Colors.blue,
+                ),
               ),
             ),
           ),

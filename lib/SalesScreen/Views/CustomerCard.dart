@@ -130,6 +130,7 @@ class CustomerCard extends StatelessWidget {
                           phoneController.text = customer.phone;
                           c.selectedCustomer = customer;
                           c.closeDropdown();
+                          c.update();
                           FocusScope.of(ctx).unfocus();
                         },
                       );

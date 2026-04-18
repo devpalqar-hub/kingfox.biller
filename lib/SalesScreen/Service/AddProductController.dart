@@ -108,6 +108,7 @@ class AddProductController extends GetxController {
     int count = int.tryParse(voucherCountController.text) ?? 1;
     count++;
     voucherCountController.text = count.toString();
+    update();
   }
 
   @override
@@ -117,35 +118,12 @@ class AddProductController extends GetxController {
     fetchCampaigns();
     fetchStaff();
     getCart();
-    checkPorts();
   }
 
   @override
   void onClose() {
     disposeAllTextControllers();
     super.onClose();
-  }
-
-  void checkPorts() {
-    final List<String> availablePortNames = SerialPort.availablePorts;
-
-    if (availablePortNames.isEmpty) {
-      print("No Serial Devices Found. Check your scanner mode!");
-      return;
-    }
-
-    for (String name in availablePortNames) {
-      try {
-        final port = SerialPort(name);
-        print('--- Port Found ---');
-        print('Name: $name');
-        print('Manufacturer: ${port.manufacturer ?? "Unknown"}');
-        print('Product: ${port.productName ?? "Unknown"}');
-        // If the scanner is in Serial Mode, one of these will likely say "Barcode" or "USB Serial"
-      } catch (e) {
-        print('Could not open metadata for $name');
-      }
-    }
   }
 
   void selectCampaign(LuckyDrawCampaign campaign) {
