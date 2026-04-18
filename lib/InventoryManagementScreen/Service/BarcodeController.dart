@@ -135,6 +135,7 @@ class BarcodePrinterController extends GetxController {
   Printer? selectedPrinter;
   List<Printer> availableDevices = [];
   StreamSubscription<List<Printer>>? _scanSubscription;
+  bool _isConnecting = false;
 
   String? savedThermalName;
   String? savedThermalAddress;
@@ -146,6 +147,20 @@ class BarcodePrinterController extends GetxController {
   final Map<String, SheetSession> _sessions = {};
 
   final _plugin = FlutterThermalPrinter.instance;
+
+  bool isDeviceConnected(Printer printer) {
+    if (!isConnected || selectedPrinter == null) return false;
+    final selected = selectedPrinter!;
+
+    // Prefer address as the stable identifier when available.
+    if ((selected.address ?? '').isNotEmpty &&
+        (printer.address ?? '').isNotEmpty) {
+      return selected.address == printer.address;
+    }
+
+    return selected.name == printer.name &&
+        selected.connectionType == printer.connectionType;
+  }
 
   // ── Init ──────────────────────────────────────────────────────────────────
   @override
@@ -226,6 +241,21 @@ class BarcodePrinterController extends GetxController {
     try {
       _scanSubscription = _plugin.devicesStream.listen((printers) async {
         availableDevices = printers;
+
+        // Keep selected printer in sync with refreshed scan objects.
+        if (selectedPrinter != null) {
+          final selected = selectedPrinter!;
+          for (final device in printers) {
+            if (((selected.address ?? '').isNotEmpty &&
+                    (device.address ?? '').isNotEmpty &&
+                    selected.address == device.address) ||
+                (selected.name == device.name &&
+                    selected.connectionType == device.connectionType)) {
+              selectedPrinter = device;
+              break;
+            }
+          }
+        }
         update();
         if (autoConnectAddress != null) {
           final match = printers.firstWhereOrNull(
@@ -260,6 +290,15 @@ class BarcodePrinterController extends GetxController {
 
   // ── Connect / disconnect ──────────────────────────────────────────────────
   Future<void> connectPrinter(Printer printer) async {
+    if (_isConnecting) return;
+    if (isDeviceConnected(printer)) {
+      selectedPrinter = printer;
+      isConnected = true;
+      update();
+      return;
+    }
+
+    _isConnecting = true;
     try {
       await _plugin.connect(printer);
       selectedPrinter = printer;
@@ -268,6 +307,8 @@ class BarcodePrinterController extends GetxController {
       _toast('Connected to ${printer.name ?? "printer"}');
     } catch (e) {
       _toast('Connection failed: $e');
+    } finally {
+      _isConnecting = false;
     }
   }
 

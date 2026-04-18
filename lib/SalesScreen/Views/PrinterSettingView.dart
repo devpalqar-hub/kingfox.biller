@@ -397,7 +397,7 @@ class _PrinterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isConnected = printer.isConnected == true;
+    final isConnected = ctrl.isDeviceConnected(printer);
     final isSaved = ctrl.isSaved(printer);
     final isUSB = printer.connectionType == ConnectionType.USB;
     final accent = isConnected

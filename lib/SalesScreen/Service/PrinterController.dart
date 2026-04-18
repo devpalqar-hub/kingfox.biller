@@ -9,7 +9,6 @@ import 'package:flutter_thermal_printer/flutter_thermal_printer.dart';
 import 'package:flutter_thermal_printer/utils/printer.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_navigation/src/snackbar/snackbar.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
@@ -36,6 +35,7 @@ class PrinterController extends GetxController {
   Printer? selectedPrinter;
   List<Printer> availableDevices = [];
   StreamSubscription<List<Printer>>? _scanSubscription;
+  bool _isConnecting = false;
 
   // Saved (default) printer info from SharedPreferences
   String? savedDeviceName;
@@ -45,6 +45,20 @@ class PrinterController extends GetxController {
   bool get hasSavedDevice => savedDeviceAddress != null;
 
   final _plugin = FlutterThermalPrinter.instance;
+
+  bool isDeviceConnected(Printer printer) {
+    if (!isConnected || selectedPrinter == null) return false;
+    final selected = selectedPrinter!;
+
+    // Prefer address as the stable identifier when available.
+    if ((selected.address ?? '').isNotEmpty &&
+        (printer.address ?? '').isNotEmpty) {
+      return selected.address == printer.address;
+    }
+
+    return selected.name == printer.name &&
+        selected.connectionType == printer.connectionType;
+  }
 
   // ── Init ────────────────────────────────────────────────────────────────────
   @override
@@ -108,6 +122,21 @@ class PrinterController extends GetxController {
     try {
       _scanSubscription = _plugin.devicesStream.listen((printers) async {
         availableDevices = printers;
+
+        // Keep selected printer in sync with refreshed scan objects.
+        if (selectedPrinter != null) {
+          final selected = selectedPrinter!;
+          for (final device in printers) {
+            if (((selected.address ?? '').isNotEmpty &&
+                    (device.address ?? '').isNotEmpty &&
+                    selected.address == device.address) ||
+                (selected.name == device.name &&
+                    selected.connectionType == device.connectionType)) {
+              selectedPrinter = device;
+              break;
+            }
+          }
+        }
         update();
 
         if (autoConnectAddress != null) {
@@ -143,6 +172,15 @@ class PrinterController extends GetxController {
 
   // ── Connect / Disconnect ────────────────────────────────────────────────────
   Future<void> connectPrinter(Printer printer) async {
+    if (_isConnecting) return;
+    if (isDeviceConnected(printer)) {
+      selectedPrinter = printer;
+      isConnected = true;
+      update();
+      return;
+    }
+
+    _isConnecting = true;
     try {
       await _plugin.connect(printer);
       selectedPrinter = printer;
@@ -151,6 +189,8 @@ class PrinterController extends GetxController {
       _toast('Connected to ${printer.name ?? "printer"}');
     } catch (e) {
       _toast('Connection failed: $e');
+    } finally {
+      _isConnecting = false;
     }
   }
 
