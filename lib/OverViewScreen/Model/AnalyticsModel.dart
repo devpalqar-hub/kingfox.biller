@@ -36,6 +36,10 @@ class Summary {
   final double transactionsCount;
   final double totalSales;
 
+  final double totalCollectedByHand;
+  final double totalCollectedByOnline;
+  final double totalGstCollected;
+
   Summary({
     required this.totalOrders,
     required this.averageOrderValue,
@@ -44,6 +48,9 @@ class Summary {
     required this.netRevenue,
     required this.transactionsCount,
     required this.totalSales,
+    required this.totalCollectedByHand,
+    required this.totalCollectedByOnline,
+    required this.totalGstCollected,
   });
 
   factory Summary.fromJson(Map<String, dynamic> json) => Summary(
@@ -54,6 +61,14 @@ class Summary {
         netRevenue: (json['netRevenue'] ?? 0).toDouble(),
         transactionsCount: (json['transactionsCount'] ?? 0).toDouble(),
         totalSales: (json['totalSales'] ?? 0).toDouble(),
+
+       
+        totalCollectedByHand:
+            (json['totalCollectedByHand'] ?? 0).toDouble(),
+        totalCollectedByOnline:
+            (json['totalCollectedByOnline'] ?? 0).toDouble(),
+        totalGstCollected:
+            (json['totalGstCollected'] ?? 0).toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -64,6 +79,11 @@ class Summary {
         'netRevenue': netRevenue,
         'transactionsCount': transactionsCount,
         'totalSales': totalSales,
+
+
+        'totalCollectedByHand': totalCollectedByHand,
+        'totalCollectedByOnline': totalCollectedByOnline,
+        'totalGstCollected': totalGstCollected,
       };
 }
 

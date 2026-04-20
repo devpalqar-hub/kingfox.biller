@@ -28,45 +28,46 @@ class PickupOrdersController extends GetxController {
   }
 
   Future<void> fetchOrders({bool loadMore = false}) async {
-    if (loadMore) {
-      isLoadMore = true;
-    } else {
-      isLoading = true;
-    }
-    update();
-
-    String url = "$baseUrl/billing/pickup-orders?page=$page&limit=20";
-
-    if (selectedStatus != null) {
-      url += "&status=$selectedStatus";
-    }
-
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $accessToken",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      final result = PickupOrdersResponse.fromJson(data);
-
-      if (loadMore) {
-        orders.addAll(result.data);
-      } else {
-        orders = result.data;
-      }
-
-      totalPages = result.pagination.totalPages;
-    } else {}
-
-    isLoading = false;
-    isLoadMore = false;
-    update();
+  if (loadMore) {
+    isLoadMore = true;
+  } else {
+    isLoading = true;
   }
+  update();
+
+  String url = "$baseUrl/billing/pickup-orders?page=$page&limit=20";
+
+  if (selectedStatus != null) {
+    url += "&status=$selectedStatus";
+  }
+  final response = await http.get(
+    Uri.parse(url),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    final result = PickupOrdersResponse.fromJson(data);
+
+    if (loadMore) {
+      orders.addAll(result.data);
+    } else {
+      orders = result.data;
+    }
+
+    totalPages = result.pagination.totalPages;
+  } else {
+
+  }
+
+  isLoading = false;
+  isLoadMore = false;
+  update();
+}
 
   Future<void> fetchAnalytics() async {
     isAnalyticsLoading = true;
@@ -91,6 +92,7 @@ class PickupOrdersController extends GetxController {
     isAnalyticsLoading = false;
     update();
   }
+
 
   Future<void> updateOrderStatus(int orderId, String status) async {
     final url = "$baseUrl/billing/pickup-orders/$orderId/status";

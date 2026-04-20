@@ -56,31 +56,27 @@ class _InventoryFiltersState extends State<InventoryFilters> {
                       debounce!.cancel();
                     }
 
+                   
+                      
                     debounce = Timer(
-                      const Duration(milliseconds: 500),
-                      () {
+  const Duration(milliseconds: 500),
+  () {
+    ctrl.searchQuery = value;
 
-                        String? status;
-                        if (ctrl.selectedFilter == "Low Stock") {
-                          status = "LOW_STOCK";
-                        } else if (ctrl.selectedFilter == "Out of Stock") {
-                          status = "OUT_OF_STOCK";
-                        }
+    String? status;
+    if (ctrl.selectedFilter == "Low Stock") {
+      status = "LOW_STOCK";
+    } else if (ctrl.selectedFilter == "Out of Stock") {
+      status = "OUT_OF_STOCK";
+    }
 
-                        if (value.isEmpty) {
-                          ctrl.searchQuery = "";
-                          ctrl.getInventory(
-                            refresh: true,
-                            stockStatus: status,
-                          );
-                        } else {
-                          ctrl.getInventoryBySearch(
-                            refresh: true,
-                            search: value,
-                          );
-                        }
-                      },
-                    );
+    ctrl.getInventory(
+      refresh: true,
+      search: value,
+      stockStatus: status,
+    );
+  },
+);
                   },
 
                   decoration: InputDecoration(
@@ -90,27 +86,22 @@ class _InventoryFiltersState extends State<InventoryFilters> {
                     /// ✅ CLEAR ONLY ON CLICK
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () {
+                     onPressed: () {
+  searchController.clear();
+  controller.searchQuery = "";
 
-                        /// 🔥 CLEAR TEXTFIELD ONLY HERE
-                        searchController.clear();
+  String? status;
+  if (controller.selectedFilter == "Low Stock") {
+    status = "LOW_STOCK";
+  } else if (controller.selectedFilter == "Out of Stock") {
+    status = "OUT_OF_STOCK";
+  }
 
-                        /// 🔥 RESET SEARCH STATE
-                        controller.searchQuery = "";
-
-                        String? status;
-                        if (ctrl.selectedFilter == "Low Stock") {
-                          status = "LOW_STOCK";
-                        } else if (ctrl.selectedFilter == "Out of Stock") {
-                          status = "OUT_OF_STOCK";
-                        }
-
-                        /// 🔥 LOAD NORMAL INVENTORY
-                        controller.getInventory(
-                          refresh: true,
-                          stockStatus: status,
-                        );
-                      },
+  controller.getInventory(
+    refresh: true,
+    stockStatus: status,
+  );
+},
                     ),
 
                     filled: true,
@@ -132,30 +123,22 @@ class _InventoryFiltersState extends State<InventoryFilters> {
                 return Padding(
                   padding: EdgeInsets.only(left: 10.w),
                   child: GestureDetector(
-                    onTap: () {
+                   onTap: () {
+  ctrl.selectedFilter = filter;
 
-                      ctrl.selectedFilter = filter;
+  String? status;
+  if (filter == "Low Stock") {
+    status = "LOW_STOCK";
+  } else if (filter == "Out of Stock") {
+    status = "OUT_OF_STOCK";
+  }
 
-                      String? status;
-                      if (filter == "Low Stock") {
-                        status = "LOW_STOCK";
-                      } else if (filter == "Out of Stock") {
-                        status = "OUT_OF_STOCK";
-                      }
-
-                      /// 🔥 KEEP SEARCH STATE
-                      if (ctrl.searchQuery.isEmpty) {
-                        ctrl.getInventory(
-                          refresh: true,
-                          stockStatus: status,
-                        );
-                      } else {
-                        ctrl.getInventoryBySearch(
-                          refresh: true,
-                          search: ctrl.searchQuery,
-                        );
-                      }
-                    },
+  ctrl.getInventory(
+    refresh: true,
+    search: ctrl.searchQuery,
+    stockStatus: status,
+  );
+},
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: 18.w, vertical: 10.h),

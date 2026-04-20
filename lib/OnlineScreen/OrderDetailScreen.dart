@@ -96,7 +96,8 @@ class OrderDetailScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: _bottomBar(),
+     bottomNavigationBar:
+    order.status == "DELIVERED" ? null : _bottomBar(),
     );
   }
 

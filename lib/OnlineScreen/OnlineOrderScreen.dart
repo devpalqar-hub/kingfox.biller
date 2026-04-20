@@ -19,7 +19,7 @@ class OnlineOrderScreen extends StatelessWidget {
 
           body: SafeArea(
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics:  AlwaysScrollableScrollPhysics(),
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.w,
@@ -29,7 +29,7 @@ class OnlineOrderScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    /// ================= HEADER =================
+               
                     Wrap(
                       spacing: 20.w,
                       runSpacing: 15.h,
@@ -123,8 +123,39 @@ class OnlineOrderScreen extends StatelessWidget {
 
                     SizedBox(height: 20.h),
 
-                    /// TABLE
-                    const OnlineOrderTable(),
+controller.orders.isEmpty
+    ? Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 60.h),
+          child: Column(
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 70,
+                color: Colors.grey.shade400,
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                "No Orders Found",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              SizedBox(height: 5.h),
+              Text(
+                "You don’t have any online orders yet.",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      )
+    : const OnlineOrderTable(),
                   ],
                 ),
               ),
@@ -135,7 +166,6 @@ class OnlineOrderScreen extends StatelessWidget {
     );
   }
 
-  /// ================= FILTER BOX =================
   Widget _filterBox({required Widget child}) {
     return Container(
       height: 38.h,
@@ -150,7 +180,6 @@ class OnlineOrderScreen extends StatelessWidget {
     );
   }
 
-  /// ================= CLEAR BUTTON =================
   Widget _clearBtn() {
     return Container(
       height: 38.h,

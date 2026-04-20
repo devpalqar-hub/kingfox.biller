@@ -5,6 +5,7 @@ import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 import 'package:kinfox_biller/SalesScreen/Views/ManualDiscountCard.dart';
 import 'package:kinfox_biller/SalesScreen/Views/OrderSummaryCard.dart';
+import 'package:kinfox_biller/SalesScreen/Views/PaymentMethodCrad.dart';
 import 'package:kinfox_biller/SalesScreen/Views/VoucherSelectionCard.dart';
 
 class BillSummaryCard extends StatelessWidget {
@@ -25,6 +26,8 @@ class BillSummaryCard extends StatelessWidget {
               SizedBox(height: 8.h),
               const VoucherSelectionCard(),
               SizedBox(height: 8.h),
+              const PaymentMethodCard(),
+SizedBox(height: 8.h),
               OrderSummaryCard(
                 subtotal: cart?.subtotal ?? 0,
                 tax: cart?.gstAmount ?? 0,
@@ -35,11 +38,11 @@ class BillSummaryCard extends StatelessWidget {
                 grandTotal: cart?.grandFinalTotal ?? 0,
                 onPrint: () async {
                   if (cart == null) {
-                    Get.snackbar('Error', 'Cart is empty');
+                  
                     return;
                   }
                   final ok = await ctrl.checkoutCart(
-                    paymentMethod: 'cash',
+                    paymentMethod: ctrl.selectedPaymentMethod,
                     customerName: ctrl.nameController.text,
                     customerPhone: ctrl.phoneController.text,
                     couponCode: ctrl.appliedCoupon,
@@ -57,6 +60,7 @@ class BillSummaryCard extends StatelessWidget {
                         discount: cart.couponDiscountAmount,
                         refundAmount: cart.refundAmount,
                         total: cart.grandFinalTotal,
+                        paymentMethod: ctrl.selectedPaymentMethod,
                       ),
                     );
                     ctrl.couponController.clear();

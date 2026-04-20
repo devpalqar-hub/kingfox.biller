@@ -16,6 +16,7 @@ class OrderCompleteDialog extends StatelessWidget {
   final String counterName;
   final String customerName;
   final double tenderedAmount;
+  final String paymentMethod;
 
   const OrderCompleteDialog({
     super.key,
@@ -26,6 +27,7 @@ class OrderCompleteDialog extends StatelessWidget {
     required this.discount,
     required this.refundAmount,
     required this.total,
+    required this.paymentMethod,
     this.cashierName = 'Cashier',
     this.counterName = 'POS-01',
     this.customerName = 'Walk-in',
@@ -86,6 +88,7 @@ class OrderCompleteDialog extends StatelessWidget {
                           ),
                           PaymentInformationCard(
                             paymentDateTime: DateTime.now(),
+                            paymentMethod: paymentMethod,
                             paidAmount: total,
                             tenderedAmount: tenderedAmount,
                           ),

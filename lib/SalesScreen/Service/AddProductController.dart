@@ -30,6 +30,7 @@ class AddProductController extends GetxController {
   StaffModel? selectedStaff;
   CartModel? completedOrder;
   String? invoiceNumber;
+  String selectedPaymentMethod = "CASH";
 
   List items = [];
   List<ProductVariantModel> searchProductsList = [];
@@ -110,6 +111,11 @@ class AddProductController extends GetxController {
     voucherCountController.text = count.toString();
     update();
   }
+
+  void setPaymentMethod(String method) {
+  selectedPaymentMethod = method.toUpperCase(); 
+  update();
+}
 
   @override
   void onInit() {
@@ -316,7 +322,7 @@ class AddProductController extends GetxController {
     final url = "$baseUrl/billing/cart/checkout";
 
     final Map<String, dynamic> body = {
-      "paymentMethod": paymentMethod.toUpperCase(),
+      "paymentMethod":  selectedPaymentMethod,
       "customerName": customerName ?? "",
       "customerPhone": customerPhone ?? "",
       "customerEmail": customerEmail ?? "",

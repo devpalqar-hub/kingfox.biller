@@ -27,7 +27,7 @@ class OrderSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350.w,
-      padding: EdgeInsets.symmetric(vertical: 18.w, horizontal: 16.h),
+      padding: EdgeInsets.symmetric(vertical: 15.w, horizontal: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -42,12 +42,12 @@ class OrderSummaryCard extends StatelessWidget {
               SizedBox(width: 10.w),
               Text(
                 "Order Summary",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
               ),
             ],
           ),
 
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
 
           /// Rows
           _row("Subtotal", subtotal),
@@ -59,12 +59,12 @@ class OrderSummaryCard extends StatelessWidget {
           _row("Return Amount", appliedReturnDiscount, isNegative: true),
           _row("Refund Amount", refundAmount, isNegative: true),
 
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
 
           /// Divider
           Divider(color: Colors.grey.shade300, thickness: 1, height: 20.h),
 
-          SizedBox(height: 5.h),
+          SizedBox(height: 3.h),
 
           /// Grand Total Label
           Text(
@@ -77,7 +77,7 @@ class OrderSummaryCard extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.h),
 
           /// Amount
           Text(
@@ -89,12 +89,12 @@ class OrderSummaryCard extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 20.h),
+          SizedBox(height: 10.h),
 
           /// Print Button
           GestureDetector(
             onTap: onPrint,
-            // 👈 CALL HERE
+            
             child: Container(
               height: 42.h,
               width: 300.w,
@@ -140,7 +140,7 @@ class OrderSummaryCard extends StatelessWidget {
     bool red = false,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
+      padding: EdgeInsets.symmetric(vertical: 2.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

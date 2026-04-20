@@ -5,10 +5,12 @@ class PaymentInformationCard extends StatelessWidget {
   final DateTime paymentDateTime;
   final double? paidAmount;
   final double? tenderedAmount;
+  final String paymentMethod ; // Placeholder, replace with actual method
 
   const PaymentInformationCard({
     super.key,
     required this.paymentDateTime,
+    required this.paymentMethod,
     this.paidAmount,
     this.tenderedAmount,
   });
@@ -39,7 +41,7 @@ class PaymentInformationCard extends StatelessWidget {
                   child: _gridCell(
                     label: 'Method',
                     child: Text(
-                      'Cash',
+                      paymentMethod, 
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,

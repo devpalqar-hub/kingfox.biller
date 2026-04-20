@@ -169,7 +169,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                               SizedBox(width: 12.w),
 
-                              /// FROM DATE ✅ UPDATED
                               _dateButton(
                                 label: fromDate == null
                                     ? "From"
@@ -185,7 +184,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                               SizedBox(width: 10.w),
 
-                              /// TO DATE ✅ UPDATED
+                           
                               _dateButton(
                                 label: toDate == null
                                     ? "To"
@@ -201,7 +200,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                               SizedBox(width: 10.w),
 
-                              /// CLEAR
+                        
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -275,7 +274,45 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         ),
 
                       SizedBox(height: 20.h),
+                      
 
+
+Row(
+  children: [
+    Expanded(
+      child: AnalyticsCard(
+        title: "BY HAND",
+        value:
+    "₹${(ctrl.analytics?.summary.totalCollectedByHand ?? 0).toDouble().toStringAsFixed(2)}",
+           
+        color:  Colors.brown,
+      ),
+    ),
+
+    SizedBox(width: 20.w),
+
+    Expanded(
+      child: AnalyticsCard(
+        title: "BY BANK / ONLINE",
+          value:
+              "₹${ctrl.analytics?.summary.totalCollectedByOnline.toStringAsFixed(2) ?? '0.00'}",
+        color: const Color.fromARGB(255, 85, 184, 231),
+      ),
+    ),
+
+    SizedBox(width: 20.w),
+
+    Expanded(
+      child: AnalyticsCard(
+        title: "TOTAL GST",
+        value:
+    "₹${(ctrl.analytics?.summary.totalGstCollected ?? 0).toDouble().toStringAsFixed(2)}",
+        color:  Colors.orange,
+      ),
+    ),
+  ],
+),
+ SizedBox(height: 20.h),
                       /// TABLE
                       BillingHistoryTable(controller: ctrl),
 
