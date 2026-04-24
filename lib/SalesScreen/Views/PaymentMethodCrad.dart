@@ -23,10 +23,7 @@ class PaymentMethodCard extends StatelessWidget {
             children: [
               Text(
                 "Payment Method",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
 
               SizedBox(height: 10.h),
@@ -67,7 +64,7 @@ class PaymentMethodCard extends StatelessWidget {
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
-                fontSize: 12.sp,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),

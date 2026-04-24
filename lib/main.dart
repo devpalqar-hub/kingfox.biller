@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kinfox_biller/DashBoard/DashBoardScreen.dart';
 import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 
-
-String baseUrl = "https://api.kingfox.palqar.cloud/v1";
+String baseUrl = (true)
+    ? "https://api.kingfox.palqar.cloud/v1"
+    : "https://api.kingfoxclothing.com/v1";
 String? accessToken;
 
 void main() async {
@@ -23,7 +24,7 @@ void main() async {
 class KingfoxBiller extends StatelessWidget {
   KingfoxBiller({super.key});
 
-  final AuthController controller = Get.put(AuthController(),permanent: true);
+  final AuthController controller = Get.put(AuthController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +33,7 @@ class KingfoxBiller extends StatelessWidget {
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(fontFamily: "Inter"),
-        home: const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
     );
   }

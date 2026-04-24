@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
@@ -81,7 +82,6 @@ class AddProductController extends GetxController {
   }
 
   void clearVoucherSelection() {
-    campaigns.clear();
     selectedCampaign = null;
   }
 
@@ -113,9 +113,9 @@ class AddProductController extends GetxController {
   }
 
   void setPaymentMethod(String method) {
-  selectedPaymentMethod = method.toUpperCase(); 
-  update();
-}
+    selectedPaymentMethod = method.toUpperCase();
+    update();
+  }
 
   @override
   void onInit() {
@@ -322,7 +322,7 @@ class AddProductController extends GetxController {
     final url = "$baseUrl/billing/cart/checkout";
 
     final Map<String, dynamic> body = {
-      "paymentMethod":  selectedPaymentMethod,
+      "paymentMethod": selectedPaymentMethod,
       "customerName": customerName ?? "",
       "customerPhone": customerPhone ?? "",
       "customerEmail": customerEmail ?? "",
@@ -373,6 +373,7 @@ class AddProductController extends GetxController {
       invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
       PrinterController pctrl = Get.find();
       pctrl.printReceipt(printModel);
+      Get.dialog(OrderCompleteDialog(data: printModel));
       clearAllTextControllers();
       clearVoucherSelection();
 

@@ -51,18 +51,7 @@ SizedBox(height: 8.h),
                         int.tryParse(ctrl.voucherCountController.text) ?? 0,
                   );
                   if (ok) {
-                    Get.dialog(
-                      OrderCompleteDialog(
-                        cart: ctrl.completedOrder!,
-                        invoiceNumber: ctrl.invoiceNumber ?? 'N/A',
-                        subtotal: cart.subtotal,
-                        tax: cart.gstAmount,
-                        discount: cart.couponDiscountAmount,
-                        refundAmount: cart.refundAmount,
-                        total: cart.grandFinalTotal,
-                        paymentMethod: ctrl.selectedPaymentMethod,
-                      ),
-                    );
+                    
                     ctrl.couponController.clear();
                     ctrl.voucherCountController.clear();
                     ctrl.cart = null;

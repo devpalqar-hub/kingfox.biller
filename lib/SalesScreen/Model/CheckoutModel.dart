@@ -17,6 +17,8 @@ class CheckoutData {
   final Customer? customer;
   final List<String> issuedVoucherCodes;
   final List<Voucher> availableVouchers;
+  final String? createdAt;
+  final String? status;
 
   const CheckoutData({
     this.cartId,
@@ -37,6 +39,8 @@ class CheckoutData {
     this.customer,
     this.issuedVoucherCodes = const [],
     this.availableVouchers = const [],
+    this.createdAt,
+    this.status,
   });
 
   factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
@@ -66,6 +70,9 @@ class CheckoutData {
     availableVouchers: (j['availableVouchers'] as List? ?? [])
         .map((e) => Voucher.fromJson(e))
         .toList(),
+
+    createdAt: j["createdAt"],
+    status: j["status"],
   );
 }
 

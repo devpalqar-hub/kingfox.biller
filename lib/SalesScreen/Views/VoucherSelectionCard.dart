@@ -10,7 +10,7 @@ class VoucherSelectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350.w,
-      padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 14.w),
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -24,10 +24,10 @@ class VoucherSelectionCard extends StatelessWidget {
               /// TITLE
               Text(
                 "Voucher Selection",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700),
               ),
 
-              SizedBox(height: 12.h),
+              SizedBox(height: 8.h),
 
               /// 🔥 DROPDOWN + COUNTER
               Row(
@@ -35,11 +35,11 @@ class VoucherSelectionCard extends StatelessWidget {
                   /// DROPDOWN
                   Expanded(
                     child: Container(
-                      height: 42.h,
-                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      height: 36.h,
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14.r),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: DropdownButton<int>(
@@ -48,14 +48,14 @@ class VoucherSelectionCard extends StatelessWidget {
                         underline: const SizedBox(),
                         hint: Text(
                           "Select Voucher",
-                          style: TextStyle(fontSize: 12.sp),
+                          style: TextStyle(fontSize: 11.sp),
                         ),
                         value: controller.selectedCampaign?.id,
 
                         items: [
                           DropdownMenuItem<int>(
                             value: null,
-                            child: Text("None", style: TextStyle(fontSize: 12)),
+                            child: Text("None", style: TextStyle(fontSize: 11.sp)),
                           ),
 
                           ...controller.campaigns.map((campaign) {
@@ -63,7 +63,7 @@ class VoucherSelectionCard extends StatelessWidget {
                               value: campaign.id,
                               child: Text(
                                 campaign.name,
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 11.sp),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             );
@@ -87,7 +87,7 @@ class VoucherSelectionCard extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
 
                   GestureDetector(
                     onTap: () {
@@ -105,32 +105,32 @@ class VoucherSelectionCard extends StatelessWidget {
                       }
                     },
                     child: Container(
-                      height: 42.h,
-                      width: 36.w,
+                      height: 36.h,
+                      width: 32.w,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: Icon(Icons.remove, size: 18.sp),
+                      child: Icon(Icons.remove, size: 16.sp),
                     ),
                   ),
 
-                  SizedBox(width: 6.w),
+                  SizedBox(width: 4.w),
 
                   /// COUNT
                   Container(
-                    width: 55.w,
-                    height: 42.h,
+                    width: 46.w,
+                    height: 36.h,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(10.r),
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: Text(
                       controller.voucherCountController.text,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -151,20 +151,20 @@ class VoucherSelectionCard extends StatelessWidget {
                     // ),
                   ),
 
-                  SizedBox(width: 6.w),
+                  SizedBox(width: 4.w),
 
                   /// ➕ PLUS
                   GestureDetector(
                     onTap: controller.updateVoucherCount,
                     child: Container(
-                      height: 42.h,
-                      width: 36.w,
+                      height: 36.h,
+                      width: 32.w,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: Icon(Icons.add, size: 18.sp),
+                      child: Icon(Icons.add, size: 16.sp),
                     ),
                   ),
                 ],
@@ -176,32 +176,32 @@ class VoucherSelectionCard extends StatelessWidget {
                   padding: EdgeInsets.only(top: 6.h, left: 4.w),
                   child: Text(
                     controller.voucherError!,
-                    style: TextStyle(color: Colors.red, fontSize: 11.sp),
+                    style: TextStyle(color: Colors.red, fontSize: 10.sp),
                   ),
                 ),
 
-              SizedBox(height: 14.h),
+              SizedBox(height: 10.h),
 
               Row(
                 children: [
                   Expanded(
                     child: Container(
-                      height: 42.h,
-                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      height: 36.h,
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14.r),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search, size: 16),
-                          SizedBox(width: 6.w),
+                          Icon(Icons.search, size: 14.sp),
+                          SizedBox(width: 4.w),
                           Expanded(
                             child: TextField(
                               controller: controller.couponController,
                               textAlignVertical: TextAlignVertical.center,
-                              style: TextStyle(fontSize: 13),
+                              style: TextStyle(fontSize: 12.sp),
                               onChanged: (value) {
                                 controller.couponError = null;
                                 controller.appliedCoupon = "";
@@ -212,7 +212,7 @@ class VoucherSelectionCard extends StatelessWidget {
                                 isCollapsed: true,
                                 hintText: "Coupon Code",
                                 hintStyle: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11.sp,
                                   color: Colors.black,
                                 ),
 
@@ -226,7 +226,7 @@ class VoucherSelectionCard extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
 
                   GestureDetector(
                     onTap: () async {
@@ -245,19 +245,19 @@ class VoucherSelectionCard extends StatelessWidget {
                       await controller.getCart(couponCode: coupon);
                     },
                     child: Container(
-                      height: 42.h,
-                      width: 90.w,
+                      height: 36.h,
+                      width: 72.w,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xff6CCF4F),
-                        borderRadius: BorderRadius.circular(14.r),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         "Apply",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
@@ -270,7 +270,7 @@ class VoucherSelectionCard extends StatelessWidget {
                   padding: EdgeInsets.only(top: 6.h, left: 4.w),
                   child: Text(
                     controller.couponError!,
-                    style: TextStyle(color: Colors.red, fontSize: 11.sp),
+                    style: TextStyle(color: Colors.red, fontSize: 10.sp),
                   ),
                 ),
             ],

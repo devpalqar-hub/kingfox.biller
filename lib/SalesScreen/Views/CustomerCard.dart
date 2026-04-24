@@ -214,7 +214,7 @@ class CustomerCard extends StatelessWidget {
         style: TextStyle(fontSize: 13.sp),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(10),
+          LengthLimitingTextInputFormatter(12),
         ],
         decoration: InputDecoration(
           isDense: true,

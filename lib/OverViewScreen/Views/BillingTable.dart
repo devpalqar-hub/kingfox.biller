@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
 import 'package:kinfox_biller/OverViewScreen/Service/HistoryController.dart';
+import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 
 class BillingHistoryTable extends StatelessWidget {
   final Historycontroller controller;
@@ -49,12 +51,12 @@ class BillingHistoryTable extends StatelessWidget {
         Expanded(child: Text("AMOUNT", overflow: TextOverflow.ellipsis)),
         Expanded(child: Text("METHOD", overflow: TextOverflow.ellipsis)),
         Expanded(child: Text("STATUS", overflow: TextOverflow.ellipsis)),
-       // Expanded(child: Text("ACTION", overflow: TextOverflow.ellipsis)),
+        // Expanded(child: Text("ACTION", overflow: TextOverflow.ellipsis)),
       ],
     );
   }
 
-  Widget _InvoiceRow(InvoiceModel inv) {
+  Widget _InvoiceRow(CheckoutData inv) {
     final createdAt = inv.createdAt ?? '';
     String date = '';
     String time = '';
@@ -65,8 +67,8 @@ class BillingHistoryTable extends StatelessWidget {
       time = parts.length > 1 ? parts[1].split(".")[0] : '';
     }
 
-    final itemsCount = inv.items?.fold<int>(
-            0, (prev, item) => prev + (item.quantity ?? 0)) ??
+    final itemsCount =
+        inv.items?.fold<int>(0, (prev, item) => prev + (item.quantity ?? 0)) ??
         0;
     final amount = inv.finalAmount ?? '0';
     final method = (inv.payments?.isNotEmpty ?? false)
@@ -81,23 +83,41 @@ class BillingHistoryTable extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(child: Text(invoiceNumber, overflow: TextOverflow.ellipsis)),
-          Expanded(child: Text("$date, $time", overflow: TextOverflow.ellipsis)),
           Expanded(
-              child: Text("$itemsCount Item${itemsCount > 1 ? 's' : ''}",
-                  overflow: TextOverflow.ellipsis)),
-          Expanded(
-            child: Text("₹$amount",
-                style: const TextStyle(color: Colors.green),
-                overflow: TextOverflow.ellipsis),
+            child: Text("$date, $time", overflow: TextOverflow.ellipsis),
           ),
-          Expanded(child: Text(method, overflow: TextOverflow.ellipsis)),
           Expanded(
-            child: Text(status,
-                style: TextStyle(
-                    color: status == "RETURNED" ? Colors.red : Colors.green),
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              "$itemsCount Item${itemsCount > 1 ? 's' : ''}",
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-         
+          Expanded(
+            child: Text(
+              "₹$amount",
+              style: const TextStyle(color: Colors.green),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            child: Text(method.toUpperCase(), overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            child: Text(
+              status.replaceAll("_", " ").capitalize ?? "",
+              style: TextStyle(
+                color: status == "RETURNED" ? Colors.red : Colors.green,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          InkWell(
+            onTap: () {
+              Get.dialog(OrderCompleteDialog(data: inv));
+            },
+            child: Icon(Icons.visibility, color: Colors.black45),
+          ),
         ],
       ),
     );

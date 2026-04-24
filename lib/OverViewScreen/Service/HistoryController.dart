@@ -4,6 +4,7 @@ import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/OverViewScreen/Model/AnalyticsModel.dart';
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
+import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 import 'package:kinfox_biller/main.dart';
 
 class Historycontroller extends GetxController {
@@ -16,7 +17,7 @@ class Historycontroller extends GetxController {
   final int limit = 20;
 
   AnalyticsModel? analytics;
-  List<InvoiceModel> invoices = [];
+  List<CheckoutData> invoices = [];
 
   
  Future<void> geAnalytics({
@@ -119,7 +120,7 @@ Future<void> getInvoices({
       hasMore = false;
     } else {
       invoices.addAll(
-        data.map((e) => InvoiceModel.fromJson(e)).toList(),
+        data.map((e) => CheckoutData.fromJson(e)).toList(),
       );
       page++;
     }
