@@ -540,15 +540,34 @@ class _LineItemsCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            it.productName ?? '—',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E293B),
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                it.productName ?? '—',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+
+                              if (it.returnedQuantity != null &&
+                                  it.returnedQuantity! > 0)
+                                Text(
+                                  (it.pendingReturnQuantity == 0)
+                                      ? "  (Full Returned)"
+                                      : "  (${it.returnedQuantity} item returned)",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                            ],
                           ),
                           SizedBox(height: 2.h),
                           Text(

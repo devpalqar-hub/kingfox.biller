@@ -120,6 +120,8 @@ class CartItem {
   final double? price;
   final int? quantity;
   final double? lineTotal;
+  final int? returnedQuantity;
+  final int? pendingReturnQuantity;
 
   const CartItem({
     this.variantId,
@@ -133,6 +135,8 @@ class CartItem {
     this.price,
     this.quantity,
     this.lineTotal,
+    this.returnedQuantity,
+    this.pendingReturnQuantity,
   });
 
   factory CartItem.fromJson(Map<String, dynamic> j) => CartItem(
@@ -147,6 +151,8 @@ class CartItem {
     price: (j['price'] as num?)?.toDouble(),
     quantity: j['quantity'],
     lineTotal: (j['lineTotal'] as num?)?.toDouble(),
+    returnedQuantity: (j["returnedQuantity"]),
+    pendingReturnQuantity: (j["pendingReturnQuantity"]),
   );
 }
 
