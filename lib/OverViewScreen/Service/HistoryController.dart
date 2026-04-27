@@ -18,6 +18,7 @@ class Historycontroller extends GetxController {
 
   AnalyticsModel? analytics;
   List<CheckoutData> invoices = [];
+  String searchQuery = "";
 
   
  Future<void> geAnalytics({
@@ -69,6 +70,7 @@ Future<void> getInvoices({
   String? status,
   String? from,
   String? to,
+  String?search,
 }) async {
   if (refresh) {
     page = 1;
@@ -93,6 +95,7 @@ Future<void> getInvoices({
     if (status != null) "status": status,
     if (from != null) "from": from,
     if (to != null) "to": to,
+     if (search != null && search.isNotEmpty) "search": search,
   };
 
   final uri = Uri.parse("$baseUrl/billing/my-invoices")

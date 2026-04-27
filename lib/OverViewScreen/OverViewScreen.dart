@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kinfox_biller/OverViewScreen/Service/HistoryController.dart';
 import 'package:kinfox_biller/OverViewScreen/Views/BillingTable.dart';
 import 'package:kinfox_biller/OverViewScreen/Views/AnalyticsCard.dart';
+import 'package:kinfox_biller/OverViewScreen/Views/InvoiceSearch.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -43,9 +44,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   Future<void> loadData() async {
     await historyController.geAnalytics(
-  fromDate: fromDate != null ? formatDate(fromDate!) : null,
-  toDate: toDate != null ? formatDate(toDate!) : null,
-);
+      fromDate: fromDate != null ? formatDate(fromDate!) : null,
+      toDate: toDate != null ? formatDate(toDate!) : null,
+    );
     await historyController.getInvoices(
       refresh: true,
       status: selectedStatus,
@@ -58,7 +59,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
     await loadData();
   }
 
-  /// ✅ 🔥 COMMON DATE PICKER (REUSABLE)
   Future<DateTime?> _pickDate() async {
     return await showDatePicker(
       context: context,
@@ -77,12 +77,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
               onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Color(0xff3B82F6),
-              ),
+              style: TextButton.styleFrom(foregroundColor: Color(0xff3B82F6)),
             ),
             dialogBackgroundColor: Colors.white,
-         
           ),
           child: child!,
         );
@@ -105,12 +102,13 @@ class _OverviewScreenState extends State<OverviewScreen> {
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 40.w, vertical: 30.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.w,
+                    vertical: 30.h,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       /// HEADER + FILTER
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -139,27 +137,29 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                           Row(
                             children: [
-
-                              /// STATUS
                               _filterBox(
                                 child: DropdownButton<String>(
                                   dropdownColor: Colors.white,
                                   isExpanded: false,
                                   value: selectedStatus,
-                                  hint: Text("Status", style: TextStyle(fontSize: 12.sp)),
+                                  hint: Text(
+                                    "Status",
+                                    style: TextStyle(fontSize: 12.sp),
+                                  ),
                                   underline: const SizedBox(),
-                                  items: [
-                                    "DRAFT",
-                                    "COMPLETED",
-                                    "CANCELLED",
-                                    "RETURNED",
-                                    "PARTIALLY_RETURNED"
-                                  ].map((status) {
-                                    return DropdownMenuItem(
-                                      value: status,
-                                      child: Text(status),
-                                    );
-                                  }).toList(),
+                                  items:
+                                      [
+                                        "DRAFT",
+                                        "COMPLETED",
+                                        "CANCELLED",
+                                        "RETURNED",
+                                        "PARTIALLY_RETURNED",
+                                      ].map((status) {
+                                        return DropdownMenuItem(
+                                          value: status,
+                                          child: Text(status),
+                                        );
+                                      }).toList(),
                                   onChanged: (value) {
                                     setState(() => selectedStatus = value);
                                     loadData();
@@ -184,7 +184,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                               SizedBox(width: 10.w),
 
-                           
                               _dateButton(
                                 label: toDate == null
                                     ? "To"
@@ -200,7 +199,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                               SizedBox(width: 10.w),
 
-                        
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -212,14 +210,19 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 12.w, vertical: 8.h),
+                                    horizontal: 12.w,
+                                    vertical: 8.h,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.red.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8.r),
                                   ),
                                   child: Text(
                                     "Clear",
-                                    style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 12.sp,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -230,7 +233,6 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                       SizedBox(height: 25.h),
 
-                      /// ANALYTICS
                       if (analytics == null)
                         _analyticsLoading()
                       else
@@ -274,46 +276,45 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         ),
 
                       SizedBox(height: 20.h),
-                      
 
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AnalyticsCard(
+                              title: "BY HAND",
+                              value:
+                                  "₹${(ctrl.analytics?.summary.totalCollectedByHand ?? 0).toDouble().toStringAsFixed(2)}",
 
-Row(
-  children: [
-    Expanded(
-      child: AnalyticsCard(
-        title: "BY HAND",
-        value:
-    "₹${(ctrl.analytics?.summary.totalCollectedByHand ?? 0).toDouble().toStringAsFixed(2)}",
-           
-        color:  Colors.brown,
-      ),
-    ),
+                              color: Colors.brown,
+                            ),
+                          ),
 
-    SizedBox(width: 20.w),
+                          SizedBox(width: 20.w),
 
-    Expanded(
-      child: AnalyticsCard(
-        title: "BY BANK / ONLINE",
-          value:
-              "₹${ctrl.analytics?.summary.totalCollectedByOnline.toStringAsFixed(2) ?? '0.00'}",
-        color: const Color.fromARGB(255, 85, 184, 231),
-      ),
-    ),
+                          Expanded(
+                            child: AnalyticsCard(
+                              title: "BY BANK / ONLINE",
+                              value:
+                                  "₹${ctrl.analytics?.summary.totalCollectedByOnline.toStringAsFixed(2) ?? '0.00'}",
+                              color: const Color.fromARGB(255, 85, 184, 231),
+                            ),
+                          ),
 
-    SizedBox(width: 20.w),
+                          SizedBox(width: 20.w),
 
-    Expanded(
-      child: AnalyticsCard(
-        title: "TOTAL GST",
-        value:
-    "₹${(ctrl.analytics?.summary.totalGstCollected ?? 0).toDouble().toStringAsFixed(2)}",
-        color:  Colors.orange,
-      ),
-    ),
-  ],
-),
- SizedBox(height: 20.h),
-                      /// TABLE
+                          Expanded(
+                            child: AnalyticsCard(
+                              title: "TOTAL GST",
+                              value:
+                                  "₹${(ctrl.analytics?.summary.totalGstCollected ?? 0).toDouble().toStringAsFixed(2)}",
+                              color: Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20.h),
+                      InvoiceSearch(),
+                      SizedBox(height: 20.h),
                       BillingHistoryTable(controller: ctrl),
 
                       if (ctrl.isLoadMore)
@@ -351,10 +352,7 @@ Row(
     );
   }
 
-  Widget _dateButton({
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _dateButton({required String label, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: _filterBox(
