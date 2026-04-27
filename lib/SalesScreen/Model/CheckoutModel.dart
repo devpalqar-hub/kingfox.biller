@@ -19,6 +19,8 @@ class CheckoutData {
   final List<Voucher> availableVouchers;
   final String? createdAt;
   final String? status;
+  final String? manualDiscountAmount;
+  final String? appliedCouponDiscount;
 
   const CheckoutData({
     this.cartId,
@@ -41,6 +43,8 @@ class CheckoutData {
     this.availableVouchers = const [],
     this.createdAt,
     this.status,
+    this.manualDiscountAmount,
+    this.appliedCouponDiscount,
   });
 
   factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
@@ -70,7 +74,8 @@ class CheckoutData {
     availableVouchers: (j['availableVouchers'] as List? ?? [])
         .map((e) => Voucher.fromJson(e))
         .toList(),
-
+    manualDiscountAmount: (j["manualDiscountAmount"] ?? "0").toString(),
+    appliedCouponDiscount: (j["appliedCouponDiscount"] ?? "0").toString(),
     createdAt: j["createdAt"],
     status: j["status"],
   );

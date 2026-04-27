@@ -346,11 +346,6 @@ class AddProductController extends GetxController {
       body["attendedByStaffId"] = attendedByStaffId;
     }
 
-    debugPrint("========== CHECKOUT REQUEST ==========");
-    debugPrint("URL: $url");
-    debugPrint("BODY: ${jsonEncode(body)}");
-    debugPrint("======================================");
-
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -359,12 +354,6 @@ class AddProductController extends GetxController {
       },
       body: jsonEncode(body),
     );
-
-    debugPrint("========== CHECKOUT RESPONSE ==========");
-    debugPrint("STATUS CODE: ${response.statusCode}");
-    debugPrint("BODY: ${response.body}");
-    debugPrint("=======================================");
-
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
 

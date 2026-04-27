@@ -12,11 +12,10 @@ import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart';
 class Dashboardscreen extends StatelessWidget {
   Dashboardscreen({super.key});
 
-  final DashboardController controller = Get.put(
+  DashboardController controller = Get.put(
     DashboardController(),
     permanent: true,
   );
-  final PrinterController pctrl = Get.put(PrinterController());
   final pages = [
     SalesScreen(),
     const OverviewScreen(),
@@ -26,6 +25,8 @@ class Dashboardscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final PrinterController pctrl = Get.put(PrinterController());
+
     return Scaffold(
       body: Column(
         children: [

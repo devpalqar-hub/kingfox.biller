@@ -15,16 +15,15 @@ class AuthController extends GetxController {
   String userId = "";
   String userName = "";
 
-
   @override
   void onInit() async {
     super.onInit();
-    
+
     final prefs = await SharedPreferences.getInstance();
 
     userId = prefs.getString("userId") ?? "";
     userName = prefs.getString("userName") ?? "";
-    
+
     // Perform login check only once, after first frame is rendered
     if (!_loginCheckCompleted) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -32,10 +31,9 @@ class AuthController extends GetxController {
         _loginCheckCompleted = true;
       });
     }
-    
+
     update();
   }
-
 
   Future<void> login(String email, String password) async {
     isLoading = true;
@@ -43,13 +41,8 @@ class AuthController extends GetxController {
 
     final response = await http.post(
       Uri.parse("$baseUrl/auth/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-      }),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "password": password}),
     );
 
     final data = jsonDecode(response.body);
@@ -59,14 +52,12 @@ class AuthController extends GetxController {
 
       userId = data["user"]["id"].toString();
       userName = data["user"]["name"] ?? "";
-    
+
       final prefs = await SharedPreferences.getInstance();
 
-      
       await prefs.setString("accessToken", accessToken!);
       await prefs.setString("userId", userId);
       await prefs.setString("userName", userName);
-      
 
       Get.offAll(() => Dashboardscreen());
     } else {
@@ -79,7 +70,6 @@ class AuthController extends GetxController {
           errorMessage = data["message"].toString();
         }
       }
- Get.snackbar("Error", errorMessage);
     }
 
     isLoading = false;
@@ -99,9 +89,7 @@ class AuthController extends GetxController {
 
     final response = await http.get(
       Uri.parse("$baseUrl/auth/profile"),
-      headers: {
-        "Authorization": "Bearer $accessToken",
-      },
+      headers: {"Authorization": "Bearer $accessToken"},
     );
 
     if (response.statusCode == 200) {
@@ -110,7 +98,6 @@ class AuthController extends GetxController {
       await logout();
     }
   }
-
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -121,12 +108,9 @@ class AuthController extends GetxController {
     Get.offAll(() => LoginScreen());
   }
 
-
   void handleUnauthorized(int statusCode) {
     if (statusCode == 401) {
       logout();
-
-     
     }
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kinfox_biller/OrderCompleteDailogue/Views/OrderDetailCard.dart';
-import 'package:kinfox_biller/OrderCompleteDailogue/Views/PaymentInformationCard.dart';
-import 'package:kinfox_biller/OrderCompleteDailogue/Views/PaymentSummaryCard.dart';
-import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart'; // adjust import
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/get_instance.dart';
+import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
+import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart'; // adjust import
 
 class OrderCompleteDialog extends StatelessWidget {
   final CheckoutData data;
@@ -249,7 +249,8 @@ class OrderCompleteDialog extends StatelessWidget {
             'Date',
             _formatMetaDate(
               data.createdAt != null
-                  ? DateTime.tryParse(data.createdAt!) ?? DateTime.now()
+                  ? (DateTime.tryParse(data.createdAt!) ?? DateTime.now())
+                        .toLocal()
                   : DateTime.now(),
             ),
           ),
@@ -320,13 +321,20 @@ class OrderCompleteDialog extends StatelessWidget {
             style: TextStyle(color: const Color(0xFF94A3B8), fontSize: 10.sp),
           ),
           const Spacer(),
-          _footerBtn(
-            icon: Icons.file_download_outlined,
-            label: 'Export',
-            onTap: () {},
-          ),
+          // _footerBtn(
+          //   icon: Icons.file_download_outlined,
+          //   label: 'Export',
+          //   onTap: () {},
+          // ),
           SizedBox(width: 8.w),
-          _footerBtn(icon: Icons.print_outlined, label: 'Print', onTap: () {}),
+          _footerBtn(
+            icon: Icons.print_outlined,
+            label: 'Print',
+            onTap: () {
+              PrinterController pctrl = Get.find();
+              pctrl.printReceipt(data);
+            },
+          ),
           SizedBox(width: 8.w),
           _footerBtnPrimary(
             icon: Icons.check_rounded,
@@ -1033,7 +1041,7 @@ class _PaymentAttributionCard extends StatelessWidget {
                   child: _cell(
                     label: 'Date & Time',
                     child: Text(
-                      _fmt(dt),
+                      _fmt(dt.toLocal()),
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
@@ -1328,12 +1336,17 @@ class _BillSummaryPanel extends StatelessWidget {
           ),
 
         // Coupon / voucher discount
-        if ((data.discountedSubtotal != null) &&
-            (data.subtotal != null) &&
-            (data.discountedSubtotal! < data.subtotal!))
+        if (data.manualDiscountAmount != "0")
+          _row(
+            'Discount',
+            -(double.parse(data.manualDiscountAmount ?? "0")),
+            color: const Color(0xFFDC2626),
+          ),
+
+        if (data.appliedCouponDiscount != "0")
           _row(
             'Coupon Discount',
-            -(((data.subtotal ?? 0) - (data.discountedSubtotal ?? 0))),
+            -(double.parse(data.appliedCouponDiscount ?? "0")),
             color: const Color(0xFFDC2626),
           ),
 
@@ -1433,39 +1446,39 @@ class _BillSummaryPanel extends StatelessWidget {
         ],
 
         // Cash change block
-        if (change != null) ...[
-          SizedBox(height: 8.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Cash Transaction',
-                  style: TextStyle(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                _changeRow('Tendered', '₹${tenderedAmount.toStringAsFixed(2)}'),
-                SizedBox(height: 2.h),
-                _changeRow(
-                  'Change',
-                  '₹${change.toStringAsFixed(2)}',
-                  color: const Color(0xFF15803D),
-                ),
-              ],
-            ),
-          ),
-        ],
+        // if (change != null) ...[
+        //   SizedBox(height: 8.h),
+        //   Container(
+        //     width: double.infinity,
+        //     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        //     decoration: BoxDecoration(
+        //       color: Colors.white,
+        //       borderRadius: BorderRadius.circular(8.r),
+        //       border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
+        //     ),
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         Text(
+        //           'Cash Transaction',
+        //           style: TextStyle(
+        //             color: const Color(0xFF94A3B8),
+        //             fontSize: 10.sp,
+        //             fontWeight: FontWeight.w500,
+        //           ),
+        //         ),
+        //         SizedBox(height: 4.h),
+        //         _changeRow('Tendered', '₹${tenderedAmount.toStringAsFixed(2)}'),
+        //         SizedBox(height: 2.h),
+        //         _changeRow(
+        //           'Change',
+        //           '₹${change.toStringAsFixed(2)}',
+        //           color: const Color(0xFF15803D),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ],
 
         // Customer info (if not walk-in)
         if (data.customer != null) ...[

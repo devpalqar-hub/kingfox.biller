@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -8,12 +9,19 @@ import 'package:collection/collection.dart';
 import 'package:flutter_thermal_printer/flutter_thermal_printer.dart';
 import 'package:flutter_thermal_printer/utils/printer.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:http/http.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
+import 'package:kinfox_biller/Dashboard/Service/DashBoardController.dart';
+import 'package:kinfox_biller/LoginScreen/LognScreen.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
+import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
+import 'package:kinfox_biller/Dashboard/Models/BranchModel.dart' as md;
 import 'package:kinfox_biller/SalesScreen/Views/PrinterSettingView.dart';
+import 'package:kinfox_biller/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,7 +32,8 @@ const _kMockMode = 'printer_mock_mode';
 
 class PrinterController extends GetxController {
   // ── Shop config (set before printing) ─────────────────────────────────────
-  String shopName = 'My Shop';
+
+  String shopName = "";
   String branchName = 'Main Branch';
   String shopAddress = '123 Main Street, City - 000000';
   String shopPhone = '+91 98765 43210';
@@ -49,6 +58,27 @@ class PrinterController extends GetxController {
 
   final _plugin = FlutterThermalPrinter.instance;
 
+  md.BranchModel branch = md.BranchModel.fromJson({});
+
+  fetchProfileDetails() async {
+    final response = await get(
+      Uri.parse(baseUrl + "/users/profile/"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      var data = json.decode(response.body);
+      branch = md.BranchModel.fromJson(data["branch"]);
+      update();
+    } else {
+      Get.deleteAll();
+      Get.offAll(() => LoginScreen());
+    }
+  }
+
   bool isDeviceConnected(Printer printer) {
     if (!isConnected || selectedPrinter == null) return false;
     final selected = selectedPrinter!;
@@ -65,6 +95,7 @@ class PrinterController extends GetxController {
   void onInit() {
     super.onInit();
     _initController();
+    fetchProfileDetails();
   }
 
   /// Loads prefs then kicks off auto-connect, ensuring [update()] is always
@@ -299,23 +330,81 @@ class PrinterController extends GetxController {
     final moneyFmt = NumberFormat('#,##0.00');
     final dtFmt = DateFormat('dd MMM yyyy  hh:mm a');
 
-    // ── 1. Shop logo ──────────────────────────────────────────────────────
+    // ── CONSISTENT STYLE CONSTANTS ─────────────────────────────────────────
+    // Define once, use everywhere — this prevents layout drift between sections.
+    const PosStyles sNormal = PosStyles(fontType: PosFontType.fontA);
+    const PosStyles sBold = PosStyles(fontType: PosFontType.fontA, bold: true);
+    const PosStyles sRight = PosStyles(
+      fontType: PosFontType.fontA,
+      align: PosAlign.right,
+    );
+    const PosStyles sCenter = PosStyles(
+      fontType: PosFontType.fontA,
+      align: PosAlign.center,
+    );
+    const PosStyles sBoldR = PosStyles(
+      fontType: PosFontType.fontA,
+      bold: true,
+      align: PosAlign.right,
+    );
+    // fontB for item detail rows (compact) — fixed here too
+    const PosStyles sFontB = PosStyles(
+      fontType: PosFontType.fontB,
+      height: PosTextSize.size1,
+      width: PosTextSize.size1,
+    );
+    const PosStyles sFontBR = PosStyles(
+      fontType: PosFontType.fontB,
+      height: PosTextSize.size1,
+      width: PosTextSize.size1,
+      align: PosAlign.right,
+    );
+    const PosStyles sFontBC = PosStyles(
+      fontType: PosFontType.fontB,
+      height: PosTextSize.size1,
+      width: PosTextSize.size1,
+      align: PosAlign.center,
+    );
+    const PosStyles sFontBB = PosStyles(
+      fontType: PosFontType.fontB,
+      height: PosTextSize.size1,
+      width: PosTextSize.size1,
+      bold: true,
+    );
+
+    // ── Helper: standard label/value row (fontA, always same width split) ──
+    // All metadata rows (invoice, date, customer, totals, payments) use this.
+    void labelValueRow(String label, String value, {bool bold = false}) {
+      bytes += generator.row([
+        PosColumn(text: label, width: 5, styles: bold ? sBold : sNormal),
+        PosColumn(text: value, width: 7, styles: bold ? sBoldR : sRight),
+      ]);
+    }
+
+    // ── Helper: totals row ─────────────────────────────────────────────────
+    void totRow(
+      String label,
+      double? val, {
+      bool bold = false,
+      String prefix = '',
+    }) {
+      if (val == null) return;
+      labelValueRow(label, '$prefix${moneyFmt.format(val)}', bold: bold);
+    }
+
+    // ── 1. Shop logo ───────────────────────────────────────────────────────
     if (shopLogoPath != null) {
       try {
         Uint8List? rawBytes;
-
-        // Support both asset paths (assets/...) and absolute file paths
         if (shopLogoPath!.startsWith('assets/')) {
           rawBytes = await _loadAssetBytes(shopLogoPath!);
         } else {
           final f = File(shopLogoPath!);
           if (await f.exists()) rawBytes = await f.readAsBytes();
         }
-
         if (rawBytes != null) {
           final decoded = img.decodeImage(rawBytes);
           if (decoded != null) {
-            // Convert to greyscale first — improves thermal print contrast
             final grey = img.grayscale(decoded);
             final resized = img.copyResize(grey, width: 120);
             bytes += generator.imageRaster(
@@ -328,13 +417,13 @@ class PrinterController extends GetxController {
           }
         }
       } catch (e) {
-        log('[Printer] Logo load failed: $e'); // graceful — print continues
+        log('[Printer] Logo load failed: $e');
       }
     }
 
-    // ── 2. Shop name (large) ──────────────────────────────────────────────
+    // ── 2. Shop name ───────────────────────────────────────────────────────
     bytes += generator.text(
-      shopName,
+      branch.name ?? '',
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,
@@ -343,150 +432,107 @@ class PrinterController extends GetxController {
       ),
     );
 
-    // ── 3. Address (single line) ──────────────────────────────────────────
-    bytes += generator.text(
-      shopAddress,
-      styles: const PosStyles(align: PosAlign.center),
-    );
+    // ── 3. Address ─────────────────────────────────────────────────────────
+    bytes += generator.text(branch.address ?? '', styles: sCenter);
 
-    // ── 4. Phone & GSTIN on one line ──────────────────────────────────────
-    bytes += generator.text(
-      'Ph: $shopPhone  |  GSTIN: $shopGstin',
-      styles: const PosStyles(align: PosAlign.center),
-    );
-
+    // ── 4. Phone & GSTIN ──────────────────────────────────────────────────
+    String thirdLine = 'Ph: ${branch.phone ?? ""}';
+    if ((branch.gstin ?? '').isNotEmpty) {
+      thirdLine += ' |  GSTIN: ${branch.gstin}';
+    }
+    bytes += generator.text(thirdLine, styles: sCenter);
     bytes += generator.hr(ch: '=');
 
-    // ── 5. Invoice number & date/time ─────────────────────────────────────
+    // ── 5. Invoice # & date ────────────────────────────────────────────────
     final inv = data.invoiceNumber ?? '-';
     final firstPay = data.payments.isNotEmpty ? data.payments.first : null;
     final dateStr = firstPay?.paidAt != null
-        ? dtFmt.format(DateTime.tryParse(firstPay!.paidAt!) ?? DateTime.now())
+        ? dtFmt.format(
+            (DateTime.tryParse(firstPay!.paidAt!) ?? DateTime.now()).toLocal(),
+          )
         : dtFmt.format(DateTime.now());
 
-    bytes += generator.row([
-      PosColumn(
-        text: 'Invoice#',
-        width: 4,
-        styles: const PosStyles(bold: true, align: PosAlign.left),
-      ),
-      PosColumn(
-        text: inv,
-        width: 8,
-        styles: const PosStyles(bold: true, align: PosAlign.right),
-      ),
-    ]);
-    bytes += generator.row([
-      PosColumn(
-        text: 'Date',
-        width: 4,
-        styles: const PosStyles(align: PosAlign.left),
-      ),
-      PosColumn(
-        text: dateStr,
-        width: 8,
-        styles: const PosStyles(align: PosAlign.right),
-      ),
-    ]);
+    labelValueRow('Invoice#', inv, bold: true);
+    labelValueRow('Date', dateStr);
 
-    // ── 6. Customer (compact) ─────────────────────────────────────────────
+    // ── 6. Customer ────────────────────────────────────────────────────────
     if (data.customer != null) {
       final c = data.customer!;
       bytes += generator.hr(ch: '-');
-      if (c.name != null)
-        bytes += generator.row([
-          PosColumn(
-            text: 'Customer',
-            width: 4,
-            styles: const PosStyles(bold: true),
-          ),
-          PosColumn(
-            text: c.name!,
-            width: 8,
-            styles: const PosStyles(align: PosAlign.right),
-          ),
-        ]);
-      if (c.phone != null)
-        bytes += generator.row([
-          PosColumn(text: 'Phone', width: 4),
-          PosColumn(
-            text: c.phone!,
-            width: 8,
-            styles: const PosStyles(align: PosAlign.right),
-          ),
-        ]);
+      if (c.name != null) labelValueRow('Customer', c.name!, bold: true);
+      if (c.phone != null) labelValueRow('Phone', c.phone!);
     }
 
     bytes += generator.hr(ch: '=');
 
-    // ── 7. Items table ────────────────────────────────────────────────────
+    // ── 7. Items table ─────────────────────────────────────────────────────
     if (data.items.isNotEmpty) {
-      // Header row
+      // Header — fontA, bold, underline
       bytes += generator.row([
         PosColumn(
           text: 'Item / Variant',
           width: 4,
-          styles: const PosStyles(bold: true, underline: true),
+          styles: const PosStyles(
+            fontType: PosFontType.fontA,
+            bold: true,
+            underline: true,
+          ),
         ),
         PosColumn(
           text: 'MRP',
           width: 2,
           styles: const PosStyles(
+            fontType: PosFontType.fontA,
             bold: true,
-            align: PosAlign.right,
             underline: true,
+            align: PosAlign.right,
           ),
         ),
         PosColumn(
           text: 'Qty',
           width: 1,
           styles: const PosStyles(
+            fontType: PosFontType.fontA,
             bold: true,
-            align: PosAlign.center,
             underline: true,
+            align: PosAlign.center,
           ),
         ),
         PosColumn(
           text: 'Rate',
           width: 2,
           styles: const PosStyles(
+            fontType: PosFontType.fontA,
             bold: true,
-            align: PosAlign.right,
             underline: true,
+            align: PosAlign.right,
           ),
         ),
         PosColumn(
           text: 'Amount',
           width: 3,
           styles: const PosStyles(
+            fontType: PosFontType.fontA,
             bold: true,
-            align: PosAlign.right,
             underline: true,
+            align: PosAlign.right,
           ),
         ),
       ]);
       bytes += generator.hr(ch: '-');
+
       double totalSaved = 0;
 
       for (final item in data.items) {
         final qty = item.quantity ?? 1;
         final lineTotal = item.lineTotal ?? 0;
-
-        // Price logic:
-        //   mrp          = item.price        (original / marked price)
-        //   sellingPrice = item.sellingPrice  (discounted / actual charged price)
-        // If sellingPrice is absent or equals mrp → no discount, show only one price.
         final mrp = item.price;
         final sp = item.sellingPrice;
         final hasDiscount = mrp != null && sp != null && mrp > sp;
-        final displayRate = sp ?? mrp ?? (lineTotal / qty); // what was charged
+        final displayRate = sp ?? mrp ?? (lineTotal / qty);
 
-        // Accumulate saved amount
-        if (hasDiscount) {
-          totalSaved += (mrp! - sp!) * qty;
-        }
+        if (hasDiscount) totalSaved += (mrp! - sp!) * qty;
 
-        // ── Product name + variant concatenated on ONE line (fontB, small) ──
         final variant = [
           item.size,
           item.color,
@@ -495,76 +541,40 @@ class PrinterController extends GetxController {
             ? '${item.productName ?? "Item"}  [$variant]'
             : (item.productName ?? 'Item');
 
-        // Name+variant row — fontB keeps it compact
+        // ── Item main row — fontB, FIXED sizes on every column ──────────
         bytes += generator.row([
+          PosColumn(text: nameVariant, width: 4, styles: sFontBB),
           PosColumn(
-            text: nameVariant,
-            width: 4,
-            styles: const PosStyles(
-              fontType: PosFontType.fontB,
-              height: PosTextSize.size1,
-              width: PosTextSize.size1,
-              bold: true,
-            ),
-          ),
-          PosColumn(
-            text: (mrp != null)
-                ? moneyFmt.format(mrp)
-                : moneyFmt.format(displayRate),
+            text: moneyFmt.format(mrp ?? displayRate),
             width: 2,
-            styles: const PosStyles(
-              fontType: PosFontType.fontB,
-              align: PosAlign.right,
-            ),
+            styles: sFontBR,
           ),
-          PosColumn(
-            text: '$qty',
-            width: 1,
-            styles: const PosStyles(
-              fontType: PosFontType.fontB,
-              align: PosAlign.center,
-            ),
-          ),
+          PosColumn(text: '$qty', width: 1, styles: sFontBC),
           PosColumn(
             text: moneyFmt.format(displayRate),
             width: 2,
-            styles: const PosStyles(
-              fontType: PosFontType.fontB,
-              align: PosAlign.right,
-            ),
+            styles: sFontBR,
           ),
           PosColumn(
             text: moneyFmt.format(lineTotal),
             width: 3,
-            styles: const PosStyles(
-              fontType: PosFontType.fontB,
-              align: PosAlign.right,
-            ),
+            styles: sFontBR,
           ),
         ]);
 
-        // ── MRP + You Save sub-line (only when discount exists) ─────────────
+        // ── Discount sub-line ────────────────────────────────────────────
         if (hasDiscount) {
           final savedPerUnit = mrp! - sp!;
           bytes += generator.row([
             PosColumn(
               text: '  MRP:${moneyFmt.format(mrp)}',
               width: 6,
-              styles: const PosStyles(
-                fontType: PosFontType.fontB,
-                height: PosTextSize.size1,
-                width: PosTextSize.size1,
-              ),
+              styles: sFontB,
             ),
             PosColumn(
               text: 'Save:${moneyFmt.format(savedPerUnit * qty)}',
               width: 6,
-              styles: const PosStyles(
-                fontType: PosFontType.fontB,
-                height: PosTextSize.size1,
-                width: PosTextSize.size1,
-                align: PosAlign.right,
-              ),
+              styles: sFontBR,
             ),
           ]);
         }
@@ -572,27 +582,22 @@ class PrinterController extends GetxController {
 
       bytes += generator.hr(ch: '-');
 
-      // ── Saved amount (informational, no calculation change) ─────────────
       if (totalSaved > 0) {
         bytes += generator.row([
-          PosColumn(
-            text: '** You Saved **',
-            width: 7,
-            styles: const PosStyles(bold: true),
-          ),
+          PosColumn(text: '** You Saved **', width: 7, styles: sBold),
           PosColumn(
             text: moneyFmt.format(totalSaved),
             width: 5,
-            styles: const PosStyles(bold: true, align: PosAlign.right),
+            styles: sBoldR,
           ),
         ]);
         bytes += generator.hr(ch: '-');
       }
     }
 
-    // ── 8. Return items ───────────────────────────────────────────────────
+    // ── 8. Return items ────────────────────────────────────────────────────
     if (data.returnItems.isNotEmpty) {
-      bytes += generator.text('Returns', styles: const PosStyles(bold: true));
+      bytes += generator.text('Returns', styles: sBold);
       bytes += generator.hr(ch: '-');
       for (final ri in data.returnItems) {
         final name = ri.productName ?? 'Return Item';
@@ -601,55 +606,48 @@ class PrinterController extends GetxController {
           ri.color,
         ].where((v) => v != null && v.isNotEmpty).join(' / ');
         final credit = (ri.creditPerUnit ?? 0) * (ri.quantity ?? 1);
+        // Use same fontB style as item rows for visual consistency
         bytes += generator.row([
           PosColumn(
             text: '$name${variant.isNotEmpty ? " ($variant)" : ""}',
             width: 8,
+            styles: sFontB, // ← was unstyled before (caused size mismatch)
           ),
           PosColumn(
             text: '-${moneyFmt.format(credit)}',
             width: 4,
-            styles: const PosStyles(align: PosAlign.right),
+            styles: sFontBR, // ← same
           ),
         ]);
       }
       bytes += generator.hr(ch: '-');
     }
 
-    // ── 9. Totals block ───────────────────────────────────────────────────
-    void totRow(
-      String label,
-      double? val, {
-      bool bold = false,
-      String prefix = '',
-    }) {
-      if (val == null) return;
-      bytes += generator.row([
-        PosColumn(
-          text: label,
-          width: 7,
-          styles: PosStyles(bold: bold),
-        ),
-        PosColumn(
-          text: '$prefix${moneyFmt.format(val)}',
-          width: 5,
-          styles: PosStyles(bold: bold, align: PosAlign.right),
-        ),
-      ]);
-    }
-
+    // ── 9. Totals ──────────────────────────────────────────────────────────
     totRow('Subtotal', data.subtotal);
 
-    if ((data.discountedSubtotal ?? 0) < (data.subtotal ?? 0)) {
+    if (data.manualDiscountAmount != "0") {
       final disc = (data.subtotal ?? 0) - (data.discountedSubtotal ?? 0);
-      totRow('Discount', disc, prefix: '-');
+      totRow(
+        'Discount',
+        double.parse(data.manualDiscountAmount ?? "0"),
+        prefix: '-',
+      );
+    }
+
+    if (data.manualDiscountAmount != "0") {
+      final disc = (data.subtotal ?? 0) - (data.discountedSubtotal ?? 0);
+      totRow(
+        'Coupon Discount',
+        double.parse(data.appliedCouponDiscount ?? "0"),
+        prefix: '-',
+      );
     }
 
     if ((data.appliedReturnDiscount ?? 0) > 0) {
-      totRow('Return Credit', data.appliedReturnDiscount, prefix: '-');
+      totRow('Return Discount', data.appliedReturnDiscount, prefix: '-');
     }
 
-    // ── GST split: SGST 2.5% + CGST 2.5% ─────────────────────────────────
     final gstAmt = data.gstAmount ?? 0;
     if (gstAmt > 0) {
       final half = gstAmt / 2;
@@ -661,22 +659,15 @@ class PrinterController extends GetxController {
     totRow('GRAND TOTAL', data.grandFinalTotal, bold: true);
     bytes += generator.hr(ch: '=');
 
-    // ── 10. Payments ──────────────────────────────────────────────────────
+    // ── 10. Payments ───────────────────────────────────────────────────────
     if (data.payments.isNotEmpty) {
-      bytes += generator.text(
-        'Payment Details',
-        styles: const PosStyles(bold: true),
-      );
+      bytes += generator.text('Payment Details', styles: sBold);
       bytes += generator.hr(ch: '-');
       for (final pay in data.payments) {
-        bytes += generator.row([
-          PosColumn(text: pay.paymentMethod ?? '-', width: 7),
-          PosColumn(
-            text: moneyFmt.format(pay.amount ?? 0),
-            width: 5,
-            styles: const PosStyles(align: PosAlign.right),
-          ),
-        ]);
+        labelValueRow(
+          pay.paymentMethod ?? '-',
+          moneyFmt.format(pay.amount ?? 0),
+        );
       }
       if ((data.refundAmount ?? 0) > 0) {
         bytes += generator.hr(ch: '-');
@@ -685,7 +676,7 @@ class PrinterController extends GetxController {
       bytes += generator.hr();
     }
 
-    // ── 11. Vouchers issued ───────────────────────────────────────────────
+    // ── 11. Vouchers ───────────────────────────────────────────────────────
     if (data.availableVouchers.isNotEmpty) {
       bytes += generator.text(
         '---- Vouchers Issued ----',
@@ -693,10 +684,7 @@ class PrinterController extends GetxController {
       );
       for (final v in data.availableVouchers) {
         if (v.voucherCode != null) {
-          bytes += generator.text(
-            v.campaignName ?? '',
-            styles: const PosStyles(align: PosAlign.center),
-          );
+          bytes += generator.text(v.campaignName ?? '', styles: sCenter);
           bytes += generator.text(
             v.voucherCode!,
             styles: const PosStyles(
@@ -710,7 +698,7 @@ class PrinterController extends GetxController {
               final exp = DateTime.parse(v.campaignEndDate!);
               bytes += generator.text(
                 'Valid until: ${DateFormat('dd MMM yyyy').format(exp)}',
-                styles: const PosStyles(align: PosAlign.center),
+                styles: sCenter,
               );
             } catch (_) {}
           }
@@ -719,12 +707,9 @@ class PrinterController extends GetxController {
       bytes += generator.hr();
     }
 
-    // ── 12. Invoice barcode ───────────────────────────────────────────────
+    // ── 12. Barcode ────────────────────────────────────────────────────────
     if (data.invoiceNumber != null) {
-      bytes += generator.text(
-        'Scan to verify',
-        styles: const PosStyles(align: PosAlign.center),
-      );
+      bytes += generator.text('Scan to verify', styles: sCenter);
       bytes += generator.barcode(
         Barcode.code128(
           data.invoiceNumber!.replaceAll('INV-', '').characters.toList(),
@@ -735,7 +720,7 @@ class PrinterController extends GetxController {
       bytes += generator.feed(1);
     }
 
-    // ── 13. Footer ────────────────────────────────────────────────────────
+    // ── 13. Footer ─────────────────────────────────────────────────────────
     bytes += generator.hr(ch: '*');
     bytes += generator.text(
       'Thank you for shopping!',
@@ -747,17 +732,17 @@ class PrinterController extends GetxController {
       ),
     );
     bytes += generator.text(
-      shopName,
+      branch.name ?? '',
       styles: const PosStyles(align: PosAlign.center, bold: true),
     );
     bytes += generator.text(
-      'Visit us again  •  $shopPhone',
-      styles: const PosStyles(align: PosAlign.center),
+      'Visit us again  •  ${branch.phone ?? ""}',
+      styles: sCenter,
     );
     bytes += generator.feed(3);
     bytes += generator.cut();
 
-    // ── Send ──────────────────────────────────────────────────────────────
+    // ── Send ───────────────────────────────────────────────────────────────
     if (mockMode) {
       _showMockPreview(data, bytes);
     } else {
