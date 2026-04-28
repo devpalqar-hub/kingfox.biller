@@ -10,23 +10,28 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 📦 Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      # 🐦 Flutter setup
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.5'
 
-      - name: Enable Windows
+      - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
 
       - name: Install Dependencies
         run: flutter pub get
 
+      # 🏗 Build app
       - name: Build Windows App
         run: flutter build windows --release
 
-      - name: Prepare Output
+      # 📁 Copy build output
+      - name: Prepare Build Output
         run: |
           mkdir build_output
           xcopy build\windows\x64\runner\Release build_output /E /I
@@ -46,29 +51,34 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      # 📝 Create installer script
+      # 📝 Create installer script (FIXED VERSION)
       - name: Create installer script
         run: |
-          echo [Setup] > installer.iss
-          echo AppName=Kingfox Biller >> installer.iss
-          echo AppVersion=1.0.0 >> installer.iss
-          echo AppPublisher=Kingfox Clothing >> installer.iss
-          echo DefaultDirName={pf}\Kingfox Biller >> installer.iss
-          echo DefaultGroupName=Kingfox Biller >> installer.iss
-          echo OutputDir=installer_output >> installer.iss
-          echo OutputBaseFilename=KingfoxBillerSetup >> installer.iss
-          echo SetupIconFile=logo.ico >> installer.iss
-          echo UninstallDisplayIcon={app}\runner.exe >> installer.iss
-          echo Compression=lzma >> installer.iss
-          echo SolidCompression=yes >> installer.iss
+          @"
+          [Setup]
+          AppName=Kingfox Biller
+          AppVersion=1.0.0
+          AppPublisher=Kingfox Clothing
+          AppComments=Developed by Palqar Private Limited
+          DefaultDirName={pf}\Kingfox Biller
+          DefaultGroupName=Kingfox Biller
+          OutputDir=installer_output
+          OutputBaseFilename=KingfoxBillerSetup
+          SetupIconFile=logo.ico
+          Compression=lzma
+          SolidCompression=yes
 
-          echo [Files] >> installer.iss
-          echo Source: "build_output\*"; DestDir: "{app}"; Flags: recursesubdirs >> installer.iss
+          [Files]
+          Source: "build_output\*"; DestDir: "{app}"; Flags: recursesubdirs
 
-          echo [Icons] >> installer.iss
-          echo Name: "{group}\Kingfox Biller"; Filename: "{app}\runner.exe"; IconFilename: "{app}\runner.exe" >> installer.iss
+          [Icons]
+          Name: "{group}\Kingfox Biller"; Filename: "{app}\runner.exe"
 
-      # 🔐 Generate self-signed cert
+          [Run]
+          Filename: "{app}\runner.exe"; Description: "Launch Kingfox Biller"; Flags: nowait postinstall skipifsilent
+          "@ | Out-File installer.iss -Encoding ascii
+
+      # 🔐 Generate self-signed certificate
       - name: Generate certificate
         run: |
           $cert = New-SelfSignedCertificate `
@@ -98,7 +108,8 @@ jobs:
             /tr http://timestamp.digicert.com `
             installer_output\KingfoxBillerSetup.exe
 
-      - name: Upload
+      # 📤 Upload final installer
+      - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: kingfox-biller-installer
