@@ -1,14 +1,11 @@
 name: Build Kingfox Biller Installer
-
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
       # 📦 Checkout
       - name: Checkout
@@ -18,7 +15,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.5'
+          flutter-version: '3.24.5'
 
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
@@ -30,11 +27,32 @@ jobs:
       - name: Build Windows App
         run: flutter build windows --release
 
-      # 📁 Prepare build output
+      # 🔍 Debug - List all build output files
+      - name: List Build Output
+        run: |
+          echo "=== Release folder contents ==="
+          Get-ChildItem -Path "build\windows\x64\runner\Release" -Recurse | ForEach-Object { $_.FullName }
+
+      # 🔍 Find the actual executable name
+      - name: Find Executable Name
+        id: find_exe
+        run: |
+          $exe = Get-ChildItem -Path "build\windows\x64\runner\Release" -Filter "*.exe" | Select-Object -First 1
+          echo "EXE_NAME=$($exe.Name)" >> $env:GITHUB_OUTPUT
+          echo "Found executable: $($exe.Name)"
+
+      # 📁 Prepare build output - copy EVERYTHING including data folder
       - name: Prepare Build Output
         run: |
-          mkdir build_output
-          xcopy build\windows\x64\runner\Release build_output /E /I
+          New-Item -ItemType Directory -Force -Path build_output
+          Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "build_output\" -Recurse -Force
+          echo "=== build_output contents ==="
+          Get-ChildItem -Path "build_output" -Recurse | ForEach-Object { $_.FullName }
+
+      # 💻 Install Visual C++ Redistributable (bundled into installer)
+      - name: Download VC++ Redistributable
+        run: |
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "build_output\vc_redist.x64.exe"
 
       # 🏗 Install Inno Setup
       - name: Install Inno Setup
@@ -43,28 +61,40 @@ jobs:
       # 📝 Create installer script
       - name: Create installer script
         run: |
-          @"
+          $exeName = "${{ steps.find_exe.outputs.EXE_NAME }}"
+          $script = @"
           [Setup]
           AppName=Kingfox Biller
           AppVersion=1.0.0
           AppPublisher=Kingfox Clothing
           AppComments=Developed by Palqar Private Limited
-          DefaultDirName={pf}\Kingfox Biller
+          DefaultDirName={autopf}\Kingfox Biller
           DefaultGroupName=Kingfox Biller
           OutputDir=installer_output
           OutputBaseFilename=KingfoxBillerSetup
           Compression=lzma
           SolidCompression=yes
+          PrivilegesRequired=admin
+          ArchitecturesInstallIn64BitMode=x64
 
           [Files]
-          Source: "build_output\*"; DestDir: "{app}"; Flags: recursesubdirs
+          Source: "build_output\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+          Source: "build_output\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
           [Icons]
-          Name: "{group}\Kingfox Biller"; Filename: "{app}\runner.exe"
+          Name: "{group}\Kingfox Biller"; Filename: "{app}\$exeName"
+          Name: "{commondesktop}\Kingfox Biller"; Filename: "{app}\$exeName"; Tasks: desktopicon
+
+          [Tasks]
+          Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
 
           [Run]
-          Filename: "{app}\runner.exe"; Description: "Launch Kingfox Biller"; Flags: nowait postinstall skipifsilent
-          "@ | Out-File installer.iss -Encoding ascii
+          Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Visual C++ Runtime..."; Flags: waituntilterminated
+          Filename: "{app}\$exeName"; Description: "Launch Kingfox Biller"; Flags: nowait postinstall skipifsilent
+          "@
+          $script | Out-File installer.iss -Encoding ascii
+          echo "=== Generated installer.iss ==="
+          cat installer.iss
 
       # 📦 Build installer
       - name: Build Installer
