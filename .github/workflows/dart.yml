@@ -26,7 +26,7 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 🏗 Build Flutter app
+      # 🏗 Build Flutter Windows app
       - name: Build Windows App
         run: flutter build windows --release
 
@@ -40,7 +40,7 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      # 📝 Create installer script (NO ICONS)
+      # 📝 Create installer script
       - name: Create installer script
         run: |
           @"
@@ -66,46 +66,9 @@ jobs:
           Filename: "{app}\runner.exe"; Description: "Launch Kingfox Biller"; Flags: nowait postinstall skipifsilent
           "@ | Out-File installer.iss -Encoding ascii
 
-      # 🔐 Generate self-signed certificate
-      - name: Generate certificate
-        run: |
-          $cert = New-SelfSignedCertificate `
-            -Type CodeSigning `
-            -Subject "CN=Kingfox Clothing, O=Palqar Private Limited" `
-            -KeyUsage DigitalSignature `
-            -CertStoreLocation "Cert:\CurrentUser\My"
-
-          $pwd = ConvertTo-SecureString -String "password123" -Force -AsPlainText
-
-          Export-PfxCertificate `
-            -Cert $cert `
-            -FilePath cert.pfx `
-            -Password $pwd
-
       # 📦 Build installer
       - name: Build Installer
         run: iscc installer.iss
-
-      # 🧰 Install Windows SDK (for signtool)
-      - name: Install Windows SDK
-        run: choco install windows-sdk-10-version-2004-all -y
-
-      # 🔏 Sign installer
-      - name: Sign Installer
-        run: |
-          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" -Recurse | Select-Object -First 1
-
-          if (-not $signtool) {
-            Write-Error "signtool not found!"
-            exit 1
-          }
-
-          & $signtool.FullName sign `
-            /f cert.pfx `
-            /p password123 `
-            /fd sha256 `
-            /tr http://timestamp.digicert.com `
-            installer_output\KingfoxBillerSetup.exe
 
       # 📤 Upload installer
       - name: Upload Installer
