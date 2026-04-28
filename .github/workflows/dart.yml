@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🐦 Flutter setup
+      # 🐦 Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -26,17 +26,17 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 🏗 Build app
+      # 🏗 Build Flutter Windows app
       - name: Build Windows App
         run: flutter build windows --release
 
-      # 📁 Copy build output
+      # 📁 Prepare output
       - name: Prepare Build Output
         run: |
           mkdir build_output
           xcopy build\windows\x64\runner\Release build_output /E /I
 
-      # 🖼 Download your logo
+      # 🖼 Download logo
       - name: Download logo
         run: |
           curl -L "https://kingfoxclothing.com/wp-content/uploads/2025/10/Kgf-Photoroom1-140x131.png" -o logo.png
@@ -51,7 +51,7 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      # 📝 Create installer script (FIXED VERSION)
+      # 📝 Create installer script (safe multiline)
       - name: Create installer script
         run: |
           @"
@@ -98,10 +98,21 @@ jobs:
       - name: Build Installer
         run: iscc installer.iss
 
-      # 🔏 Sign installer
+      # 🧰 Install Windows SDK (ensures signtool exists)
+      - name: Install Windows SDK
+        run: choco install windows-sdk-10-version-2004-all -y
+
+      # 🔏 Sign installer (robust detection)
       - name: Sign Installer
         run: |
-          signtool sign `
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" -Recurse | Select-Object -First 1
+
+          if (-not $signtool) {
+            Write-Error "signtool not found!"
+            exit 1
+          }
+
+          & $signtool.FullName sign `
             /f cert.pfx `
             /p password123 `
             /fd sha256 `
