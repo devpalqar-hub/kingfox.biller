@@ -355,7 +355,8 @@ class AddProductController extends GetxController {
     );
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      if (data["returnOnly"]) {
+      if (data["returnOnly"] ?? false) {
+      } else {
         CheckoutData printModel = CheckoutData.fromJson(data);
         PrinterController pctrl = Get.find();
         pctrl.printReceipt(printModel);
@@ -363,7 +364,6 @@ class AddProductController extends GetxController {
       }
       clearAllTextControllers();
       clearVoucherSelection();
-
       discountController.clear();
       isLoading = false;
       update();
