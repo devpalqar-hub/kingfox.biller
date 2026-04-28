@@ -29,8 +29,6 @@ class AddProductController extends GetxController {
   LuckyDrawCampaign? selectedCampaign;
   List<StaffModel> staffList = [];
   StaffModel? selectedStaff;
-  CartModel? completedOrder;
-  String? invoiceNumber;
   String selectedPaymentMethod = "CASH";
 
   List items = [];
@@ -79,6 +77,7 @@ class AddProductController extends GetxController {
     voucherCountController.clear();
     couponController.clear();
     discountController.clear();
+    update();
   }
 
   void clearVoucherSelection() {
@@ -356,16 +355,16 @@ class AddProductController extends GetxController {
     );
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-
-      completedOrder = CartModel.fromJson(data["data"] ?? data);
-      CheckoutData printModel = CheckoutData.fromJson(data);
-      invoiceNumber = data["invoiceNumber"] ?? data["invoice_number"];
-      PrinterController pctrl = Get.find();
-      pctrl.printReceipt(printModel);
-      Get.dialog(OrderCompleteDialog(data: printModel));
+      if (data["returnOnly"]) {
+        CheckoutData printModel = CheckoutData.fromJson(data);
+        PrinterController pctrl = Get.find();
+        pctrl.printReceipt(printModel);
+        Get.dialog(OrderCompleteDialog(data: printModel));
+      }
       clearAllTextControllers();
       clearVoucherSelection();
 
+      discountController.clear();
       isLoading = false;
       update();
 

@@ -1,9 +1,8 @@
-name: Build Windows EXE
+name: Build Kingfox Biller Installer
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -11,15 +10,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.5' # or your version
+          flutter-version: '3.41.5'
 
-      - name: Enable Windows Desktop
+      - name: Enable Windows
         run: flutter config --enable-windows-desktop
 
       - name: Install Dependencies
@@ -28,13 +26,80 @@ jobs:
       - name: Build Windows App
         run: flutter build windows --release
 
-      - name: Archive Build
+      - name: Prepare Output
         run: |
           mkdir build_output
           xcopy build\windows\x64\runner\Release build_output /E /I
 
-      - name: Upload Artifact
+      # 🖼 Download your logo
+      - name: Download logo
+        run: |
+          curl -L "https://kingfoxclothing.com/wp-content/uploads/2025/10/Kgf-Photoroom1-140x131.png" -o logo.png
+
+      # 🔄 Convert PNG → ICO
+      - name: Convert to ICO
+        run: |
+          choco install imagemagick -y
+          magick logo.png -resize 256x256 logo.ico
+
+      # 🏗 Install Inno Setup
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      # 📝 Create installer script
+      - name: Create installer script
+        run: |
+          echo [Setup] > installer.iss
+          echo AppName=Kingfox Biller >> installer.iss
+          echo AppVersion=1.0.0 >> installer.iss
+          echo AppPublisher=Kingfox Clothing >> installer.iss
+          echo DefaultDirName={pf}\Kingfox Biller >> installer.iss
+          echo DefaultGroupName=Kingfox Biller >> installer.iss
+          echo OutputDir=installer_output >> installer.iss
+          echo OutputBaseFilename=KingfoxBillerSetup >> installer.iss
+          echo SetupIconFile=logo.ico >> installer.iss
+          echo UninstallDisplayIcon={app}\runner.exe >> installer.iss
+          echo Compression=lzma >> installer.iss
+          echo SolidCompression=yes >> installer.iss
+
+          echo [Files] >> installer.iss
+          echo Source: "build_output\*"; DestDir: "{app}"; Flags: recursesubdirs >> installer.iss
+
+          echo [Icons] >> installer.iss
+          echo Name: "{group}\Kingfox Biller"; Filename: "{app}\runner.exe"; IconFilename: "{app}\runner.exe" >> installer.iss
+
+      # 🔐 Generate self-signed cert
+      - name: Generate certificate
+        run: |
+          $cert = New-SelfSignedCertificate `
+            -Type CodeSigning `
+            -Subject "CN=Kingfox Clothing, O=Palqar Private Limited" `
+            -KeyUsage DigitalSignature `
+            -CertStoreLocation "Cert:\CurrentUser\My"
+
+          $pwd = ConvertTo-SecureString -String "password123" -Force -AsPlainText
+
+          Export-PfxCertificate `
+            -Cert $cert `
+            -FilePath cert.pfx `
+            -Password $pwd
+
+      # 📦 Build installer
+      - name: Build Installer
+        run: iscc installer.iss
+
+      # 🔏 Sign installer
+      - name: Sign Installer
+        run: |
+          signtool sign `
+            /f cert.pfx `
+            /p password123 `
+            /fd sha256 `
+            /tr http://timestamp.digicert.com `
+            installer_output\KingfoxBillerSetup.exe
+
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: windows-exe
-          path: build_output
+          name: kingfox-biller-installer
+          path: installer_output\KingfoxBillerSetup.exe

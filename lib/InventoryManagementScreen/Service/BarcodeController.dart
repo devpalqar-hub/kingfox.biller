@@ -51,8 +51,8 @@ class BarcodeLabelSize {
 /// Pre-defined standard label sizes.
 const List<BarcodeLabelSize> kLabelSizes = [
   BarcodeLabelSize(
-    name: '40 × 24 mm  (48/sheet)',
-    widthMm: 40,
+    name: '48 × 24 mm  (48/sheet)',
+    widthMm: 48,
     heightMm: 24,
     labelsPerA4Sheet: 48,
     labelsPerThermalRow: 1,
