@@ -26,32 +26,21 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # 🏗 Build Flutter Windows app
+      # 🏗 Build Flutter app
       - name: Build Windows App
         run: flutter build windows --release
 
-      # 📁 Prepare output
+      # 📁 Prepare build output
       - name: Prepare Build Output
         run: |
           mkdir build_output
           xcopy build\windows\x64\runner\Release build_output /E /I
 
-      # 🖼 Download logo
-      - name: Download logo
-        run: |
-          curl -L "https://kingfoxclothing.com/wp-content/uploads/2025/10/Kgf-Photoroom1-140x131.png" -o logo.png
-
-      # 🔄 Convert PNG → ICO
-      - name: Convert to ICO
-        run: |
-          choco install imagemagick -y
-          magick logo.png -resize 256x256 logo.ico
-
       # 🏗 Install Inno Setup
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      # 📝 Create installer script (safe multiline)
+      # 📝 Create installer script (NO ICONS)
       - name: Create installer script
         run: |
           @"
@@ -64,7 +53,6 @@ jobs:
           DefaultGroupName=Kingfox Biller
           OutputDir=installer_output
           OutputBaseFilename=KingfoxBillerSetup
-          SetupIconFile=logo.ico
           Compression=lzma
           SolidCompression=yes
 
@@ -98,11 +86,11 @@ jobs:
       - name: Build Installer
         run: iscc installer.iss
 
-      # 🧰 Install Windows SDK (ensures signtool exists)
+      # 🧰 Install Windows SDK (for signtool)
       - name: Install Windows SDK
         run: choco install windows-sdk-10-version-2004-all -y
 
-      # 🔏 Sign installer (robust detection)
+      # 🔏 Sign installer
       - name: Sign Installer
         run: |
           $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" -Recurse | Select-Object -First 1
@@ -119,7 +107,7 @@ jobs:
             /tr http://timestamp.digicert.com `
             installer_output\KingfoxBillerSetup.exe
 
-      # 📤 Upload final installer
+      # 📤 Upload installer
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
