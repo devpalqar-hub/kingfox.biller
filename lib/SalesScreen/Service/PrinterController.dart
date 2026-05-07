@@ -635,7 +635,8 @@ class PrinterController extends GetxController {
       );
     }
 
-    if (data.manualDiscountAmount != "0") {
+    if (data.appliedCouponDiscount != "0" &&
+        data.appliedCouponDiscount != null) {
       final disc = (data.subtotal ?? 0) - (data.discountedSubtotal ?? 0);
       totRow(
         'Coupon Discount',
