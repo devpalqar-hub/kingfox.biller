@@ -90,7 +90,7 @@ class _CustomerCardState extends State<CustomerCard> {
                     children: [
                       Expanded(child: _nameField(c)),
                       SizedBox(width: 8.w),
-                      SizedBox(width: 130.w, child: _phoneField()),
+                      SizedBox(width: 250, child: _phoneField()),
                     ],
                   ),
                 ],
@@ -127,7 +127,7 @@ class _CustomerCardState extends State<CustomerCard> {
 
   Widget _nameField(CustomerController c) {
     return SizedBox(
-      height: 38.h,
+      height: 40.h,
       child: TextField(
         controller: widget.nameController,
         focusNode: _nameFocusNode,
@@ -170,36 +170,37 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   Widget _phoneField() {
-    return SizedBox(
+    return Container(
       height: 38.h,
+      alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: Color(0xFFE2E8F0)),
+      ),
       child: TextField(
         controller: widget.phoneController,
         keyboardType: TextInputType.number,
-        style: TextStyle(fontSize: 13.sp),
+        style: TextStyle(fontSize: 14),
+
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(12),
         ],
         decoration: InputDecoration(
           isDense: true,
+          isCollapsed: true,
+          prefix: Text(
+            "+91 ",
+            style: TextStyle(fontSize: 14, color: Colors.black),
+          ),
+
+          border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
-            horizontal: 12.w,
-            vertical: 10.h,
+            horizontal: 14,
+            //  vertical: 10.h,
           ),
-          hintText: 'Phone',
+          hintText: 'Enter Phone Number',
           hintStyle: TextStyle(fontSize: 12.sp, color: const Color(0xFF94A3B8)),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.r),
-            borderSide: const BorderSide(color: Color(0xFF2563EB)),
-          ),
         ),
       ),
     );

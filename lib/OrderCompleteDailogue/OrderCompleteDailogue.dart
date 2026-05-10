@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
-import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart'; // adjust import
+import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart';
 
 class OrderCompleteDialog extends StatelessWidget {
   final CheckoutData data;
@@ -106,6 +106,16 @@ class OrderCompleteDialog extends StatelessWidget {
                               issued: data.issuedVoucherCodes,
                               available: data.availableVouchers,
                             ),
+                            SizedBox(height: 12.h),
+                          ],
+
+                          // Allocated coupon (conditional)
+                          if (data.returnCoupon != null) ...[
+                            _sectionLabel(
+                              Icons.card_giftcard_outlined,
+                              'Allocated Coupon',
+                            ),
+                            _AllocatedCouponCard(coupon: data.returnCoupon!),
                             SizedBox(height: 12.h),
                           ],
 
@@ -321,11 +331,6 @@ class OrderCompleteDialog extends StatelessWidget {
             style: TextStyle(color: const Color(0xFF94A3B8), fontSize: 10.sp),
           ),
           const Spacer(),
-          // _footerBtn(
-          //   icon: Icons.file_download_outlined,
-          //   label: 'Export',
-          //   onTap: () {},
-          // ),
           SizedBox(width: 8.w),
           _footerBtn(
             icon: Icons.print_outlined,
@@ -504,7 +509,6 @@ class _LineItemsCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // Header
           Container(
             color: const Color(0xFFF8FAFC),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
@@ -552,7 +556,6 @@ class _LineItemsCard extends StatelessWidget {
                                   color: const Color(0xFF1E293B),
                                 ),
                               ),
-
                               if (it.returnedQuantity != null &&
                                   it.returnedQuantity! > 0)
                                 Text(
@@ -656,7 +659,6 @@ class _ReturnItemsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sub-header
           Container(
             color: const Color(0xFFFFF7ED),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
@@ -722,7 +724,6 @@ class _ReturnItemsCard extends StatelessWidget {
               );
             },
           ),
-          // Return credit summary footer
           if (returnCredit != null || returnInvoiceId != null)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -815,7 +816,6 @@ class _VouchersCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Issued voucher codes
           if (issued.isNotEmpty) ...[
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -857,7 +857,6 @@ class _VouchersCard extends StatelessWidget {
               ),
           ],
 
-          // Available vouchers (coupons)
           if (available.isNotEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -914,6 +913,8 @@ class _VouchersCard extends StatelessWidget {
   );
 }
 
+// ── Voucher row — code + name only ───────────────────────────────────────────
+
 class _VoucherRow extends StatelessWidget {
   final Voucher v;
   const _VoucherRow({required this.v});
@@ -943,34 +944,129 @@ class _VoucherRow extends StatelessWidget {
           ),
           SizedBox(width: 10.w),
           Expanded(
+            child: Text(
+              v.campaignName ?? '—',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ALLOCATED COUPON CARD
+// ════════════════════════════════════════════════════════════════════════════
+
+class _AllocatedCouponCard extends StatelessWidget {
+  final ReturnCoupon coupon;
+  const _AllocatedCouponCard({required this.coupon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFBBF7D0), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          // Icon
+          Container(
+            width: 36.w,
+            height: 36.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFF22C55E).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color: const Color(0xFF22C55E).withOpacity(0.3),
+                width: 0.5,
+              ),
+            ),
+            child: Icon(
+              Icons.card_giftcard_outlined,
+              color: const Color(0xFF15803D),
+              size: 16.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+
+          // Code + expiry
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  v.campaignName ?? '—',
+                  'COUPON CODE',
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 10.sp,
+                    color: const Color(0xFF86EFAC),
+                    letterSpacing: 0.6,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1E293B),
                   ),
                 ),
-                if (v.campaignDescription != null)
+                SizedBox(height: 2.h),
+                Text(
+                  coupon.code ?? '—',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF15803D),
+                    fontFamily: 'monospace',
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                if (coupon.expiresAt != null) ...[
+                  SizedBox(height: 2.h),
                   Text(
-                    v.campaignDescription!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    'Expires: ${coupon.expiresAt}',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: const Color(0xFF94A3B8),
+                      color: const Color(0xFF4ADE80).withOpacity(0.8),
                     ),
                   ),
+                ],
               ],
             ),
           ),
-          if (v.campaignEndDate != null)
-            Text(
-              'Exp: ${v.campaignEndDate}',
-              style: TextStyle(fontSize: 10.sp, color: const Color(0xFF94A3B8)),
+
+          // Amount badge
+          if (coupon.amount != null && coupon.amount! > 0)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF15803D),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '₹${coupon.amount!.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'value',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
@@ -1015,7 +1111,6 @@ class _PaymentAttributionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top 2×2 grid
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1087,7 +1182,6 @@ class _PaymentAttributionCard extends StatelessWidget {
             ),
           ),
 
-          // Per-payment breakdown (multi-method)
           if (payments.length > 1) ...[
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -1140,7 +1234,6 @@ class _PaymentAttributionCard extends StatelessWidget {
             ),
           ],
 
-          // Cash change row
           if (change > 0)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -1316,7 +1409,6 @@ class _BillSummaryPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section label
         Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: Row(
@@ -1346,7 +1438,6 @@ class _BillSummaryPanel extends StatelessWidget {
           data.gstAmount ?? 0,
         ),
 
-        // Discounted subtotal (shown if coupon applied)
         if ((data.appliedReturnDiscount ?? 0) > 0)
           _row(
             'Return Adj.',
@@ -1354,7 +1445,6 @@ class _BillSummaryPanel extends StatelessWidget {
             color: const Color(0xFFDC2626),
           ),
 
-        // Coupon / voucher discount
         if (data.manualDiscountAmount != "0")
           _row(
             'Discount',
@@ -1369,7 +1459,6 @@ class _BillSummaryPanel extends StatelessWidget {
             color: const Color(0xFFDC2626),
           ),
 
-        // Refund
         if ((data.refundAmount ?? 0) > 0)
           _row(
             'Refund Adj.',
@@ -1463,41 +1552,6 @@ class _BillSummaryPanel extends StatelessWidget {
             ),
           ),
         ],
-
-        // Cash change block
-        // if (change != null) ...[
-        //   SizedBox(height: 8.h),
-        //   Container(
-        //     width: double.infinity,
-        //     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        //     decoration: BoxDecoration(
-        //       color: Colors.white,
-        //       borderRadius: BorderRadius.circular(8.r),
-        //       border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
-        //     ),
-        //     child: Column(
-        //       crossAxisAlignment: CrossAxisAlignment.start,
-        //       children: [
-        //         Text(
-        //           'Cash Transaction',
-        //           style: TextStyle(
-        //             color: const Color(0xFF94A3B8),
-        //             fontSize: 10.sp,
-        //             fontWeight: FontWeight.w500,
-        //           ),
-        //         ),
-        //         SizedBox(height: 4.h),
-        //         _changeRow('Tendered', '₹${tenderedAmount.toStringAsFixed(2)}'),
-        //         SizedBox(height: 2.h),
-        //         _changeRow(
-        //           'Change',
-        //           '₹${change.toStringAsFixed(2)}',
-        //           color: const Color(0xFF15803D),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
 
         // Customer info (if not walk-in)
         if (data.customer != null) ...[

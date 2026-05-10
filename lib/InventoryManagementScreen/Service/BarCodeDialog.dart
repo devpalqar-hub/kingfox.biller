@@ -74,7 +74,10 @@ class _BarcodePrinterDialogState extends State<BarcodePrinterDialog> {
   Future<void> _onOverride(BarcodePrinterController ctrl, String v) async {
     final n = int.tryParse(v);
     if (n == null) return;
-    await ctrl.overrideRemaining(_resolvedJob.sheetKey, n);
+    await ctrl.overrideRemaining(
+      _resolvedJob.sheetKey(ctrl.selectedSizeIndex),
+      n,
+    );
   }
 }
 
@@ -423,7 +426,7 @@ class _LabelSizeGrid extends StatelessWidget {
                 SizedBox(height: 2.h),
                 Text(
                   ctrl.printMode == BarcodePrintMode.a4
-                      ? '${size.labelsPerA4Sheet ?? "-"}/sheet'
+                      ? '${size.labelsPerA4Sheet}/sheet'
                       : 'Thermal roll',
                   style: TextStyle(
                     fontSize: 8.sp,
@@ -555,8 +558,9 @@ class _SheetSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = ctrl.selectedSize.labelsPerA4Sheet ?? 48;
-    final session = ctrl.getSessionSnapshot(job.sheetKey);
+    final sessionKey = job.sheetKey(ctrl.selectedSizeIndex);
+    final total = ctrl.selectedSize.labelsPerA4Sheet;
+    final session = ctrl.getSessionSnapshot(sessionKey);
     final used = session?.used ?? 0;
     final remaining = total - used;
     final willUse = count;
@@ -663,7 +667,7 @@ class _SheetSessionCard extends StatelessWidget {
               SizedBox(width: 6.w),
               _SmallBtn(
                 label: 'Reset',
-                onTap: () => ctrl.resetSession(job.sheetKey),
+                onTap: () => ctrl.resetSession(sessionKey),
                 color: const Color(0xFFEF4444),
                 outlined: true,
               ),

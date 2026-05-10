@@ -53,80 +53,17 @@ class OrderSummaryCard extends StatelessWidget {
           _row("Subtotal", subtotal),
           _row("CGST ", (tax / 2)),
           _row("SGST ", (tax / 2)),
-
-          _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
-          _row("Coupon Deduction", coupon, isNegative: true),
-          _row("Return Amount", appliedReturnDiscount, isNegative: true),
-          _row("Refund Amount", refundAmount, isNegative: true),
-
-          SizedBox(height: 2.h),
-
-          /// Divider
-          Divider(color: Colors.grey.shade300, thickness: 1, height: 20.h),
-
-          SizedBox(height: 3.h),
-
-          /// Grand Total Label
-          Text(
-            "GRAND TOTAL",
-            style: TextStyle(
-              fontSize: 12,
-              letterSpacing: 2,
-              fontWeight: FontWeight.w600,
-              color: Color(0xff64748B),
+          //   _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
+          if (coupon > 0) _row("Coupon Deduction", coupon, isNegative: true),
+          if (appliedReturnDiscount > 0)
+            _row(
+              "Exchange Credit",
+              appliedReturnDiscount,
+              isNegative: true,
+              red: true,
             ),
-          ),
-
-          SizedBox(height: 1.h),
-
-          /// Amount
-          Text(
-            "₹${grandTotal.toStringAsFixed(2)}",
-            style: TextStyle(
-              fontSize: 32.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xff1D4ED8),
-            ),
-          ),
-
-          SizedBox(height: 10.h),
-
-          /// Print Button
-          GestureDetector(
-            onTap: onPrint,
-            
-            child: Container(
-              height: 42.h,
-              width: 300.w,
-              decoration: BoxDecoration(
-                color: const Color(0xff1D4ED8),
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.print, color: Colors.white, size: 22.sp),
-                  SizedBox(width: 10.w),
-                  Text(
-                    "PRINT ( F1 )",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          if (refundAmount > 0)
+            _row("Refund Amount", refundAmount, isNegative: true),
         ],
       ),
     );
@@ -146,7 +83,7 @@ class OrderSummaryCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: Color(0xff64748B),
               fontWeight: FontWeight.w500,

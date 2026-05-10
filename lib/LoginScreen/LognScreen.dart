@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:kinfox_biller/DashBoard/DashBoardScreen.dart';
 import 'package:kinfox_biller/LoginScreen/Service/AuthController.dart';
-import 'package:kinfox_biller/main.dart';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const _bg = Color(0xff0f0f0f);
@@ -13,6 +11,7 @@ const _gold = Color(0xffD4A26A);
 const _textPri = Color(0xffE8E8E8);
 const _textMuted = Color(0xff666666);
 const _textHint = Color(0xff3a3a3a);
+const _danger = Color(0xffEF4444);
 
 // Replace with your own Unsplash / CDN URLs or local assets
 const _fashionImages = [
@@ -32,7 +31,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _idCtrl = TextEditingController();
   final _pinCtrl = TextEditingController();
-  bool _pinVisible = false;
 
   @override
   void dispose() {
@@ -93,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _idCtrl,
                         hint: "Enter your staff ID",
                         icon: Icons.person_outline_rounded,
+                        onChanged: (_) => auth.clearLoginError(),
                       ),
                       SizedBox(height: 18.h),
 
@@ -114,7 +113,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       SizedBox(height: 7.h),
-                      _PinField(controller: _pinCtrl),
+                      _PinField(
+                        controller: _pinCtrl,
+                        onChanged: (_) => auth.clearLoginError(),
+                      ),
+                      if ((auth.loginError ?? '').isNotEmpty) ...[
+                        SizedBox(height: 8.h),
+                        Text(
+                          auth.loginError!,
+                          style: TextStyle(
+                            color: _danger,
+                            fontSize: 12.sp,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
                       SizedBox(height: 24.h),
 
                       // Login button
@@ -126,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 22.h),
 
                       // Status strip
-                      _StatusStrip(),
+                      //    _StatusStrip(),
                     ],
                   ),
                 ),
@@ -334,16 +347,19 @@ class _DarkInput extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final IconData icon;
+  final ValueChanged<String>? onChanged;
   const _DarkInput({
     required this.controller,
     required this.hint,
     required this.icon,
+    this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      onChanged: onChanged,
       style: TextStyle(fontSize: 14.sp, color: _textPri),
       decoration: InputDecoration(
         hintText: hint,
@@ -367,7 +383,8 @@ class _DarkInput extends StatelessWidget {
 
 class _PinField extends StatefulWidget {
   final TextEditingController controller;
-  const _PinField({required this.controller});
+  final ValueChanged<String>? onChanged;
+  const _PinField({required this.controller, this.onChanged});
 
   @override
   State<_PinField> createState() => _PinFieldState();
@@ -380,6 +397,7 @@ class _PinFieldState extends State<_PinField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: widget.controller,
+      onChanged: widget.onChanged,
       obscureText: !_visible,
       keyboardType: TextInputType.number,
       //maxLength: 4,
@@ -439,7 +457,6 @@ class _LoginButton extends StatelessWidget {
           ? null
           : () async {
               await auth.login(idCtrl.text, pinCtrl.text);
-              if (accessToken != null) Get.off(() => Dashboardscreen());
             },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -474,6 +491,7 @@ class _LoginButton extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _StatusStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

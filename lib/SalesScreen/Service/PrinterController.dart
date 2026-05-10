@@ -526,12 +526,12 @@ class PrinterController extends GetxController {
       for (final item in data.items) {
         final qty = item.quantity ?? 1;
         final lineTotal = item.lineTotal ?? 0;
-        final mrp = item.price;
+        final mrp = item.costPrice;
         final sp = item.sellingPrice;
         final hasDiscount = mrp != null && sp != null && mrp > sp;
         final displayRate = sp ?? mrp ?? (lineTotal / qty);
 
-        if (hasDiscount) totalSaved += (mrp! - sp!) * qty;
+        if (hasDiscount) totalSaved += (mrp - sp) * qty;
 
         final variant = [
           item.size,
@@ -563,21 +563,21 @@ class PrinterController extends GetxController {
         ]);
 
         // ── Discount sub-line ────────────────────────────────────────────
-        if (hasDiscount) {
-          final savedPerUnit = mrp! - sp!;
-          bytes += generator.row([
-            PosColumn(
-              text: '  MRP:${moneyFmt.format(mrp)}',
-              width: 6,
-              styles: sFontB,
-            ),
-            PosColumn(
-              text: 'Save:${moneyFmt.format(savedPerUnit * qty)}',
-              width: 6,
-              styles: sFontBR,
-            ),
-          ]);
-        }
+        // if (hasDiscount) {
+        //   final savedPerUnit = mrp! - sp!;
+        //   bytes += generator.row([
+        //     PosColumn(
+        //       text: '  MRP:${moneyFmt.format(mrp)}',
+        //       width: 6,
+        //       styles: sFontB,
+        //     ),
+        //     PosColumn(
+        //       text: 'Save:${moneyFmt.format(savedPerUnit * qty)}',
+        //       width: 6,
+        //       styles: sFontBR,
+        //     ),
+        //   ]);
+        // }
       }
 
       bytes += generator.hr(ch: '-');
@@ -694,15 +694,15 @@ class PrinterController extends GetxController {
               underline: true,
             ),
           );
-          if (v.campaignEndDate != null) {
-            try {
-              final exp = DateTime.parse(v.campaignEndDate!);
-              bytes += generator.text(
-                'Valid until: ${DateFormat('dd MMM yyyy').format(exp)}',
-                styles: sCenter,
-              );
-            } catch (_) {}
-          }
+          // if (v.campaignEndDate != null) {
+          //   try {
+          //     final exp = DateTime.parse(v.campaignEndDate!);
+          //     bytes += generator.text(
+          //       'Valid until: ${DateFormat('dd MMM yyyy').format(exp)}',
+          //       styles: sCenter,
+          //     );
+          //   } catch (_) {}
+          // }
         }
       }
       bytes += generator.hr();
@@ -710,7 +710,6 @@ class PrinterController extends GetxController {
 
     // ── 12. Barcode ────────────────────────────────────────────────────────
     if (data.invoiceNumber != null) {
-      bytes += generator.text('Scan to verify', styles: sCenter);
       bytes += generator.barcode(
         Barcode.code128(
           data.invoiceNumber!.replaceAll('INV-', '').characters.toList(),

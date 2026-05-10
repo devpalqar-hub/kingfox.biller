@@ -242,7 +242,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               child: AnalyticsCard(
                                 title: "TOTAL REVENUE",
                                 value:
-                                    "₹${analytics.summary.netRevenue.toStringAsFixed(2)}",
+                                    "₹${analytics.summary.totalRevenue.toStringAsFixed(2)}",
                                 color: const Color(0xff22C55E),
                               ),
                             ),
@@ -268,7 +268,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               child: AnalyticsCard(
                                 title: "REFUNDS",
                                 value:
-                                    "₹${analytics.summary.totalRefunds.toStringAsFixed(2)}",
+                                    "₹${analytics.summary.refundAmount.toStringAsFixed(2)}",
                                 color: const Color(0xffEF4444),
                               ),
                             ),

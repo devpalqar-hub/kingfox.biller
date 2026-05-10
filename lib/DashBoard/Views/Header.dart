@@ -140,8 +140,8 @@ class Header extends StatelessWidget {
     return GestureDetector(
       onTap: () => controller.changeTab(index),
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 14.w),
-        padding: EdgeInsets.symmetric(vertical: 6.h),
+        margin: EdgeInsets.symmetric(horizontal: 14),
+        padding: EdgeInsets.symmetric(vertical: 6),
         decoration: selected
             ? const BoxDecoration(
                 border: Border(
@@ -152,7 +152,7 @@ class Header extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            fontSize: 15.sp,
+            fontSize: 14,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             color: selected ? Colors.black : Color(0XFF64748B),
           ),
@@ -196,59 +196,64 @@ class _PrinterPill extends StatelessWidget {
         ? const Color(0xFFF59E0B)
         : const Color(0xFF94A3B8);
 
-    return GestureDetector(
-      onTap: () => Get.dialog(
-        const PrinterSettingsDialog(),
-        barrierDismissible: true,
-        barrierColor: Colors.black54,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(7.r),
-          border: Border.all(color: border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 7.w,
-              height: 7.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: dotColor,
-              ),
+    return GetBuilder<PrinterController>(
+      builder: (__) {
+        return GestureDetector(
+          onTap: () => Get.dialog(
+            const PrinterSettingsDialog(),
+            barrierDismissible: true,
+            barrierColor: Colors.black54,
+          ),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(7.r),
+              border: Border.all(color: border),
             ),
-            SizedBox(width: 6.w),
-            Icon(
-              ctrl.selectedPrinter?.connectionType == null
-                  ? Icons.print_outlined
-                  : ctrl.selectedPrinter!.connectionType == ConnectionType.USB
-                  ? Icons.usb_rounded
-                  : Icons.bluetooth_rounded,
-              size: 13.sp,
-              color: textColor,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 7.w,
+                  height: 7.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: dotColor,
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Icon(
+                  ctrl.selectedPrinter?.connectionType == null
+                      ? Icons.print_outlined
+                      : ctrl.selectedPrinter!.connectionType ==
+                            ConnectionType.USB
+                      ? Icons.usb_rounded
+                      : Icons.bluetooth_rounded,
+                  size: 13.sp,
+                  color: textColor,
+                ),
+                SizedBox(width: 5.w),
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                SizedBox(width: 3.w),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 13.sp,
+                  color: textColor.withOpacity(0.7),
+                ),
+              ],
             ),
-            SizedBox(width: 5.w),
-            Text(
-              displayName,
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-              ),
-            ),
-            SizedBox(width: 3.w),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 13.sp,
-              color: textColor.withOpacity(0.7),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -24,7 +24,7 @@ class VoucherSelectionCard extends StatelessWidget {
               /// TITLE
               Text(
                 "Voucher Selection",
-                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
 
               SizedBox(height: 8.h),
@@ -55,7 +55,10 @@ class VoucherSelectionCard extends StatelessWidget {
                         items: [
                           DropdownMenuItem<int>(
                             value: null,
-                            child: Text("None", style: TextStyle(fontSize: 11.sp)),
+                            child: Text(
+                              "None",
+                              style: TextStyle(fontSize: 11.sp),
+                            ),
                           ),
 
                           ...controller.campaigns.map((campaign) {
@@ -186,42 +189,47 @@ class VoucherSelectionCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Container(
-                      height: 36.h,
+                      height: 38.h,
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.search, size: 14.sp),
-                          SizedBox(width: 4.w),
-                          Expanded(
-                            child: TextField(
-                              controller: controller.couponController,
-                              textAlignVertical: TextAlignVertical.center,
-                              style: TextStyle(fontSize: 12.sp),
-                              onChanged: (value) {
-                                controller.couponError = null;
-                                controller.appliedCoupon = "";
-                                controller.update();
-                              },
-                              decoration: InputDecoration(
-                                isDense: true,
-                                isCollapsed: true,
-                                hintText: "Coupon Code",
-                                hintStyle: TextStyle(
-                                  fontSize: 11.sp,
-                                  color: Colors.black,
-                                ),
-
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                            ),
+                      child: TextField(
+                        controller: controller.couponController,
+                        textAlignVertical: TextAlignVertical.center,
+                        textAlign: TextAlign.start,
+                        style: TextStyle(fontSize: 12.sp),
+                        onChanged: (value) {
+                          controller.couponError = null;
+                          controller.appliedCoupon = "";
+                          controller.update();
+                        },
+                        onSubmitted: (value) async {
+                          final coupon = controller.couponController.text
+                              .trim();
+                          if (controller.cart == null ||
+                              controller.cart!.items.isEmpty)
+                            return;
+                          if (coupon.isEmpty) {
+                            controller.couponError = "Enter coupon code";
+                            controller.update();
+                            return;
+                          }
+                          await controller.getCart(couponCode: coupon);
+                        },
+                        decoration: InputDecoration(
+                          isDense: true,
+                          isCollapsed: true,
+                          hintText: "Coupon Code",
+                          hintStyle: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.black,
                           ),
-                        ],
+
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
                   ),

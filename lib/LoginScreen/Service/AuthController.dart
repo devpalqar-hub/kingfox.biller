@@ -12,6 +12,8 @@ class AuthController extends GetxController {
   bool isLoading = false;
   bool _loginCheckCompleted = false;
 
+  String? loginError;
+
   String userId = "";
   String userName = "";
 
@@ -35,52 +37,89 @@ class AuthController extends GetxController {
     update();
   }
 
-  Future<void> login(String email, String password) async {
-    isLoading = true;
+  void clearLoginError() {
+    if (loginError == null) return;
+    loginError = null;
     update();
+  }
 
-    final response = await http.post(
-      Uri.parse("$baseUrl/auth/login"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"email": email, "password": password}),
-    );
+  Future<void> login(String email, String password) async {
+    final trimmedEmail = email.trim();
+    final trimmedPassword = password.trim();
 
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 201) {
-      accessToken = data["access_token"];
-
-      userId = data["user"]["id"].toString();
-      userName = data["user"]["name"] ?? "";
-
-      final prefs = await SharedPreferences.getInstance();
-
-      await prefs.setString("accessToken", accessToken!);
-      await prefs.setString("userId", userId);
-      await prefs.setString("userName", userName);
-
-      Get.offAll(() => Dashboardscreen());
-    } else {
-      String errorMessage = "Login failed";
-
-      if (data["message"] != null) {
-        if (data["message"] is List) {
-          errorMessage = data["message"].join(", ");
-        } else {
-          errorMessage = data["message"].toString();
-        }
-      }
+    if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
+      loginError = 'Enter staff ID and password';
+      update();
+      return;
     }
 
-    isLoading = false;
+    isLoading = true;
+    loginError = null;
     update();
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": trimmedEmail, "password": trimmedPassword}),
+      );
+
+      final dynamic data = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        userId = data["user"]["id"].toString();
+        userName = data["user"]["name"] ?? "";
+
+        final roleRaw = data["user"]["role"];
+        final role = (roleRaw ?? '').toString().trim().toLowerCase();
+
+        final prefs = await SharedPreferences.getInstance();
+
+        if (role == "cashier") {
+          accessToken = data["access_token"];
+          await prefs.setString("accessToken", accessToken!);
+          await prefs.setString("userId", userId);
+          await prefs.setString("userName", userName);
+          await prefs.setString("userRole", role);
+
+          Get.offAll(() => Dashboardscreen());
+        } else {
+          // Ensure a non-cashier cannot enter via stale token.
+          accessToken = null;
+          await prefs.remove("accessToken");
+          await prefs.remove("userRole");
+          loginError = "Please login as cashier";
+        }
+      } else {
+        String errorMessage = "Login failed";
+
+        if (data is Map && data["message"] != null) {
+          final msg = data["message"];
+          if (msg is List) {
+            errorMessage = msg.join(", ");
+          } else {
+            errorMessage = msg.toString();
+          }
+        }
+
+        loginError = errorMessage;
+      }
+    } catch (_) {
+      loginError = 'Login failed. Check your connection and try again.';
+    } finally {
+      isLoading = false;
+      update();
+    }
   }
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
     String? savedToken = prefs.getString("accessToken");
+    final savedRole = (prefs.getString("userRole") ?? '').trim().toLowerCase();
 
-    if (savedToken == null || savedToken.isEmpty) {
+    if (savedToken == null || savedToken.isEmpty || savedRole != 'cashier') {
+      await prefs.remove("accessToken");
+      await prefs.remove("userRole");
       Get.offAll(() => LoginScreen());
       return;
     }
@@ -104,7 +143,7 @@ class AuthController extends GetxController {
 
     await prefs.clear();
     accessToken = null;
-
+    Get.deleteAll();
     Get.offAll(() => LoginScreen());
   }
 

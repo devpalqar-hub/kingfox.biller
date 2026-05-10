@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
@@ -38,10 +39,52 @@ class ManualDiscountCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _InputField(
-                    controller: ctrl.discountController,
-                    hint: 'Discount amount',
-                    keyboardType: TextInputType.number,
+                  child: Container(
+                    height: 40.h,
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: Color(0xFFE2E8F0)),
+                    ),
+                    child: TextField(
+                      controller: ctrl.discountController,
+                      keyboardType: TextInputType.number,
+                      style: TextStyle(fontSize: 14),
+
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3),
+                      ],
+                      onSubmitted: (value) async {
+                        if (ctrl.cart == null || ctrl.cart!.items.isEmpty)
+                          return;
+                        final input = ctrl.discountController.text.trim();
+                        final discount = (input.isEmpty)
+                            ? int.parse("0")
+                            : int.tryParse(input);
+
+                        if (discount == null) return;
+                        ctrl.discountController.text = "$discount";
+                        if (discount < ctrl.cart!.subtotal)
+                          await ctrl.getCart(
+                            manualDiscountAmount: discount.toDouble(),
+                          );
+                      },
+                      decoration: InputDecoration(
+                        isDense: true,
+                        isCollapsed: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          //  vertical: 10.h,
+                        ),
+                        hintText: 'Discout Amount',
+                        hintStyle: TextStyle(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(width: 8.w),

@@ -74,7 +74,7 @@ class AddProductController extends GetxController {
   void clearAllTextControllers() {
     nameController.clear();
     phoneController.clear();
-    voucherCountController.clear();
+    voucherCountController.text = "0";
     couponController.clear();
     discountController.clear();
     update();

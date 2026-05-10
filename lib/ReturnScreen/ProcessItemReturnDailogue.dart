@@ -507,7 +507,7 @@ class ProcessItemReturnDialog extends StatelessWidget {
                             onTap: () {
                               controller.increaseQty(
                                 item.variantId,
-                                item.quantity,
+                                item.quantity - item.returnedQuantity,
                               );
                             },
                             child: _qtyBtn(Icons.add),

@@ -21,6 +21,7 @@ class CheckoutData {
   final String? status;
   final String? manualDiscountAmount;
   final String? appliedCouponDiscount;
+  final ReturnCoupon? returnCoupon;
 
   const CheckoutData({
     this.cartId,
@@ -45,6 +46,7 @@ class CheckoutData {
     this.status,
     this.manualDiscountAmount,
     this.appliedCouponDiscount,
+    this.returnCoupon,
   });
 
   factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
@@ -78,6 +80,9 @@ class CheckoutData {
     appliedCouponDiscount: (j["appliedCouponDiscount"] ?? "0").toString(),
     createdAt: j["createdAt"],
     status: j["status"],
+    returnCoupon: j["returnCoupon"] != null
+        ? ReturnCoupon.fromJson(j["returnCoupon"])
+        : null,
   );
 }
 
@@ -118,6 +123,7 @@ class CartItem {
   final String? productName;
   final String? category;
   final double? price;
+  final double? costPrice;
   final int? quantity;
   final double? lineTotal;
   final int? returnedQuantity;
@@ -132,6 +138,7 @@ class CartItem {
     this.sellingPrice,
     this.productName,
     this.category,
+    this.costPrice,
     this.price,
     this.quantity,
     this.lineTotal,
@@ -149,6 +156,7 @@ class CartItem {
     productName: j['productName'],
     category: j['category'],
     price: (j['price'] as num?)?.toDouble(),
+    costPrice: (j['costPrice'] as num?)?.toDouble(),
     quantity: j['quantity'],
     lineTotal: (j['lineTotal'] as num?)?.toDouble(),
     returnedQuantity: (j["returnedQuantity"]),
@@ -187,6 +195,20 @@ class Customer {
     phone: j['phone'],
     email: j['email'],
     address: j['address'],
+  );
+}
+
+class ReturnCoupon {
+  final String? code;
+  final double? amount;
+  final String? expiresAt;
+
+  const ReturnCoupon({this.code, this.amount, this.expiresAt});
+
+  factory ReturnCoupon.fromJson(Map<String, dynamic> j) => ReturnCoupon(
+    code: j["code"],
+    amount: (j["amount"] ?? 0).toDouble(),
+    expiresAt: j["expiresAt"],
   );
 }
 
