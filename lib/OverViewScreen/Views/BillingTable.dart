@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
 import 'package:kinfox_biller/OverViewScreen/Model/InvoiceModel.dart';
 import 'package:kinfox_biller/OverViewScreen/Service/HistoryController.dart';
@@ -60,7 +61,7 @@ class BillingHistoryTable extends StatelessWidget {
     final createdAt = inv.createdAt ?? '';
     String date = '';
     String time = '';
-
+    DateTime dt = DateTime.parse(createdAt).toLocal();
     if (createdAt.contains('T')) {
       final parts = createdAt.split('T');
       date = parts[0];
@@ -84,7 +85,10 @@ class BillingHistoryTable extends StatelessWidget {
         children: [
           Expanded(child: Text(invoiceNumber, overflow: TextOverflow.ellipsis)),
           Expanded(
-            child: Text("$date, $time", overflow: TextOverflow.ellipsis),
+            child: Text(
+              DateFormat("yyyy-MM-dd, hh:mm a").format(dt),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Expanded(
             child: Text(
