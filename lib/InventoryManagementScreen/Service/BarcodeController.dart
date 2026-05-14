@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart' hide Printer;
+import 'package:pdf/widgets.dart' show PdfGoogleFonts;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27,24 +28,20 @@ const _kBarcodeRemainingPrefix = 'bp_rem_';
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums & Value Objects
 // ─────────────────────────────────────────────────────────────────────────────
-
 enum BarcodePrintMode { thermal, a4 }
 
-/// Label size definition.
-///
-/// [cols] / [rows]  — exact grid on one A4 sheet (never derive at runtime).
-/// [marginMm]       — dead border around the sheet edge (printer + sheet spec).
-/// [gapMm]          — gap between adjacent labels (horizontal & vertical).
-///
-/// These three values MUST match the physical label sheet you buy.
 class BarcodeLabelSize {
   final String name;
   final double widthMm;
   final double heightMm;
   final int cols;
   final int rows;
-  final double marginMm; // sheet border — typically 8–11 mm
-  final double gapMm; // inter-label gap — typically 2–3 mm
+  final double hMarginMm;
+  final double hMarginEndMm;
+  final double vMarginMm;
+  final double vMarginEndMm;
+  final double hGapMm;
+  final double vGapMm;
 
   const BarcodeLabelSize({
     required this.name,
@@ -52,63 +49,90 @@ class BarcodeLabelSize {
     required this.heightMm,
     required this.cols,
     required this.rows,
-    this.marginMm = 10.0,
-    this.gapMm = 2.5,
-  });
+    required this.hMarginMm,
+    double? hMarginEndMm,
+    required this.vMarginMm,
+    double? vMarginEndMm,
+    required this.hGapMm,
+    required this.vGapMm,
+  }) : hMarginEndMm = hMarginEndMm ?? hMarginMm,
+       vMarginEndMm = vMarginEndMm ?? vMarginMm;
 
   int get labelsPerA4Sheet => cols * rows;
 }
 
-/// Pre-defined standard label sizes.
-/// Margins and gaps match the most common Avery-compatible sheets.
+// ─────────────────────────────────────────────────────────────────────────────
+// Label size catalogue
+// ─────────────────────────────────────────────────────────────────────────────
 const List<BarcodeLabelSize> kLabelSizes = [
+  // ── 48-label  48 × 24 mm  (4 × 12) ─────────────────────────────────────
+  // W : 4×48 + 3×2 + 2.5 + 2.5 = 203 mm ✓
+  // H : 12×24 + 11×0 + 5 + 3   = 296 mm ✓
   BarcodeLabelSize(
-    name: '48 × 24 mm  (48/sheet)',
-    widthMm: 48,
-    heightMm: 24,
+    name: '48-label  48×24 mm  (4×12)  ★',
+    widthMm: 48.0,
+    heightMm: 24.0,
     cols: 4,
-    rows: 12, // 4 × 12 = 48
-    marginMm: 9.0,
-    gapMm: 2.5,
+    rows: 12,
+    hMarginMm: 2.5,
+    hMarginEndMm: 2.5,
+    vMarginMm: 5.0,
+    vMarginEndMm: 3.0,
+    hGapMm: 2.0,
+    vGapMm: 0.0,
   ),
+  // ── 72-label  48 × 14.9 mm  (4 × 18) ────────────────────────────────────
   BarcodeLabelSize(
-    name: '52 × 26 mm  (30/sheet)',
-    widthMm: 52,
-    heightMm: 26,
+    name: '72-label  48×14.9 mm  (4×18)',
+    widthMm: 48.0,
+    heightMm: 14.9,
+    cols: 4,
+    rows: 18,
+    hMarginMm: 5.0,
+    vMarginMm: 13.0,
+    vMarginEndMm: 10.0,
+    hGapMm: 2.0,
+    vGapMm: 0.0,
+  ),
+  // ── 65-label  38 × 21.2 mm  (5 × 13) ────────────────────────────────────
+  BarcodeLabelSize(
+    name: '65-label  38×21.2 mm  (5×13)',
+    widthMm: 38.0,
+    heightMm: 21.2,
+    cols: 5,
+    rows: 13,
+    hMarginMm: 4.0,
+    vMarginMm: 9.0,
+    hGapMm: 2.0,
+    vGapMm: 0.0,
+  ),
+  // ── 24-label  63 × 33 mm  (3 × 8) ───────────────────────────────────────
+  BarcodeLabelSize(
+    name: '24-label  63×33 mm  (3×8)',
+    widthMm: 63.0,
+    heightMm: 33.0,
     cols: 3,
-    rows: 10, // 3 × 10 = 30
-    marginMm: 10.5,
-    gapMm: 3.0,
+    rows: 8,
+    hMarginMm: 7.0,
+    vMarginMm: 11.0,
+    hGapMm: 3.0,
+    vGapMm: 1.0,
   ),
+  // ── 10-label  99 × 55 mm  (2 × 5) ───────────────────────────────────────
   BarcodeLabelSize(
-    name: '63 × 38 mm  (21/sheet)',
-    widthMm: 63,
-    heightMm: 38,
-    cols: 3,
-    rows: 7, // 3 × 7 = 21
-    marginMm: 10.0,
-    gapMm: 2.0,
-  ),
-  BarcodeLabelSize(
-    name: '70 × 37 mm  (24/sheet)',
-    widthMm: 70,
-    heightMm: 37,
-    cols: 3,
-    rows: 8, // 3 × 8 = 24
-    marginMm: 10.5,
-    gapMm: 2.0,
-  ),
-  BarcodeLabelSize(
-    name: '99 × 57 mm  (10/sheet)',
-    widthMm: 99,
-    heightMm: 57,
+    name: '10-label  99×55 mm  (2×5)',
+    widthMm: 99.0,
+    heightMm: 55.0,
     cols: 2,
-    rows: 5, // 2 × 5 = 10
-    marginMm: 11.0,
-    gapMm: 3.0,
+    rows: 5,
+    hMarginMm: 4.5,
+    vMarginMm: 8.5,
+    hGapMm: 3.0,
+    vGapMm: 0.0,
   ),
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
 class BarcodePrintJob {
   final String barcodeValue;
   final String productName;
@@ -124,7 +148,6 @@ class BarcodePrintJob {
     required this.count,
   });
 
-  /// Key includes size index so sessions from different label sizes never mix.
   String sheetKey(int sizeIndex) =>
       '${barcodeValue}_${variantName ?? "default"}_s$sizeIndex'.replaceAll(
         RegExp(r'[^a-zA-Z0-9_]'),
@@ -136,9 +159,7 @@ class SheetSession {
   final String key;
   int used;
   int total;
-
   SheetSession({required this.key, required this.used, required this.total});
-
   int get remaining => total - used;
   bool get hasSpace => remaining > 0;
 }
@@ -147,12 +168,10 @@ class SheetSession {
 // BarcodePrinterController
 // ─────────────────────────────────────────────────────────────────────────────
 class BarcodePrinterController extends GetxController {
-  // ── Persistent state ──────────────────────────────────────────────────────
   BarcodePrintMode printMode = BarcodePrintMode.thermal;
   int selectedSizeIndex = 0;
   BarcodeLabelSize get selectedSize => kLabelSizes[selectedSizeIndex];
 
-  // ── Thermal printer state ─────────────────────────────────────────────────
   bool isScanning = false;
   bool isConnected = false;
   Printer? selectedPrinter;
@@ -165,14 +184,8 @@ class BarcodePrinterController extends GetxController {
   ConnectionType? savedThermalConnType;
   bool get hasSavedThermal => savedThermalAddress != null;
 
-  // ── Sheet session cache ───────────────────────────────────────────────────
   final Map<String, SheetSession> _sessions = {};
-
   final _plugin = FlutterThermalPrinter.instance;
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ─────────────────────────────────────────────────────────────────────────
 
   bool isDeviceConnected(Printer printer) {
     if (!isConnected || selectedPrinter == null) return false;
@@ -183,7 +196,6 @@ class BarcodePrinterController extends GetxController {
     return s.name == printer.name && s.connectionType == printer.connectionType;
   }
 
-  // ── Init ──────────────────────────────────────────────────────────────────
   @override
   void onInit() {
     super.onInit();
@@ -240,7 +252,6 @@ class BarcodePrinterController extends GetxController {
     update();
   }
 
-  // ── Mode / size setters ───────────────────────────────────────────────────
   Future<void> setPrintMode(BarcodePrintMode mode) async {
     printMode = mode;
     await _saveModePref();
@@ -248,8 +259,6 @@ class BarcodePrinterController extends GetxController {
 
   Future<void> setSizeIndex(int idx) async {
     selectedSizeIndex = idx;
-    // Invalidate in-memory session cache when size changes — persisted keys
-    // already embed the size index so old data is never reloaded.
     _sessions.clear();
     await _saveModePref();
   }
@@ -349,26 +358,20 @@ class BarcodePrinterController extends GetxController {
   String connectionLabel(Printer p) =>
       p.connectionType == ConnectionType.USB ? 'USB' : 'BLE';
 
-  // ── Auto-connect ──────────────────────────────────────────────────────────
   Future<void> _autoConnect() async {
     if (savedThermalAddress == null || printMode == BarcodePrintMode.a4) return;
     await startScan(autoConnectAddress: savedThermalAddress);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Sheet session management
-  // ─────────────────────────────────────────────────────────────────────────
-
+  // ── Sheet sessions ────────────────────────────────────────────────────────
   Future<SheetSession> _getSession(String key) async {
     if (_sessions.containsKey(key)) return _sessions[key]!;
     final p = await SharedPreferences.getInstance();
     final used = p.getInt('${_kBarcodeRemainingPrefix}${key}_used') ?? 0;
     final total = selectedSize.labelsPerA4Sheet;
-    // Guard: stored `used` may exceed total if size was changed.
-    final safeUsed = used.clamp(0, total);
-    final session = SheetSession(key: key, used: safeUsed, total: total);
-    _sessions[key] = session;
-    return session;
+    final s = SheetSession(key: key, used: used.clamp(0, total), total: total);
+    _sessions[key] = s;
+    return s;
   }
 
   Future<void> _saveSession(SheetSession session) async {
@@ -397,12 +400,8 @@ class BarcodePrinterController extends GetxController {
 
   SheetSession? getSessionSnapshot(String key) => _sessions[key];
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Entry point
-  // ─────────────────────────────────────────────────────────────────────────
-  void openBarcodePrinter(BarcodePrintJob job) {
-    Get.dialog(BarcodePrinterDialog(job: job), barrierDismissible: true);
-  }
+  void openBarcodePrinter(BarcodePrintJob job) =>
+      Get.dialog(BarcodePrinterDialog(job: job), barrierDismissible: true);
 
   // ─────────────────────────────────────────────────────────────────────────
   // PRINT — A4 mode
@@ -418,7 +417,6 @@ class BarcodePrinterController extends GetxController {
       int remaining = job.count;
       final pages = <_PageSpec>[];
 
-      // Resume on the current partially-used sheet.
       if (session.hasSpace && session.used > 0) {
         final canFit = session.remaining.clamp(0, remaining);
         pages.add(
@@ -426,79 +424,126 @@ class BarcodePrinterController extends GetxController {
         );
         remaining -= canFit;
         session.used += canFit;
-        if (session.used >= total) session.used = 0; // sheet exhausted → reset
+        if (session.used >= total) session.used = 0;
       }
-
-      // Full / partial fresh sheets for the rest.
       while (remaining > 0) {
         final canFit = remaining.clamp(0, total);
         pages.add(_PageSpec(startSlot: 0, count: canFit, totalSlots: total));
         remaining -= canFit;
         session.used = (canFit < total) ? canFit : 0;
       }
-
       await _saveSession(session);
 
-      // ── PDF build ─────────────────────────────────────────────────────────
-      final pdf = pw.Document();
-      final font = pw.Font.helvetica();
-      final fontBold = pw.Font.helveticaBold();
+      // ── Fonts ────────────────────────────────────────────────────────────
+      final font = await PdfGoogleFonts.notoSansRegular();
+      final fontBold = await PdfGoogleFonts.notoSansBold();
 
-      // Convert all measurements to PDF points once.
-      final marginPt = size.marginMm * PdfPageFormat.mm;
-      final gapPt = size.gapMm * PdfPageFormat.mm;
+      // ── Convert mm → pt ──────────────────────────────────────────────────
+      // 1 mm = PdfPageFormat.mm pt  (≈ 2.8346 pt)
       final labelW = size.widthMm * PdfPageFormat.mm;
       final labelH = size.heightMm * PdfPageFormat.mm;
-      final cols = size.cols;
-      final rows = size.rows;
+      final hMarginPt = size.hMarginMm * PdfPageFormat.mm;
+      final hGapPt = size.hGapMm * PdfPageFormat.mm;
+      final vMarginPt = size.vMarginMm * PdfPageFormat.mm;
+      final vGapPt = size.vGapMm * PdfPageFormat.mm;
+
+      // ── Build PDF ────────────────────────────────────────────────────────
+      final pdf = pw.Document();
 
       for (final page in pages) {
-        final slotCount = cols * rows;
-
-        // Populate slot map — guard against out-of-bounds if session was stale.
+        // Which slots are filled on this page?
+        final slotCount = size.cols * size.rows;
         final slots = List<bool>.filled(slotCount, false);
         for (int i = 0; i < page.count; i++) {
-          final slotIdx = page.startSlot + i;
-          if (slotIdx >= slotCount) break; // crash guard
-          slots[slotIdx] = true;
+          final idx = page.startSlot + i;
+          if (idx >= slotCount) break;
+          slots[idx] = true;
         }
 
         pdf.addPage(
           pw.Page(
-            pageFormat: PdfPageFormat.a4,
-            // Zero built-in margin — we control all spacing via pw.Padding
-            // so the grid origin is pixel-perfect.
-            margin: pw.EdgeInsets.zero,
-            build: (_) => pw.Padding(
-              padding: pw.EdgeInsets.all(marginPt),
-              child: pw.Column(
-                // FIX: crossAxisAlignment.center prevents the last short row
-                // from being left-hung on some pdf library versions.
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                // mainAxisSize defaults to max — fills available height after
-                // the margin is applied. Do NOT set min here.
-                children: _buildRows(
-                  rows: rows,
-                  cols: cols,
-                  slots: slots,
-                  slotCount: slotCount,
-                  labelW: labelW,
-                  labelH: labelH,
-                  gapPt: gapPt,
-                  job: job,
-                  font: font,
-                  fontBold: fontBold,
-                ),
+            // ── Explicitly zero ALL margins via PdfPageFormat ─────────────
+            // pw.Page.margin only controls the pw layout engine margin;
+            // PdfPageFormat itself also carries margin values that become
+            // the effective page clip region.  Set both to zero so
+            // availableWidth == pageWidth and availableHeight == pageHeight.
+            pageTheme: pw.PageTheme(
+              margin: pw.EdgeInsets.zero,
+              pageFormat: PdfPageFormat(
+                210 * PdfPageFormat.mm, // width  = 210 mm
+                297 * PdfPageFormat.mm, // height = 297 mm
+                marginAll: 0, // ← zero format-level margin
               ),
             ),
+            build: (_) {
+              // ── Outer padding = sheet margins ────────────────────────────
+              return pw.Padding(
+                padding: pw.EdgeInsets.only(
+                  left: hMarginPt,
+                  right: size.hMarginEndMm * PdfPageFormat.mm,
+                  top: vMarginPt,
+                  bottom: size.vMarginEndMm * PdfPageFormat.mm,
+                ),
+                // ── FIX: use min + start instead of max + spaceBetween ────
+                // mainAxisSize.max + spaceBetween caused the Column to
+                // stretch to full page height, ballooning the inter-row
+                // spacing and creating a large blank gap at the bottom.
+                // With mainAxisSize.min the Column is exactly as tall as
+                // its content; explicit SizedBox gaps replace spaceBetween.
+                child: pw.Column(
+                  mainAxisSize: pw.MainAxisSize.min,
+                  mainAxisAlignment: pw.MainAxisAlignment.start,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: List.generate(size.rows, (row) {
+                    return pw.Column(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      children: [
+                        pw.Row(
+                          mainAxisSize: pw.MainAxisSize.max,
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: List.generate(size.cols, (col) {
+                            final idx = row * size.cols + col;
+                            final filled = idx < slotCount && slots[idx];
+                            return pw.SizedBox(
+                              width: labelW,
+                              height: labelH,
+                              child: filled
+                                  ? _buildPdfLabel(
+                                      job: job,
+                                      font: font,
+                                      fontBold: fontBold,
+                                      w: labelW,
+                                      h: labelH,
+                                    )
+                                  : pw.SizedBox(width: labelW, height: labelH),
+                            );
+                          }),
+                        ),
+                        // Inter-row gap — skipped after last row and when
+                        // vGapMm is 0 (e.g. the 48-label sheet).
+                        if (row < size.rows - 1 && vGapPt > 0)
+                          pw.SizedBox(height: vGapPt),
+                      ],
+                    );
+                  }),
+                ),
+              );
+            },
           ),
         );
       }
 
-      await Printing.layoutPdf(
-        onLayout: (_) async => pdf.save(),
-        name: 'Barcode_${job.barcodeValue}',
-      );
+      final pdfBytes = await pdf.save();
+
+      if (Platform.isMacOS) {
+        await _openPdfOnMac(pdfBytes, 'Barcode_${job.barcodeValue}');
+      } else {
+        await Printing.layoutPdf(
+          onLayout: (_) async => pdfBytes,
+          name: 'Barcode_${job.barcodeValue}',
+        );
+      }
 
       _toast(
         'Sent to printer — ${job.count} labels across ${pages.length} page(s)',
@@ -510,93 +555,14 @@ class BarcodePrinterController extends GetxController {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // _buildRows  — builds the list of row widgets for one PDF page
+  // _buildPdfLabel — ONE label cell, tuned for 48 × 24 mm
   //
-  // Why separate helper:
-  //  • Each row is wrapped in pw.SizedBox(height: labelH) so row height is
-  //    pinned exactly — the pdf library cannot shrink or stretch it.
-  //  • Between rows we insert pw.SizedBox(height: gapPt) spacers that live
-  //    OUTSIDE the label cells, so the label always fills exactly labelW×labelH.
-  //  • The same spacer pattern applies horizontally between columns.
-  //  • Empty slots render a transparent pw.SizedBox of the same fixed size,
-  //    keeping the grid intact even when most slots are unfilled.
-  // ─────────────────────────────────────────────────────────────────────────
-  List<pw.Widget> _buildRows({
-    required int rows,
-    required int cols,
-    required List<bool> slots,
-    required int slotCount,
-    required double labelW,
-    required double labelH,
-    required double gapPt,
-    required BarcodePrintJob job,
-    required pw.Font font,
-    required pw.Font fontBold,
-  }) {
-    final children = <pw.Widget>[];
-
-    for (int row = 0; row < rows; row++) {
-      // ── Build cells for this row ─────────────────────────────────────────
-      final rowCells = <pw.Widget>[];
-
-      for (int col = 0; col < cols; col++) {
-        final idx = row * cols + col;
-        final filled = idx < slotCount && slots[idx];
-
-        // Horizontal spacer between columns (not before the first).
-        if (col > 0) {
-          rowCells.add(pw.SizedBox(width: gapPt, height: labelH));
-        }
-
-        // FIX: wrap each cell in a fixed pw.SizedBox so the label widget
-        // always receives exactly labelW × labelH — no padding touches it.
-        rowCells.add(
-          pw.SizedBox(
-            width: labelW,
-            height: labelH,
-            child: filled
-                ? _buildPdfLabel(
-                    job: job,
-                    font: font,
-                    fontBold: fontBold,
-                    w: labelW,
-                    h: labelH,
-                  )
-                : pw.SizedBox(width: labelW, height: labelH), // empty slot
-          ),
-        );
-      }
-
-      // Vertical spacer between rows (not before the first).
-      if (row > 0) {
-        children.add(pw.SizedBox(height: gapPt));
-      }
-
-      // FIX: pin row height exactly with an outer pw.SizedBox.
-      children.add(
-        pw.SizedBox(
-          height: labelH,
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.start,
-            children: rowCells,
-          ),
-        ),
-      );
-    }
-
-    return children;
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // _buildPdfLabel — renders one label cell
-  //
-  // Fixes vs original:
-  //  • Removed mainAxisSize: pw.MainAxisSize.min — was collapsing the inner
-  //    Column to its natural (smaller-than-cell) height and bunching all
-  //    content at the top regardless of spaceEvenly.
-  //  • crossAxisAlignment: center is now explicit for clarity.
-  //  • spaceEvenly now works correctly because the Column fills the full
-  //    cell height (= h) as intended.
+  // Layout (top→bottom, spaceEvenly):
+  //   1. Product name   bold   7.0 pt
+  //   2. Variant name   reg    5.8 pt  (optional)
+  //   3. Barcode image         24 pt height ≈ 8.5 mm
+  //   4. Barcode digits mono   5.2 pt
+  //   5. Price          bold   7.0 pt  (optional)
   // ─────────────────────────────────────────────────────────────────────────
   pw.Widget _buildPdfLabel({
     required BarcodePrintJob job,
@@ -605,95 +571,91 @@ class BarcodePrinterController extends GetxController {
     required double w,
     required double h,
   }) {
-    // 2 mm inset keeps content away from the die-cut edge.
-    const padMm = 2.0;
-    const padPt = padMm * PdfPageFormat.mm;
-
+    const padPt = 0.8 * PdfPageFormat.mm;
     final innerW = w - padPt * 2;
-    final innerH = h - padPt * 2;
 
-    // Barcode occupies 50 % of inner height, capped at 18 mm.
-    final barcodeH = (innerH * 0.50).clamp(0.0, 18.0 * PdfPageFormat.mm);
+    final hasVariant = job.variantName != null && job.variantName!.isNotEmpty;
+    final hasPrice = job.price != null;
 
-    // Barcode width: leave 15 % each side as quiet zone for scanner margin.
-    final barcodeW = innerW * 0.85;
+    const fsName = 7.0;
+    const fsVariant = 5.8;
+    const fsDigits = 5.2;
+    const fsPrice = 7.0;
 
-    // Font sizes scale with label height; raised minimums for laser legibility.
-    final fsBig = (h * 0.13).clamp(6.0, 9.0);
-    final fsSmall = (h * 0.10).clamp(5.5, 7.5);
+    // Barcode height scales with label height so it works for all sizes too.
+    // For 24 mm labels → ≈ 8.5 mm; clamped so it never overflows.
+    final barcodeH = (h * 0.38).clamp(14.0, 30.0);
+    final barcodeW = innerW * 0.90;
 
-    return pw.SizedBox(
+    return pw.Container(
       width: w,
       height: h,
-      child: pw.Container(
-        decoration: pw.BoxDecoration(
-          border: pw.Border.all(color: PdfColors.grey400, width: 0.3),
-        ),
-        padding: pw.EdgeInsets.all(padPt),
-        child: pw.Column(
-          // FIX: no mainAxisSize: min — Column expands to fill the full cell
-          // height so spaceEvenly distributes content correctly.
-          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          children: [
-            // ── Product name ────────────────────────────────────────────────
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey400, width: 0.3),
+      ),
+      padding: const pw.EdgeInsets.all(padPt),
+      child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.max,
+        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          // 1. Product name
+          pw.SizedBox(
+            width: innerW,
+            child: pw.Text(
+              job.productName,
+              style: pw.TextStyle(font: fontBold, fontSize: fsName),
+              maxLines: 1,
+              overflow: pw.TextOverflow.clip,
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+
+          // 2. Variant (optional)
+          if (hasVariant)
             pw.SizedBox(
               width: innerW,
               child: pw.Text(
-                job.productName,
-                style: pw.TextStyle(font: fontBold, fontSize: fsBig),
+                job.variantName!,
+                style: pw.TextStyle(font: font, fontSize: fsVariant),
                 maxLines: 1,
                 overflow: pw.TextOverflow.clip,
                 textAlign: pw.TextAlign.center,
               ),
             ),
 
-            // ── Variant (optional) ──────────────────────────────────────────
-            if (job.variantName != null)
-              pw.SizedBox(
-                width: innerW,
-                child: pw.Text(
-                  job.variantName!,
-                  style: pw.TextStyle(font: font, fontSize: fsSmall),
-                  maxLines: 1,
-                  overflow: pw.TextOverflow.clip,
-                  textAlign: pw.TextAlign.center,
-                ),
-              ),
-
-            // ── Barcode — constrained SizedBox prevents stretch / overflow ──
-            pw.SizedBox(
+          // 3. Barcode image
+          pw.SizedBox(
+            width: barcodeW,
+            height: barcodeH,
+            child: pw.BarcodeWidget(
+              barcode: pw.Barcode.code128(),
+              data: job.barcodeValue,
               width: barcodeW,
               height: barcodeH,
-              child: pw.BarcodeWidget(
-                barcode: pw.Barcode.code128(),
-                data: job.barcodeValue,
-                width: barcodeW,
-                height: barcodeH,
-                drawText: false,
-              ),
+              drawText: false,
             ),
+          ),
 
-            // ── Barcode digits ───────────────────────────────────────────────
+          // 4. Barcode HRI digits
+          pw.Text(
+            job.barcodeValue,
+            style: pw.TextStyle(
+              font: font,
+              fontSize: fsDigits,
+              letterSpacing: 0.5,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+
+          // 5. Price
+          if (hasPrice)
             pw.Text(
-              job.barcodeValue,
-              style: pw.TextStyle(
-                font: font,
-                fontSize: fsSmall,
-                letterSpacing: 0.8,
-              ),
+              'Rs.\u00A0${job.price!.toStringAsFixed(2)}',
+              style: pw.TextStyle(font: fontBold, fontSize: fsPrice),
               textAlign: pw.TextAlign.center,
             ),
-
-            // ── Price — ASCII-safe "Rs." avoids PDF Helvetica subset issues ──
-            if (job.price != null)
-              pw.Text(
-                'Rs. ${job.price!.toStringAsFixed(2)}',
-                style: pw.TextStyle(font: fontBold, fontSize: fsBig),
-                textAlign: pw.TextAlign.center,
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -712,45 +674,37 @@ class BarcodePrinterController extends GetxController {
           ? PaperSize.mm58
           : PaperSize.mm80;
       final generator = Generator(paperSize, profile);
-
-      // Dots-per-mm at 203 dpi ≈ 8 dots/mm.
       const dotsPerMm = 8;
 
-      // Barcode height in dots: 40 % of label height, clamped 24–80.
       final barcodeHeightDots = ((selectedSize.heightMm * 0.40) * dotsPerMm)
           .round()
           .clamp(24, 80);
-
-      // Barcode module width multiplier: compute max safe value so barcode
-      // never overflows the printable width of the paper.
       final barcodeData = job.barcodeValue.trim();
-      int barcodeWidth = 2; // default
+      int barcodeWidth = 2;
       if (barcodeData.isNotEmpty) {
-        final printableWidthDots =
-            (selectedSize.widthMm - 8) * dotsPerMm; // 4 mm quiet zone each side
+        final printableWidthDots = (selectedSize.widthMm - 8) * dotsPerMm;
         final modulesNeeded = 11 * barcodeData.length;
-        final maxMult = (printableWidthDots / modulesNeeded).floor().clamp(
-          1,
-          3,
-        );
-        barcodeWidth = maxMult;
+        barcodeWidth = (printableWidthDots / modulesNeeded).floor().clamp(1, 3);
       }
 
       for (int i = 0; i < job.count; i++) {
         List<int> bytes = [];
-
-        // ── Reset printer state at the start of EVERY label ───────────────
-        // Some firmware carries over alignment state from the previous cut
-        // command. ESC @ resets all modes to default.
         bytes += generator.reset();
-
-        // ── Set global alignment to center ────────────────────────────────
-        // ESC a 1 sets center alignment for all following content including
-        // the barcode widget (which ignores PosStyles.align on some firmwares).
         bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
 
-        // ── Variant ───────────────────────────────────────────────────────
-        if (job.variantName != null) {
+        // Product name
+        bytes += generator.text(
+          _truncateForThermal(job.productName, paperSize),
+          styles: const PosStyles(
+            align: PosAlign.center,
+            bold: true,
+            height: PosTextSize.size1,
+            width: PosTextSize.size1,
+          ),
+        );
+
+        // Variant
+        if (job.variantName != null && job.variantName!.isNotEmpty) {
           bytes += generator.text(
             _truncateForThermal(job.variantName!, paperSize),
             styles: const PosStyles(
@@ -761,9 +715,8 @@ class BarcodePrinterController extends GetxController {
           );
         }
 
-        // ── Price ─────────────────────────────────────────────────────────
+        // Price
         if (job.price != null) {
-          bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
           bytes += generator.text(
             'Rs. ${job.price!.toStringAsFixed(2)}',
             styles: const PosStyles(
@@ -775,10 +728,7 @@ class BarcodePrinterController extends GetxController {
           );
         }
 
-        // ── Re-assert center alignment before barcode ─────────────────────
-        // generator.barcode() uses whatever alignment is currently in the
-        // printer's register. Re-sending ESC a 1 here guarantees centering
-        // even on printers that reset alignment after rendering text lines.
+        // Barcode
         if (barcodeData.isNotEmpty) {
           bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
           bytes += generator.barcode(
@@ -789,12 +739,7 @@ class BarcodePrinterController extends GetxController {
           );
         }
 
-        // ── Reset styles before feed/cut ──────────────────────────────────
-        // Clears bold, size, and alignment flags so they don't bleed into
-        // the next label's initial state after the cut command executes.
         bytes += generator.reset();
-
-        // ── Feed + cut ────────────────────────────────────────────────────
         bytes += generator.feed(1);
         bytes += generator.cut(mode: PosCutMode.partial);
 
@@ -804,7 +749,6 @@ class BarcodePrinterController extends GetxController {
           await _plugin.printData(selectedPrinter!, bytes, longData: true);
         }
       }
-
       _toast('Printed ${job.count} barcode label(s) ✓');
     } catch (e) {
       _toast('Thermal print error: $e');
@@ -812,17 +756,13 @@ class BarcodePrinterController extends GetxController {
     }
   }
 
-  /// Truncate using grapheme-aware character count so multi-byte glyphs
-  /// (e.g. Malayalam) don't overflow the paper width.
   String _truncateForThermal(String text, PaperSize paperSize) {
     final maxChars = paperSize == PaperSize.mm58 ? 32 : 48;
-    final chars = text.characters; // grapheme clusters
+    final chars = text.characters;
     return chars.length > maxChars ? chars.take(maxChars).string : text;
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // macOS CUPS path
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── macOS CUPS ────────────────────────────────────────────────────────────
   String _cupsSafeName(String? name) {
     if (name == null || name.isEmpty) return '';
     return name.trim().replaceAll(RegExp(r'[\s\-]+'), '_');
@@ -831,17 +771,14 @@ class BarcodePrinterController extends GetxController {
   Future<void> _printViaCups(List<int> bytes) async {
     final queueName = _cupsSafeName(selectedPrinter!.name);
     if (queueName.isEmpty) throw Exception('No printer name available');
-
     final baseDir = await getApplicationSupportDirectory();
     final printDir = Directory('${baseDir.path}/thermal_prints');
     if (!await printDir.exists()) await printDir.create(recursive: true);
-
     final file = File(
-      '${printDir.path}/thermal_print_${DateTime.now().millisecondsSinceEpoch}.bin',
+      '${printDir.path}/thermal_${DateTime.now().millisecondsSinceEpoch}.bin',
     );
     await file.writeAsBytes(Uint8List.fromList(bytes), flush: true);
-    log('[Printer] Sending ${bytes.length} bytes to CUPS queue: $queueName');
-
+    log('[Printer] Sending ${bytes.length} bytes → CUPS queue: $queueName');
     final result = await Process.run('/usr/bin/lp', [
       '-d',
       queueName,
@@ -849,11 +786,9 @@ class BarcodePrinterController extends GetxController {
       'raw',
       file.path,
     ]);
-
     try {
       await file.delete();
     } catch (_) {}
-
     if (result.exitCode != 0) {
       final err = result.stderr.toString().trim();
       log('[Printer] CUPS error: $err');
@@ -862,9 +797,25 @@ class BarcodePrinterController extends GetxController {
     log('[Printer] CUPS accepted job for $queueName');
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Master dispatcher
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── macOS A4 ──────────────────────────────────────────────────────────────
+  Future<void> _openPdfOnMac(Uint8List pdfBytes, String name) async {
+    final docsDir = await getApplicationDocumentsDirectory();
+    final pdfDir = Directory('${docsDir.path}/barcode_pdfs');
+    if (!await pdfDir.exists()) await pdfDir.create(recursive: true);
+    final safeName = name.replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_');
+    final file = File('${pdfDir.path}/$safeName.pdf');
+    await file.writeAsBytes(pdfBytes, flush: true);
+    log('[Printer] PDF saved to ${file.path}');
+    final result = await Process.run('/usr/bin/open', [file.path]);
+    if (result.exitCode != 0) {
+      final err = result.stderr.toString().trim();
+      log('[Printer] open error: $err');
+      throw Exception('Could not open PDF on macOS: $err');
+    }
+    log('[Printer] PDF opened in system viewer: ${file.path}');
+  }
+
+  // ── Dispatcher ────────────────────────────────────────────────────────────
   Future<void> print(BarcodePrintJob job) async {
     if (printMode == BarcodePrintMode.a4) {
       await printA4(job);
@@ -876,8 +827,6 @@ class BarcodePrinterController extends GetxController {
   void _toast(String msg) => log(msg);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal page-layout spec
 // ─────────────────────────────────────────────────────────────────────────────
 class _PageSpec {
   final int startSlot;
