@@ -283,7 +283,18 @@ class _OverviewScreenState extends State<OverviewScreen> {
                             child: AnalyticsCard(
                               title: "BY HAND",
                               value:
-                                  "₹${(ctrl.analytics?.summary.totalCollectedByHand ?? 0).toDouble().toStringAsFixed(2)}",
+                                  "₹${(ctrl.analytics?.summary.paymentBreakdown.cash ?? 0).toDouble().toStringAsFixed(2)}",
+
+                              color: Colors.brown,
+                            ),
+                          ),
+
+                          SizedBox(width: 20.w),
+                          Expanded(
+                            child: AnalyticsCard(
+                              title: "BY CARD",
+                              value:
+                                  "₹${(ctrl.analytics?.summary.paymentBreakdown.card ?? 0).toDouble().toStringAsFixed(2)}",
 
                               color: Colors.brown,
                             ),
@@ -293,9 +304,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
                           Expanded(
                             child: AnalyticsCard(
-                              title: "BY BANK / ONLINE",
+                              title: "BY UPI",
                               value:
-                                  "₹${ctrl.analytics?.summary.totalCollectedByOnline.toStringAsFixed(2) ?? '0.00'}",
+                                  "₹${(ctrl.analytics?.summary.paymentBreakdown.upi ?? 0).toDouble().toStringAsFixed(2)}",
                               color: const Color.fromARGB(255, 85, 184, 231),
                             ),
                           ),

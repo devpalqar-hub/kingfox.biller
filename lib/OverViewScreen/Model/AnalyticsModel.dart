@@ -9,37 +9,39 @@ class AnalyticsModel {
     required this.dailySales,
   });
 
-  factory AnalyticsModel.fromJson(Map<String, dynamic> json) => AnalyticsModel(
-    summary: Summary.fromJson(json['summary'] ?? {}),
-    topSellers: (json['topSellers'] ?? [])
-        .map<TopSeller>((e) => TopSeller.fromJson(e))
-        .toList(),
-    dailySales: (json['dailySales'] ?? [])
-        .map<DailySale>((e) => DailySale.fromJson(e))
-        .toList(),
-  );
+  factory AnalyticsModel.fromJson(Map<String, dynamic> json) {
+    return AnalyticsModel(
+      summary: Summary.fromJson(json['summary'] ?? {}),
+      topSellers: (json['topSellers'] as List<dynamic>? ?? [])
+          .map((e) => TopSeller.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      dailySales: (json['dailySales'] as List<dynamic>? ?? [])
+          .map((e) => DailySale.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    'summary': summary.toJson(),
-    'topSellers': topSellers.map((e) => e.toJson()).toList(),
-    'dailySales': dailySales.map((e) => e.toJson()).toList(),
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'summary': summary.toJson(),
+      'topSellers': topSellers.map((e) => e.toJson()).toList(),
+      'dailySales': dailySales.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 class Summary {
-  double totalOrders;
-  double averageOrderValue;
-  double returnRate;
-  double totalSales;
-  double totalRevenue;
-  double refundAmount;
-  double returnCouponRedeemedSales;
-  double transactionsCount;
-  double totalGstCollected;
-  double totalCollectedByOnline;
-  double totalCollectedByHand;
-  double totalRefunds;
-  double netRevenue;
+  final int totalOrders;
+  final double averageOrderValue;
+  final double returnRate;
+  final double totalSales;
+  final double totalRevenue;
+  final double totalRefunds;
+  final double refundAmount;
+  final int transactionsCount;
+  final double totalGstCollected;
+  final PaymentBreakdown paymentBreakdown;
+  final double netRevenue;
 
   Summary({
     this.totalOrders = 0,
@@ -47,31 +49,31 @@ class Summary {
     this.returnRate = 0,
     this.totalSales = 0,
     this.totalRevenue = 0,
+    this.totalRefunds = 0,
     this.refundAmount = 0,
-    this.returnCouponRedeemedSales = 0,
     this.transactionsCount = 0,
     this.totalGstCollected = 0,
-    this.totalCollectedByOnline = 0,
-    this.totalCollectedByHand = 0,
-    this.totalRefunds = 0,
+    required this.paymentBreakdown,
     this.netRevenue = 0,
   });
 
-  Summary.fromJson(Map<String, dynamic> json)
-    : totalOrders = (json['totalOrders'] ?? 0).toDouble(),
-      averageOrderValue = (json['averageOrderValue'] ?? 0).toDouble(),
-      returnRate = (json['returnRate'] ?? 0).toDouble(),
-      totalSales = (json['totalSales'] ?? 0).toDouble(),
-      totalRevenue = (json['totalRevenue'] ?? 0).toDouble(),
-      refundAmount = (json['refundAmount'] ?? 0).toDouble(),
-      returnCouponRedeemedSales = (json['returnCouponRedeemedSales'] ?? 0)
-          .toDouble(),
-      transactionsCount = (json['transactionsCount'] ?? 0).toDouble(),
-      totalGstCollected = (json['totalGstCollected'] ?? 0).toDouble(),
-      totalCollectedByOnline = (json['totalCollectedByOnline'] ?? 0).toDouble(),
-      totalCollectedByHand = (json['totalCollectedByHand'] ?? 0).toDouble(),
-      totalRefunds = (json['totalRefunds'] ?? 0).toDouble(),
-      netRevenue = (json['netRevenue'] ?? 0).toDouble();
+  factory Summary.fromJson(Map<String, dynamic> json) {
+    return Summary(
+      totalOrders: json['totalOrders'] ?? 0,
+      averageOrderValue: (json['averageOrderValue'] ?? 0).toDouble(),
+      returnRate: (json['returnRate'] ?? 0).toDouble(),
+      totalSales: (json['totalSales'] ?? 0).toDouble(),
+      totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
+      totalRefunds: (json['totalRefunds'] ?? 0).toDouble(),
+      refundAmount: (json['refundAmount'] ?? 0).toDouble(),
+      transactionsCount: json['transactionsCount'] ?? 0,
+      totalGstCollected: (json['totalGstCollected'] ?? 0).toDouble(),
+      paymentBreakdown: PaymentBreakdown.fromJson(
+        json['paymentBreakdown'] ?? {},
+      ),
+      netRevenue: (json['netRevenue'] ?? 0).toDouble(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -80,15 +82,33 @@ class Summary {
       'returnRate': returnRate,
       'totalSales': totalSales,
       'totalRevenue': totalRevenue,
+      'totalRefunds': totalRefunds,
       'refundAmount': refundAmount,
-      'returnCouponRedeemedSales': returnCouponRedeemedSales,
       'transactionsCount': transactionsCount,
       'totalGstCollected': totalGstCollected,
-      'totalCollectedByOnline': totalCollectedByOnline,
-      'totalCollectedByHand': totalCollectedByHand,
-      'totalRefunds': totalRefunds,
+      'paymentBreakdown': paymentBreakdown.toJson(),
       'netRevenue': netRevenue,
     };
+  }
+}
+
+class PaymentBreakdown {
+  final double upi;
+  final double cash;
+  final double card;
+
+  PaymentBreakdown({this.upi = 0, this.cash = 0, this.card = 0});
+
+  factory PaymentBreakdown.fromJson(Map<String, dynamic> json) {
+    return PaymentBreakdown(
+      upi: (json['UPI'] ?? 0).toDouble(),
+      cash: (json['CASH'] ?? 0).toDouble(),
+      card: (json['CARD'] ?? 0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'UPI': upi, 'CASH': cash};
   }
 }
 
@@ -111,43 +131,47 @@ class TopSeller {
     required this.totalRevenue,
   });
 
-  factory TopSeller.fromJson(Map<String, dynamic> json) => TopSeller(
-    variantId: json['variantId'] ?? 0,
-    sku: json['sku'] ?? '',
-    size: json['size'] ?? '',
-    color: json['color'] ?? '',
-    productName: json['productName'] ?? '',
-    totalQtySold: json['totalQtySold'] ?? 0,
-    totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
-  );
+  factory TopSeller.fromJson(Map<String, dynamic> json) {
+    return TopSeller(
+      variantId: json['variantId'] ?? 0,
+      sku: json['sku'] ?? '',
+      size: json['size'] ?? '',
+      color: json['color'] ?? '',
+      productName: json['productName'] ?? '',
+      totalQtySold: json['totalQtySold'] ?? 0,
+      totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    'variantId': variantId,
-    'sku': sku,
-    'size': size,
-    'color': color,
-    'productName': productName,
-    'totalQtySold': totalQtySold,
-    'totalRevenue': totalRevenue,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'variantId': variantId,
+      'sku': sku,
+      'size': size,
+      'color': color,
+      'productName': productName,
+      'totalQtySold': totalQtySold,
+      'totalRevenue': totalRevenue,
+    };
+  }
 }
 
 class DailySale {
   final String date;
   final double sales;
-  final double orders;
+  final int orders;
 
   DailySale({required this.date, required this.sales, required this.orders});
 
-  factory DailySale.fromJson(Map<String, dynamic> json) => DailySale(
-    date: json['date'] ?? '',
-    sales: (json['sales'] ?? 0).toDouble(),
-    orders: (json['orders'] ?? 0).toDouble(),
-  );
+  factory DailySale.fromJson(Map<String, dynamic> json) {
+    return DailySale(
+      date: json['date'] ?? '',
+      sales: (json['sales'] ?? 0).toDouble(),
+      orders: json['orders'] ?? 0,
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    'date': date,
-    'sales': sales,
-    'orders': orders,
-  };
+  Map<String, dynamic> toJson() {
+    return {'date': date, 'sales': sales, 'orders': orders};
+  }
 }

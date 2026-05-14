@@ -444,6 +444,7 @@ class BarcodePrinterController extends GetxController {
       final font = pw.Font.helvetica();
       final fontBold = pw.Font.helveticaBold();
 
+      // Convert all measurements to PDF points once.
       final marginPt = size.marginMm * PdfPageFormat.mm;
       final gapPt = size.gapMm * PdfPageFormat.mm;
       final labelW = size.widthMm * PdfPageFormat.mm;
@@ -458,41 +459,36 @@ class BarcodePrinterController extends GetxController {
         final slots = List<bool>.filled(slotCount, false);
         for (int i = 0; i < page.count; i++) {
           final slotIdx = page.startSlot + i;
-          if (slotIdx >= slotCount) break; // ← crash guard
+          if (slotIdx >= slotCount) break; // crash guard
           slots[slotIdx] = true;
         }
 
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4,
-            margin: pw.EdgeInsets.zero, // We control all spacing manually.
+            // Zero built-in margin — we control all spacing via pw.Padding
+            // so the grid origin is pixel-perfect.
+            margin: pw.EdgeInsets.zero,
             build: (_) => pw.Padding(
               padding: pw.EdgeInsets.all(marginPt),
               child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: List.generate(rows, (row) {
-                  return pw.Row(
-                    children: List.generate(cols, (col) {
-                      final idx = row * cols + col;
-                      final filled = idx < slotCount && slots[idx];
-                      return pw.Padding(
-                        padding: pw.EdgeInsets.only(
-                          right: col < cols - 1 ? gapPt : 0,
-                          bottom: row < rows - 1 ? gapPt : 0,
-                        ),
-                        child: filled
-                            ? _buildPdfLabel(
-                                job: job,
-                                font: font,
-                                fontBold: fontBold,
-                                w: labelW,
-                                h: labelH,
-                              )
-                            : pw.SizedBox(width: labelW, height: labelH),
-                      );
-                    }),
-                  );
-                }),
+                // FIX: crossAxisAlignment.center prevents the last short row
+                // from being left-hung on some pdf library versions.
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                // mainAxisSize defaults to max — fills available height after
+                // the margin is applied. Do NOT set min here.
+                children: _buildRows(
+                  rows: rows,
+                  cols: cols,
+                  slots: slots,
+                  slotCount: slotCount,
+                  labelW: labelW,
+                  labelH: labelH,
+                  gapPt: gapPt,
+                  job: job,
+                  font: font,
+                  fontBold: fontBold,
+                ),
               ),
             ),
           ),
@@ -514,7 +510,93 @@ class BarcodePrinterController extends GetxController {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // PDF label cell
+  // _buildRows  — builds the list of row widgets for one PDF page
+  //
+  // Why separate helper:
+  //  • Each row is wrapped in pw.SizedBox(height: labelH) so row height is
+  //    pinned exactly — the pdf library cannot shrink or stretch it.
+  //  • Between rows we insert pw.SizedBox(height: gapPt) spacers that live
+  //    OUTSIDE the label cells, so the label always fills exactly labelW×labelH.
+  //  • The same spacer pattern applies horizontally between columns.
+  //  • Empty slots render a transparent pw.SizedBox of the same fixed size,
+  //    keeping the grid intact even when most slots are unfilled.
+  // ─────────────────────────────────────────────────────────────────────────
+  List<pw.Widget> _buildRows({
+    required int rows,
+    required int cols,
+    required List<bool> slots,
+    required int slotCount,
+    required double labelW,
+    required double labelH,
+    required double gapPt,
+    required BarcodePrintJob job,
+    required pw.Font font,
+    required pw.Font fontBold,
+  }) {
+    final children = <pw.Widget>[];
+
+    for (int row = 0; row < rows; row++) {
+      // ── Build cells for this row ─────────────────────────────────────────
+      final rowCells = <pw.Widget>[];
+
+      for (int col = 0; col < cols; col++) {
+        final idx = row * cols + col;
+        final filled = idx < slotCount && slots[idx];
+
+        // Horizontal spacer between columns (not before the first).
+        if (col > 0) {
+          rowCells.add(pw.SizedBox(width: gapPt, height: labelH));
+        }
+
+        // FIX: wrap each cell in a fixed pw.SizedBox so the label widget
+        // always receives exactly labelW × labelH — no padding touches it.
+        rowCells.add(
+          pw.SizedBox(
+            width: labelW,
+            height: labelH,
+            child: filled
+                ? _buildPdfLabel(
+                    job: job,
+                    font: font,
+                    fontBold: fontBold,
+                    w: labelW,
+                    h: labelH,
+                  )
+                : pw.SizedBox(width: labelW, height: labelH), // empty slot
+          ),
+        );
+      }
+
+      // Vertical spacer between rows (not before the first).
+      if (row > 0) {
+        children.add(pw.SizedBox(height: gapPt));
+      }
+
+      // FIX: pin row height exactly with an outer pw.SizedBox.
+      children.add(
+        pw.SizedBox(
+          height: labelH,
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.start,
+            children: rowCells,
+          ),
+        ),
+      );
+    }
+
+    return children;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // _buildPdfLabel — renders one label cell
+  //
+  // Fixes vs original:
+  //  • Removed mainAxisSize: pw.MainAxisSize.min — was collapsing the inner
+  //    Column to its natural (smaller-than-cell) height and bunching all
+  //    content at the top regardless of spaceEvenly.
+  //  • crossAxisAlignment: center is now explicit for clarity.
+  //  • spaceEvenly now works correctly because the Column fills the full
+  //    cell height (= h) as intended.
   // ─────────────────────────────────────────────────────────────────────────
   pw.Widget _buildPdfLabel({
     required BarcodePrintJob job,
@@ -523,7 +605,7 @@ class BarcodePrinterController extends GetxController {
     required double w,
     required double h,
   }) {
-    // 2 mm inset keeps content away from die-cut edge.
+    // 2 mm inset keeps content away from the die-cut edge.
     const padMm = 2.0;
     const padPt = padMm * PdfPageFormat.mm;
 
@@ -549,11 +631,12 @@ class BarcodePrinterController extends GetxController {
         ),
         padding: pw.EdgeInsets.all(padPt),
         child: pw.Column(
-          mainAxisSize: pw.MainAxisSize.min,
+          // FIX: no mainAxisSize: min — Column expands to fill the full cell
+          // height so spaceEvenly distributes content correctly.
           mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
-            // ── Product name ──────────────────────────────────────────────
+            // ── Product name ────────────────────────────────────────────────
             pw.SizedBox(
               width: innerW,
               child: pw.Text(
@@ -565,7 +648,7 @@ class BarcodePrinterController extends GetxController {
               ),
             ),
 
-            // ── Variant ───────────────────────────────────────────────────
+            // ── Variant (optional) ──────────────────────────────────────────
             if (job.variantName != null)
               pw.SizedBox(
                 width: innerW,
@@ -578,7 +661,7 @@ class BarcodePrinterController extends GetxController {
                 ),
               ),
 
-            // ── Barcode — constrained SizedBox prevents stretch / overflow ─
+            // ── Barcode — constrained SizedBox prevents stretch / overflow ──
             pw.SizedBox(
               width: barcodeW,
               height: barcodeH,
@@ -591,7 +674,7 @@ class BarcodePrinterController extends GetxController {
               ),
             ),
 
-            // ── Barcode digits ────────────────────────────────────────────
+            // ── Barcode digits ───────────────────────────────────────────────
             pw.Text(
               job.barcodeValue,
               style: pw.TextStyle(
@@ -602,7 +685,7 @@ class BarcodePrinterController extends GetxController {
               textAlign: pw.TextAlign.center,
             ),
 
-            // ── Price (ASCII-safe — no ₹ in PDF Helvetica subset issues) ──
+            // ── Price — ASCII-safe "Rs." avoids PDF Helvetica subset issues ──
             if (job.price != null)
               pw.Text(
                 'Rs. ${job.price!.toStringAsFixed(2)}',
@@ -656,28 +739,15 @@ class BarcodePrinterController extends GetxController {
       for (int i = 0; i < job.count; i++) {
         List<int> bytes = [];
 
-        // ── FIX: Reset printer state at the start of EVERY label ──────────
-        // Some firmware carries over the alignment state from the previous
-        // cut command, causing all subsequent labels to print left-aligned.
-        // generator.reset() sends ESC @ which resets all modes to default
-        // (left-align) — we then immediately set center for this label.
+        // ── Reset printer state at the start of EVERY label ───────────────
+        // Some firmware carries over alignment state from the previous cut
+        // command. ESC @ resets all modes to default.
         bytes += generator.reset();
 
-        // ── FIX: Explicitly set global alignment to center ────────────────
+        // ── Set global alignment to center ────────────────────────────────
         // ESC a 1 sets center alignment for all following content including
-        // the barcode widget, which ignores PosStyles.align on some firmwares.
+        // the barcode widget (which ignores PosStyles.align on some firmwares).
         bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
-
-        // ── Product name ──────────────────────────────────────────────────
-        // bytes += generator.text(
-        //   _truncateForThermal(job.productName, paperSize),
-        //   styles: const PosStyles(
-        //     align: PosAlign.center,
-        //     bold: true,
-        //     height: PosTextSize.size1,
-        //     width: PosTextSize.size1,
-        //   ),
-        // );
 
         // ── Variant ───────────────────────────────────────────────────────
         if (job.variantName != null) {
@@ -690,6 +760,8 @@ class BarcodePrinterController extends GetxController {
             ),
           );
         }
+
+        // ── Price ─────────────────────────────────────────────────────────
         if (job.price != null) {
           bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
           bytes += generator.text(
@@ -703,11 +775,10 @@ class BarcodePrinterController extends GetxController {
           );
         }
 
-        // ── FIX: Re-assert center alignment before barcode ─────────────────
-        // generator.barcode() does not accept a PosStyles argument — it uses
-        // whatever alignment is currently active in the printer's register.
-        // Re-sending ESC a 1 here guarantees the barcode is centered even on
-        // printers that reset alignment after rendering text lines.
+        // ── Re-assert center alignment before barcode ─────────────────────
+        // generator.barcode() uses whatever alignment is currently in the
+        // printer's register. Re-sending ESC a 1 here guarantees centering
+        // even on printers that reset alignment after rendering text lines.
         if (barcodeData.isNotEmpty) {
           bytes += generator.setStyles(const PosStyles(align: PosAlign.center));
           bytes += generator.barcode(
@@ -718,20 +789,12 @@ class BarcodePrinterController extends GetxController {
           );
         }
 
-        // ── Price — use ASCII "Rs." to avoid CP437 encoding issues ────────
-        // FIX: Re-assert center BEFORE price text.
-        // BarcodeText.below renders the digit line via the printer's own text
-        // engine which resets the alignment register to left when it finishes.
-        // Without this setStyles call the price prints left-aligned on every
-        // label regardless of the PosStyles.align value passed to generator.text.
-
-        // ── FIX: Reset styles before feed/cut ─────────────────────────────
+        // ── Reset styles before feed/cut ──────────────────────────────────
         // Clears bold, size, and alignment flags so they don't bleed into
         // the next label's initial state after the cut command executes.
         bytes += generator.reset();
 
         // ── Feed + cut ────────────────────────────────────────────────────
-        // feed(1) moves the last line past the cutter head.
         bytes += generator.feed(1);
         bytes += generator.cut(mode: PosCutMode.partial);
 

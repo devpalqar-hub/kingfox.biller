@@ -189,11 +189,11 @@ class _CustomerCardState extends State<CustomerCard> {
         decoration: InputDecoration(
           isDense: true,
           isCollapsed: true,
-          prefix: Text(
-            "+91 ",
-            style: TextStyle(fontSize: 14, color: Colors.black),
-          ),
 
+          // prefix: Text(
+          //   "+91 ",
+          //   style: TextStyle(fontSize: 14, color: Colors.black),
+          // ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 14,
