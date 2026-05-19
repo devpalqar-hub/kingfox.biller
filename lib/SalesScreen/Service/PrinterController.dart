@@ -323,7 +323,14 @@ class PrinterController extends GetxController {
       return;
     }
 
-    final profile = await CapabilityProfile.load();
+    // ── Profile: try epson first, fall back to default ─────────────────────
+    CapabilityProfile profile;
+    try {
+      profile = await CapabilityProfile.load(name: 'epson');
+    } catch (_) {
+      profile = await CapabilityProfile.load();
+    }
+
     final generator = Generator(PaperSize.mm80, profile);
     List<int> bytes = [];
 
@@ -331,7 +338,6 @@ class PrinterController extends GetxController {
     final dtFmt = DateFormat('dd MMM yyyy  hh:mm a');
 
     // ── CONSISTENT STYLE CONSTANTS ─────────────────────────────────────────
-    // Define once, use everywhere — this prevents layout drift between sections.
     const PosStyles sNormal = PosStyles(fontType: PosFontType.fontA);
     const PosStyles sBold = PosStyles(fontType: PosFontType.fontA, bold: true);
     const PosStyles sRight = PosStyles(
@@ -347,7 +353,6 @@ class PrinterController extends GetxController {
       bold: true,
       align: PosAlign.right,
     );
-    // fontB for item detail rows (compact) — fixed here too
     const PosStyles sFontB = PosStyles(
       fontType: PosFontType.fontB,
       height: PosTextSize.size1,
@@ -372,8 +377,6 @@ class PrinterController extends GetxController {
       bold: true,
     );
 
-    // ── Helper: standard label/value row (fontA, always same width split) ──
-    // All metadata rows (invoice, date, customer, totals, payments) use this.
     void labelValueRow(String label, String value, {bool bold = false}) {
       bytes += generator.row([
         PosColumn(text: label, width: 5, styles: bold ? sBold : sNormal),
@@ -381,7 +384,6 @@ class PrinterController extends GetxController {
       ]);
     }
 
-    // ── Helper: totals row ─────────────────────────────────────────────────
     void totRow(
       String label,
       double? val, {
@@ -467,7 +469,6 @@ class PrinterController extends GetxController {
 
     // ── 7. Items table ─────────────────────────────────────────────────────
     if (data.items.isNotEmpty) {
-      // Header — fontA, bold, underline
       bytes += generator.row([
         PosColumn(
           text: 'Item / Variant',
@@ -541,7 +542,6 @@ class PrinterController extends GetxController {
             ? '${item.productName ?? "Item"}  [$variant]'
             : (item.productName ?? 'Item');
 
-        // ── Item main row — fontB, FIXED sizes on every column ──────────
         bytes += generator.row([
           PosColumn(text: nameVariant, width: 4, styles: sFontBB),
           PosColumn(
@@ -561,23 +561,6 @@ class PrinterController extends GetxController {
             styles: sFontBR,
           ),
         ]);
-
-        // ── Discount sub-line ────────────────────────────────────────────
-        // if (hasDiscount) {
-        //   final savedPerUnit = mrp! - sp!;
-        //   bytes += generator.row([
-        //     PosColumn(
-        //       text: '  MRP:${moneyFmt.format(mrp)}',
-        //       width: 6,
-        //       styles: sFontB,
-        //     ),
-        //     PosColumn(
-        //       text: 'Save:${moneyFmt.format(savedPerUnit * qty)}',
-        //       width: 6,
-        //       styles: sFontBR,
-        //     ),
-        //   ]);
-        // }
       }
 
       bytes += generator.hr(ch: '-');
@@ -606,17 +589,16 @@ class PrinterController extends GetxController {
           ri.color,
         ].where((v) => v != null && v.isNotEmpty).join(' / ');
         final credit = (ri.creditPerUnit ?? 0) * (ri.quantity ?? 1);
-        // Use same fontB style as item rows for visual consistency
         bytes += generator.row([
           PosColumn(
             text: '$name${variant.isNotEmpty ? " ($variant)" : ""}',
             width: 8,
-            styles: sFontB, // ← was unstyled before (caused size mismatch)
+            styles: sFontB,
           ),
           PosColumn(
             text: '-${moneyFmt.format(credit)}',
             width: 4,
-            styles: sFontBR, // ← same
+            styles: sFontBR,
           ),
         ]);
       }
@@ -627,7 +609,6 @@ class PrinterController extends GetxController {
     totRow('Subtotal', data.subtotal);
 
     if (data.manualDiscountAmount != "0") {
-      final disc = (data.subtotal ?? 0) - (data.discountedSubtotal ?? 0);
       totRow(
         'Discount',
         double.parse(data.manualDiscountAmount ?? "0"),
@@ -637,7 +618,6 @@ class PrinterController extends GetxController {
 
     if (data.appliedCouponDiscount != "0" &&
         data.appliedCouponDiscount != null) {
-      final disc = (data.subtotal ?? 0) - (data.discountedSubtotal ?? 0);
       totRow(
         'Coupon Discount',
         double.parse(data.appliedCouponDiscount ?? "0"),
@@ -694,30 +674,46 @@ class PrinterController extends GetxController {
               underline: true,
             ),
           );
-          // if (v.campaignEndDate != null) {
-          //   try {
-          //     final exp = DateTime.parse(v.campaignEndDate!);
-          //     bytes += generator.text(
-          //       'Valid until: ${DateFormat('dd MMM yyyy').format(exp)}',
-          //       styles: sCenter,
-          //     );
-          //   } catch (_) {}
-          // }
         }
       }
       bytes += generator.hr();
     }
 
     // ── 12. Barcode ────────────────────────────────────────────────────────
+    // Universal fix: works on Epson TM-M30, and other brands
     if (data.invoiceNumber != null) {
-      bytes += generator.barcode(
-        Barcode.code128(
-          data.invoiceNumber!.replaceAll('INV-', '').characters.toList(),
-        ),
-        height: 64,
-        textPos: BarcodeText.below,
-      );
-      bytes += generator.feed(1);
+      try {
+        // Strip non-alphanumeric chars — some printers reject special chars in barcode
+        final barcodeData = data.invoiceNumber!
+            .replaceAll('INV-', '')
+            .replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+
+        if (barcodeData.isNotEmpty) {
+          bytes += generator.feed(1); // feed before barcode prevents clipping
+          bytes += generator.barcode(
+            Barcode.code128(
+              barcodeData.codeUnits,
+            ), // ← fix: codeUnits not characters.toList()
+            height: 64,
+            textPos: BarcodeText.below,
+          );
+          bytes += generator.feed(1);
+        }
+      } catch (e) {
+        // Barcode failed — fall back to QR code (supported by all modern printers)
+        log('[Printer] Barcode failed, falling back to QR: $e');
+        try {
+          bytes += generator.feed(1);
+          bytes += generator.qrcode(
+            data.invoiceNumber!,
+            size: QRSize.size4,
+            cor: QRCorrection.M,
+          );
+          bytes += generator.feed(1);
+        } catch (e2) {
+          log('[Printer] QR fallback also failed: $e2');
+        }
+      }
     }
 
     // ── 13. Footer ─────────────────────────────────────────────────────────
