@@ -364,6 +364,7 @@ class AddProductController extends GetxController {
       }
       clearAllTextControllers();
       clearVoucherSelection();
+      // selectedStaff = null;
       discountController.clear();
       isLoading = false;
       update();

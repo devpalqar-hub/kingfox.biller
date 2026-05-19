@@ -691,9 +691,7 @@ class PrinterController extends GetxController {
         if (barcodeData.isNotEmpty) {
           bytes += generator.feed(1); // feed before barcode prevents clipping
           bytes += generator.barcode(
-            Barcode.code128(
-              barcodeData.codeUnits,
-            ), // ← fix: codeUnits not characters.toList()
+            Barcode.code128(barcodeData.characters.toList()),
             height: 64,
             textPos: BarcodeText.below,
           );
