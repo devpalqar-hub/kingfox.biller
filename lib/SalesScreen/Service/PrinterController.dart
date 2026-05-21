@@ -12,6 +12,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/get_utils/src/extensions/string_extensions.dart';
 import 'package:http/http.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
@@ -425,12 +426,12 @@ class PrinterController extends GetxController {
 
     // ── 2. Shop name ───────────────────────────────────────────────────────
     bytes += generator.text(
-      branch.name ?? '',
+      "KINGFOX CLOTHING PVT. LTD.",
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,
         height: PosTextSize.size2,
-        width: PosTextSize.size2,
+        width: PosTextSize.size1,
       ),
     );
 
@@ -726,13 +727,10 @@ class PrinterController extends GetxController {
       ),
     );
     bytes += generator.text(
-      branch.name ?? '',
+      "",
       styles: const PosStyles(align: PosAlign.center, bold: true),
     );
-    bytes += generator.text(
-      'Visit us again  •  ${branch.phone ?? ""}',
-      styles: sCenter,
-    );
+    bytes += generator.text('Visit us again', styles: sCenter);
     bytes += generator.feed(3);
     bytes += generator.cut();
 

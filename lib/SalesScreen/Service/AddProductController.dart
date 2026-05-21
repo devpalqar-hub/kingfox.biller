@@ -315,6 +315,11 @@ class AddProductController extends GetxController {
     debugPrint("Selected Staff ID: $attendedByStaffId");
     debugPrint("=================================");
 
+    if (customerPhone != null &&
+        customerPhone != "" &&
+        customerPhone.trim().length == 10) {
+      customerPhone = "+91$customerPhone";
+    }
     isLoading = true;
     update();
 
@@ -364,7 +369,7 @@ class AddProductController extends GetxController {
       }
       clearAllTextControllers();
       clearVoucherSelection();
-      // selectedStaff = null;
+      selectedStaff = null;
       discountController.clear();
       isLoading = false;
       update();

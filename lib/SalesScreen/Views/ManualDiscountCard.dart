@@ -16,24 +16,41 @@ class ManualDiscountCard extends StatelessWidget {
         builder: (ctrl) => Column(
           children: [
             // Staff dropdown
-            _Dropdown(
-              hint: 'Assigned staff',
-              value: ctrl.selectedStaff?.id,
-              items: ctrl.staffList
-                  .map(
-                    (s) => DropdownMenuItem<int>(
-                      value: s.id,
-                      child: Text(
-                        s.name ?? 'Unnamed',
-                        style: TextStyle(fontSize: 12.sp),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (v) {
-                if (v == null) return;
-                ctrl.selectStaff(ctrl.staffList.firstWhere((s) => s.id == v));
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: _Dropdown(
+                    hint: 'Assigned staff',
+                    value: ctrl.selectedStaff?.id,
+                    items: ctrl.staffList
+                        .map(
+                          (s) => DropdownMenuItem<int>(
+                            value: s.id,
+                            child: Text(
+                              s.name,
+                              style: TextStyle(fontSize: 12.sp),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v == null) return;
+                      ctrl.selectStaff(
+                        ctrl.staffList.firstWhere((s) => s.id == v),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: 10.w),
+
+                InkWell(
+                  onTap: () {
+                    ctrl.selectedStaff = null;
+                    ctrl.update();
+                  },
+                  child: Icon(Icons.close, size: 18.sp),
+                ),
+              ],
             ),
             SizedBox(height: 8.h),
             Row(
