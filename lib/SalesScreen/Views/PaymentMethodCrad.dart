@@ -37,6 +37,22 @@ class PaymentMethodCard extends StatelessWidget {
                   _option(ctrl, "Card", "card"),
                 ],
               ),
+
+              SizedBox(height: 10.h),
+              Text(
+                "Order Type",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+
+              SizedBox(height: 10.h),
+
+              Row(
+                children: [
+                  _option(ctrl, "Offline", "OFFLINE", istype: true),
+                  SizedBox(width: 10.w),
+                  _option(ctrl, "Online", "ONLINE", istype: true),
+                ],
+              ),
             ],
           ),
         );
@@ -44,13 +60,23 @@ class PaymentMethodCard extends StatelessWidget {
     );
   }
 
-  Widget _option(AddProductController ctrl, String label, String value) {
-    final isSelected = ctrl.selectedPaymentMethod == value;
+  Widget _option(
+    AddProductController ctrl,
+    String label,
+    String value, {
+    bool istype = false,
+  }) {
+    final isSelected = (istype)
+        ? ctrl.selectedOrderType == value
+        : ctrl.selectedPaymentMethod == value;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          ctrl.selectedPaymentMethod = value;
+          if (!istype)
+            ctrl.selectedPaymentMethod = value;
+          else
+            ctrl.selectedOrderType = value;
           ctrl.update();
         },
         child: Container(

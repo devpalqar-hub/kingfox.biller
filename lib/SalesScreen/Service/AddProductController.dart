@@ -4,6 +4,7 @@ import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:kinfox_biller/OrderCompleteDailogue/OrderCompleteDailogue.dart';
+import 'package:kinfox_biller/SalesScreen/Model/BillSessionModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CartModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 class AddProductController extends GetxController {
   bool isLoading = false;
   bool isUpdatingQty = false;
+
   int? cartId;
   double subtotal = 0;
   double gstAmount = 0;
@@ -24,12 +26,15 @@ class AddProductController extends GetxController {
   String? couponError;
   String? voucherError;
   int? attendedByStaffId;
-
+  String selectedOrderType = "OFFLINE";
   List<LuckyDrawCampaign> campaigns = [];
   LuckyDrawCampaign? selectedCampaign;
   List<StaffModel> staffList = [];
   StaffModel? selectedStaff;
   String selectedPaymentMethod = "CASH";
+
+  List<BillingSessions> session = [];
+  int? selectedSessionId = null;
 
   List items = [];
   List<ProductVariantModel> searchProductsList = [];
@@ -116,6 +121,63 @@ class AddProductController extends GetxController {
     update();
   }
 
+  void getSession({bool isFirst = false}) async {
+    final response = await http.get(
+      Uri.parse(baseUrl + "/billing/sessions"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+    session = [];
+    update();
+    if (response.statusCode == 200) {
+      var body = json.decode(response.body);
+      for (var item in body["sessions"]) {
+        session.add(BillingSessions.fromJson(item));
+      }
+      if (isFirst) selectedSessionId = session.first.billingSessionId;
+
+      update();
+    }
+  }
+
+  void changeSession(int? selected) {
+    selectedSessionId = selected;
+    getCart();
+    update();
+  }
+
+  void createSession() async {
+    final response = await http.post(
+      Uri.parse(baseUrl + "/billing/sessions"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+      body: json.encode({"gstPercent": 5}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      var body = json.decode(response.body);
+      getSession();
+      changeSession(body["billingSessionId"]);
+    }
+  }
+
+  deleteSession(int? selected) async {
+    final response = await http.delete(
+      Uri.parse(baseUrl + "/billing/sessions/$selected"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      getSession(isFirst: selected == selectedSessionId);
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -123,6 +185,7 @@ class AddProductController extends GetxController {
     fetchCampaigns();
     fetchStaff();
     getCart();
+    getSession(isFirst: true);
   }
 
   @override
@@ -143,7 +206,8 @@ class AddProductController extends GetxController {
     isLoading = true;
     update();
 
-    final url = "$baseUrl/billing/cart/scan";
+    final url =
+        "$baseUrl/billing/cart/scan?billingSessionId=${selectedSessionId}";
 
     final response = await http.post(
       Uri.parse(url),
@@ -188,6 +252,8 @@ class AddProductController extends GetxController {
     if (manualDiscountAmount != null) {
       queryParams['manualDiscountAmount'] = manualDiscountAmount.toString();
     }
+
+    queryParams["billingSessionId"] = selectedSessionId.toString();
 
     final uri = Uri.parse(
       "$baseUrl/billing/cart",
@@ -323,7 +389,8 @@ class AddProductController extends GetxController {
     isLoading = true;
     update();
 
-    final url = "$baseUrl/billing/cart/checkout";
+    final url =
+        "$baseUrl/billing/cart/checkout?billingSessionId=${selectedSessionId}";
 
     final Map<String, dynamic> body = {
       "paymentMethod": selectedPaymentMethod,
@@ -350,6 +417,8 @@ class AddProductController extends GetxController {
       body["attendedByStaffId"] = attendedByStaffId;
     }
 
+    body["orderType"] = selectedOrderType;
+
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -371,6 +440,7 @@ class AddProductController extends GetxController {
       clearVoucherSelection();
       selectedStaff = null;
       discountController.clear();
+      getSession(isFirst: true);
       isLoading = false;
       update();
 
@@ -406,7 +476,8 @@ class AddProductController extends GetxController {
     if (isUpdatingQty) return;
 
     isUpdatingQty = true;
-    final url = "$baseUrl/billing/cart/item/$variantId";
+    final url =
+        "$baseUrl/billing/cart/item/$variantId?billingSessionId=${selectedSessionId}";
     final body = {"quantity": quantity};
     final headers = {
       "Content-Type": "application/json",

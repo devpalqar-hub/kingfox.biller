@@ -147,8 +147,9 @@ class ReturnsController extends GetxController {
     final items = selectedItems.map((variantId) {
       return {"variantId": variantId, "quantity": returnQty[variantId] ?? 1};
     }).toList();
-
-    final url = "$baseUrl/billing/cart/return-items";
+    int? sessionId = Get.find<AddProductController>().selectedSessionId;
+    final url =
+        "$baseUrl/billing/cart/return-items?billingSessionId=${sessionId}";
 
     final body = {"originalInvoiceId": invoice!.id, "items": items};
 
@@ -204,11 +205,14 @@ class ReturnsController extends GetxController {
   }
 
   Future<bool> deleteReturnItemsFromCart(List<int> variantIds) async {
+    int? sessionId = Get.find<AddProductController>().selectedSessionId;
+
     if (variantIds.isEmpty) {
       return false;
     }
 
-    final url = "$baseUrl/billing/cart/return-items";
+    final url =
+        "$baseUrl/billing/cart/return-items?billingSessionId=${sessionId}";
 
     final body = {
       "variantIds": variantIds, // 👈 send list of ids to delete

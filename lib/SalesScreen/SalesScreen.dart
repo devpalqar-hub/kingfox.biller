@@ -95,6 +95,207 @@ class _SalesScreenState extends State<SalesScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 94.h),
+
+                                // if (ctrl.session.length == 1)
+                                // ── SESSION CARDS ────────────────────────────────────────────────────────
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  width: double.infinity,
+                                  margin: EdgeInsets.only(top: 15.h),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          child: Row(
+                                            children: [
+                                              if (ctrl.session.length > 1)
+                                                for (var item
+                                                    in ctrl.session) ...[
+                                                  Builder(
+                                                    builder: (context) {
+                                                      final isSelected =
+                                                          item.billingSessionId ==
+                                                          ctrl.selectedSessionId;
+                                                      // Format: last 3 digits max, e.g. #007, #42, #1234 → show full if < 3 digits, else show as-is
+                                                      final sessionLabel =
+                                                          '#${item.billingSessionId.toString().padLeft(3, '0')}';
+
+                                                      return GestureDetector(
+                                                        onTap: () =>
+                                                            ctrl.changeSession(
+                                                              item.billingSessionId,
+                                                            ),
+                                                        child: Container(
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                                right: 8.w,
+                                                                bottom: 6.h,
+                                                              ),
+                                                          padding:
+                                                              EdgeInsets.symmetric(
+                                                                horizontal:
+                                                                    10.w,
+                                                              ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          height: 32.h,
+                                                          decoration: BoxDecoration(
+                                                            color: isSelected
+                                                                ? const Color(
+                                                                    0xFFEFF6FF,
+                                                                  )
+                                                                : Colors.white,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  6.r,
+                                                                ),
+                                                            border: Border.all(
+                                                              color: isSelected
+                                                                  ? const Color(
+                                                                      0xFF3B82F6,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFFE2E8F0,
+                                                                    ),
+                                                              width: isSelected
+                                                                  ? 1.5
+                                                                  : 1.0,
+                                                            ),
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: Colors
+                                                                    .black
+                                                                    .withOpacity(
+                                                                      0.03,
+                                                                    ),
+                                                                blurRadius: 3,
+                                                                offset:
+                                                                    const Offset(
+                                                                      0,
+                                                                      1,
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Text(
+                                                                sessionLabel,
+                                                                style: TextStyle(
+                                                                  fontSize:
+                                                                      12.sp,
+                                                                  fontWeight:
+                                                                      isSelected
+                                                                      ? FontWeight
+                                                                            .w700
+                                                                      : FontWeight
+                                                                            .w600,
+                                                                  color:
+                                                                      isSelected
+                                                                      ? const Color(
+                                                                          0xFF1D4ED8,
+                                                                        )
+                                                                      : const Color(
+                                                                          0xFF334155,
+                                                                        ),
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                width: 6.w,
+                                                              ),
+                                                              GestureDetector(
+                                                                onTap: () => ctrl
+                                                                    .deleteSession(
+                                                                      item.billingSessionId,
+                                                                    ),
+                                                                child: Icon(
+                                                                  Icons
+                                                                      .close_rounded,
+                                                                  size: 13.sp,
+                                                                  color:
+                                                                      isSelected
+                                                                      ? const Color(
+                                                                          0xFF3B82F6,
+                                                                        )
+                                                                      : const Color(
+                                                                          0xFF94A3B8,
+                                                                        ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => ctrl.createSession(),
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                            right: 8.w,
+                                            bottom: 6.h,
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 10.w,
+                                          ),
+                                          alignment: Alignment.center,
+                                          height: 32.h,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              6.r,
+                                            ),
+                                            border: Border.all(
+                                              color: const Color(0xFFE2E8F0),
+                                              width: 1.0,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.02,
+                                                ),
+                                                blurRadius: 3,
+                                                offset: const Offset(0, 1),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.add_rounded,
+                                                size: 15.sp,
+                                                color: const Color(0xFF10B981),
+                                              ),
+                                              SizedBox(width: 4.w),
+                                              Text(
+                                                'New',
+                                                style: TextStyle(
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: const Color(
+                                                    0xFF10B981,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 Expanded(
                                   child:
                                       ctrl.cart == null ||
