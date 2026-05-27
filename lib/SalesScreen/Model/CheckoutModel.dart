@@ -4,6 +4,7 @@ class CheckoutData {
   final int? returnInvoiceId;
   final double? returnCredit;
   final double? appliedReturnDiscount;
+  final String? attendedByStaffName;
   final double? refundAmount;
   final List<ReturnItem> returnItems;
   final List<CartItem> items;
@@ -22,6 +23,7 @@ class CheckoutData {
   final String? manualDiscountAmount;
   final String? appliedCouponDiscount;
   final ReturnCoupon? returnCoupon;
+  final String? orderType;
 
   const CheckoutData({
     this.cartId,
@@ -38,6 +40,7 @@ class CheckoutData {
     this.finalAmount,
     this.grandFinalTotal,
     this.invoiceNumber,
+    this.orderType,
     this.payments = const [],
     this.customer,
     this.issuedVoucherCodes = const [],
@@ -47,12 +50,15 @@ class CheckoutData {
     this.manualDiscountAmount,
     this.appliedCouponDiscount,
     this.returnCoupon,
+    this.attendedByStaffName,
   });
 
   factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
     cartId: j['cartId'],
     gstPercent: (j['gstPercent'] as num?)?.toDouble(),
     returnInvoiceId: j['returnInvoiceId'],
+    attendedByStaffName: j["attendedByStaffName"],
+    orderType: j["orderType"],
     returnCredit: (j['returnCredit'] as num?)?.toDouble(),
     appliedReturnDiscount: (j['appliedReturnDiscount'] as num?)?.toDouble(),
     refundAmount: (j['refundAmount'] as num?)?.toDouble(),

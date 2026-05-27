@@ -136,7 +136,10 @@ class AddProductController extends GetxController {
       for (var item in body["sessions"]) {
         session.add(BillingSessions.fromJson(item));
       }
-      if (isFirst) selectedSessionId = session.first.billingSessionId;
+      if (isFirst) {
+        selectedSessionId = session.first.billingSessionId;
+        getCart();
+      }
 
       update();
     }
@@ -228,6 +231,7 @@ class AddProductController extends GetxController {
 
     isLoading = false;
     update();
+    getSession();
   }
 
   Future<bool> getCart({
@@ -496,6 +500,7 @@ class AddProductController extends GetxController {
     } else {}
 
     isUpdatingQty = false;
+    getSession();
   }
 
   Future<void> fetchCampaigns() async {

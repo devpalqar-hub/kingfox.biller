@@ -157,6 +157,11 @@ class _SalesScreenState extends State<SalesScreen> {
                                                                   ? const Color(
                                                                       0xFF3B82F6,
                                                                     )
+                                                                  : (item.itemCount ==
+                                                                        0)
+                                                                  ? Color(
+                                                                      0xFFF09042,
+                                                                    )
                                                                   : const Color(
                                                                       0xFFE2E8F0,
                                                                     ),
@@ -201,6 +206,11 @@ class _SalesScreenState extends State<SalesScreen> {
                                                                       ? const Color(
                                                                           0xFF1D4ED8,
                                                                         )
+                                                                      : (item.itemCount ==
+                                                                            0)
+                                                                      ? Color(
+                                                                          0xFFF09042,
+                                                                        )
                                                                       : const Color(
                                                                           0xFF334155,
                                                                         ),
@@ -223,6 +233,11 @@ class _SalesScreenState extends State<SalesScreen> {
                                                                       ? const Color(
                                                                           0xFF3B82F6,
                                                                         )
+                                                                      : (item.itemCount ==
+                                                                            0)
+                                                                      ? Color(
+                                                                          0xFFF09042,
+                                                                        )
                                                                       : const Color(
                                                                           0xFF94A3B8,
                                                                         ),
@@ -239,60 +254,75 @@ class _SalesScreenState extends State<SalesScreen> {
                                           ),
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTap: () => ctrl.createSession(),
-                                        child: Container(
-                                          margin: EdgeInsets.only(
-                                            right: 8.w,
-                                            bottom: 6.h,
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 10.w,
-                                          ),
-                                          alignment: Alignment.center,
-                                          height: 32.h,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              6.r,
+                                      if (ctrl.session
+                                              .where((it) => it.itemCount == 0)
+                                              .length ==
+                                          0)
+                                        GestureDetector(
+                                          onTap:
+                                              ()
+                                              //  {
+                                              //   print(
+                                              //     ctrl.session
+                                              //         .where(
+                                              //           (it) => it.itemCount == 0,
+                                              //         )
+                                              //         .length,
+                                              //   );
+                                              // },
+                                              => ctrl.createSession(),
+                                          child: Container(
+                                            margin: EdgeInsets.only(
+                                              right: 8.w,
+                                              bottom: 6.h,
                                             ),
-                                            border: Border.all(
-                                              color: const Color(0xFFE2E8F0),
-                                              width: 1.0,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 10.w,
                                             ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(
-                                                  0.02,
+                                            alignment: Alignment.center,
+                                            height: 32.h,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(6.r),
+                                              border: Border.all(
+                                                color: const Color(0xFFE2E8F0),
+                                                width: 1.0,
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.02),
+                                                  blurRadius: 3,
+                                                  offset: const Offset(0, 1),
                                                 ),
-                                                blurRadius: 3,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.add_rounded,
-                                                size: 15.sp,
-                                                color: const Color(0xFF10B981),
-                                              ),
-                                              SizedBox(width: 4.w),
-                                              Text(
-                                                'New',
-                                                style: TextStyle(
-                                                  fontSize: 12.sp,
-                                                  fontWeight: FontWeight.w600,
+                                              ],
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.add_rounded,
+                                                  size: 15.sp,
                                                   color: const Color(
                                                     0xFF10B981,
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                                SizedBox(width: 4.w),
+                                                Text(
+                                                  'New',
+                                                  style: TextStyle(
+                                                    fontSize: 12.sp,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: const Color(
+                                                      0xFF10B981,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),

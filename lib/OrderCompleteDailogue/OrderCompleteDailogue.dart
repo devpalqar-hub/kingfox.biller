@@ -251,21 +251,27 @@ class OrderCompleteDialog extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
-          _metaItem('Cashier', cashierName),
-          _metaSep(),
-          _metaItem('Counter', counterName),
-          _metaSep(),
+          // _metaItem('Cashier :', cashierName),
+          //_metaSep(),
+          // _metaItem('Counter', counterName),
+          if ((data.attendedByStaffName ?? '').trim().isNotEmpty) ...[
+            //  _metaSep(),
+            _metaItem('Attended By', data.attendedByStaffName!.trim()),
+            _metaSep(),
+          ],
+
           _metaItem(
-            'Date',
-            _formatMetaDate(
-              data.createdAt != null
-                  ? (DateTime.tryParse(data.createdAt!) ?? DateTime.now())
-                        .toLocal()
-                  : DateTime.now(),
-            ),
+            'Order Type :',
+            data.orderType ?? "Offline",
+            // _formatMetaDate(
+            //   data.createdAt != null
+            //       ? (DateTime.tryParse(data.createdAt!) ?? DateTime.now())
+            //             .toLocal()
+            //       : DateTime.now(),
+            // ),
           ),
           _metaSep(),
-          _metaItem('Customer', data.customer?.name ?? 'Walk-in'),
+          _metaItem('Customer :', data.customer?.name ?? 'Walk-in'),
           _metaSep(),
           _metaItem('Items', '$itemCount units'),
           if (returnCount > 0) ...[

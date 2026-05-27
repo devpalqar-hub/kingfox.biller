@@ -34,8 +34,7 @@ class _InvoiceSearchState extends State<InvoiceSearch> {
           ),
           child: Row(
             children: [
-
-              
+              SizedBox(width: 12.w),
               Expanded(
                 child: TextField(
                   controller: searchController,
@@ -45,30 +44,33 @@ class _InvoiceSearchState extends State<InvoiceSearch> {
                       debounce!.cancel();
                     }
 
-                    debounce = Timer(
-                      const Duration(milliseconds: 500),
-                      () {
-                        ctrl.searchQuery = value;
+                    debounce = Timer(const Duration(milliseconds: 500), () {
+                      ctrl.searchQuery = value;
 
-                        ctrl.getInvoices(
-                          refresh: true,
-                          search: value,
-                        );
-                      },
-                    );
+                      ctrl.getInvoices(
+                        refresh: true,
+                        search: value,
+                        orderType: ctrl.orderTypeFilter,
+                      );
+                    });
                   },
 
                   decoration: InputDecoration(
                     hintText: "Search Invoice / Customer",
                     prefixIcon: Padding(
-                      padding:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 8.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 8.h,
+                      ),
                       child: Icon(Icons.search),
                     ),
 
-                  
                     suffixIcon: IconButton(
                       icon: Padding(
-                       padding:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 8.h,
+                        ),
                         child: Icon(Icons.close),
                       ),
                       onPressed: () {
@@ -78,6 +80,7 @@ class _InvoiceSearchState extends State<InvoiceSearch> {
                         ctrl.getInvoices(
                           refresh: true,
                           search: "",
+                          orderType: ctrl.orderTypeFilter,
                         );
                       },
                     ),
@@ -91,7 +94,39 @@ class _InvoiceSearchState extends State<InvoiceSearch> {
                   ),
                 ),
               ),
-
+              SizedBox(width: 12.w),
+              SizedBox(
+                width: 150.w,
+                child: DropdownButtonFormField<String>(
+                  value: ctrl.orderTypeFilter,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xffF1F5F9),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 12.h,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.r),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: "", child: Text("All")),
+                    DropdownMenuItem(value: "OFFLINE", child: Text("Offline")),
+                    DropdownMenuItem(value: "ONLINE", child: Text("Online")),
+                  ],
+                  onChanged: (value) {
+                    ctrl.orderTypeFilter = value ?? "";
+                    ctrl.getInvoices(
+                      refresh: true,
+                      search: searchController.text,
+                      orderType: ctrl.orderTypeFilter,
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         );
