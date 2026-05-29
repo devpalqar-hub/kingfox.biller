@@ -10,6 +10,7 @@ import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/LuckyDrawModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/ProductModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/StaffModel.dart';
+import 'package:kinfox_biller/SalesScreen/Service/CustomerController.dart';
 import 'package:kinfox_biller/SalesScreen/Service/PrinterController.dart';
 import 'package:kinfox_biller/main.dart';
 import 'package:flutter/material.dart';
@@ -145,13 +146,28 @@ class AddProductController extends GetxController {
     }
   }
 
+  CustomerController cctrl = Get.put(CustomerController());
+
   void changeSession(int? selected) {
+    appliedCoupon = "";
+    couponController.text = "";
+    discountController.text = "";
+    phoneController.text = "";
+    nameController.text = "";
     selectedSessionId = selected;
+    cctrl.selectedCustomer = null;
+    cctrl.update();
     getCart();
     update();
   }
 
   void createSession() async {
+    appliedCoupon = "";
+    couponController.text = "";
+    discountController.text = "";
+    phoneController.text = "";
+    nameController.text = "";
+    update();
     final response = await http.post(
       Uri.parse(baseUrl + "/billing/sessions"),
       headers: {
@@ -169,6 +185,12 @@ class AddProductController extends GetxController {
   }
 
   deleteSession(int? selected) async {
+    appliedCoupon = "";
+    couponController.text = "";
+    discountController.text = "";
+    phoneController.text = "";
+    nameController.text = "";
+    update();
     final response = await http.delete(
       Uri.parse(baseUrl + "/billing/sessions/$selected"),
       headers: {
@@ -267,22 +289,7 @@ class AddProductController extends GetxController {
       "Authorization": "Bearer $accessToken",
       "Content-Type": "application/json",
     };
-
-    /// 🔥 PRINT REQUEST
-    debugPrint("========== GET CART REQUEST ==========");
-    debugPrint("URL: $uri");
-    debugPrint("QUERY PARAMS: $queryParams");
-    debugPrint("COUPON: $applied");
-    debugPrint("DISCOUNT: $manualDiscountAmount");
-    debugPrint("======================================");
-
     final response = await http.get(uri, headers: headers);
-
-    /// 🔥 PRINT RESPONSE
-    debugPrint("========== GET CART RESPONSE ==========");
-    debugPrint("STATUS CODE: ${response.statusCode}");
-    debugPrint("BODY: ${response.body}");
-    debugPrint("=======================================");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -311,7 +318,6 @@ class AddProductController extends GetxController {
       cart = null;
 
       couponError = "Failed to fetch cart";
-
       isLoading = false;
       update();
       return false;
@@ -326,9 +332,7 @@ class AddProductController extends GetxController {
     }
 
     isLoading = true;
-
     final url = "$baseUrl/billing/product-search?q=$query";
-
     final response = await http.get(
       Uri.parse(url),
       headers: {"Authorization": "Bearer $accessToken"},

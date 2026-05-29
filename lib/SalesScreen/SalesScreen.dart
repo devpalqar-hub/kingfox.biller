@@ -121,7 +121,7 @@ class _SalesScreenState extends State<SalesScreen> {
                                                           ctrl.selectedSessionId;
                                                       // Format: last 3 digits max, e.g. #007, #42, #1234 → show full if < 3 digits, else show as-is
                                                       final sessionLabel =
-                                                          '#${item.billingSessionId.toString().padLeft(3, '0')}';
+                                                          '#${(item.billingSessionId! % 10000).toString().padLeft(3, '0')}';
 
                                                       return GestureDetector(
                                                         onTap: () =>

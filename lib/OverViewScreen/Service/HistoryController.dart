@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:kinfox_biller/OverViewScreen/Model/AnalyticsModel.dart';
 import 'package:kinfox_biller/SalesScreen/Model/CheckoutModel.dart';
 import 'package:kinfox_biller/main.dart';
@@ -11,6 +12,9 @@ class Historycontroller extends GetxController {
   bool isInvoicesLoading = false;
   bool hasMore = true;
   bool isLoadMore = false;
+  String? selectedStatus;
+  DateTime? fromDate;
+  DateTime? toDate;
 
   int page = 1;
   final int limit = 20;
@@ -37,6 +41,9 @@ class Historycontroller extends GetxController {
       queryParams['to'] = toDate;
     }
 
+    if (orderTypeFilter != "" && orderTypeFilter != "All") {
+      queryParams['orderType'] = orderTypeFilter;
+    }
     final uri = Uri.parse(
       "$baseUrl/billing/analytics",
     ).replace(queryParameters: queryParams);
@@ -57,6 +64,23 @@ class Historycontroller extends GetxController {
 
     isLoading = false;
     update();
+  }
+
+  fetchFilterAnalytics() async {
+    await geAnalytics(
+      fromDate: fromDate != null
+          ? DateFormat("yyyy-MM-dd").format(fromDate!)
+          : null,
+      toDate: toDate != null ? DateFormat("yyyy-MM-dd").format(toDate!) : null,
+    );
+    await getInvoices(
+      refresh: true,
+      status: selectedStatus,
+      from: fromDate != null
+          ? DateFormat("yyyy-MM-dd").format(fromDate!)
+          : null,
+      to: toDate != null ? DateFormat("yyyy-MM-dd").format(toDate!) : null,
+    );
   }
 
   Future<void> getInvoices({

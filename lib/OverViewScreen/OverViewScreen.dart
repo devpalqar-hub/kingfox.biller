@@ -17,9 +17,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
   final Historycontroller historyController = Get.put(Historycontroller());
   final ScrollController _scrollController = ScrollController();
 
-  String? selectedStatus;
-  DateTime? fromDate;
-  DateTime? toDate;
+  // String? selectedStatus;
+  // DateTime? fromDate;
+  // DateTime? toDate;
 
   @override
   void initState() {
@@ -30,9 +30,13 @@ class _OverviewScreenState extends State<OverviewScreen> {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
         historyController.getInvoices(
-          status: selectedStatus,
-          from: fromDate != null ? formatDate(fromDate!) : null,
-          to: toDate != null ? formatDate(toDate!) : null,
+          status: historyController.selectedStatus,
+          from: historyController.fromDate != null
+              ? formatDate(historyController.fromDate!)
+              : null,
+          to: historyController.toDate != null
+              ? formatDate(historyController.toDate!)
+              : null,
         );
       }
     });
@@ -44,14 +48,22 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   Future<void> loadData() async {
     await historyController.geAnalytics(
-      fromDate: fromDate != null ? formatDate(fromDate!) : null,
-      toDate: toDate != null ? formatDate(toDate!) : null,
+      fromDate: historyController.fromDate != null
+          ? formatDate(historyController.fromDate!)
+          : null,
+      toDate: historyController.toDate != null
+          ? formatDate(historyController.toDate!)
+          : null,
     );
     await historyController.getInvoices(
       refresh: true,
-      status: selectedStatus,
-      from: fromDate != null ? formatDate(fromDate!) : null,
-      to: toDate != null ? formatDate(toDate!) : null,
+      status: historyController.selectedStatus,
+      from: historyController.fromDate != null
+          ? formatDate(historyController.fromDate!)
+          : null,
+      to: historyController.toDate != null
+          ? formatDate(historyController.toDate!)
+          : null,
     );
   }
 
@@ -141,7 +153,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                 child: DropdownButton<String>(
                                   dropdownColor: Colors.white,
                                   isExpanded: false,
-                                  value: selectedStatus,
+                                  value: historyController.selectedStatus,
                                   hint: Text(
                                     "Status",
                                     style: TextStyle(fontSize: 12.sp),
@@ -149,7 +161,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                   underline: const SizedBox(),
                                   items:
                                       [
-                                        "DRAFT",
+                                        //   "DRAFT",
                                         "COMPLETED",
                                         "CANCELLED",
                                         "RETURNED",
@@ -161,7 +173,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                         );
                                       }).toList(),
                                   onChanged: (value) {
-                                    setState(() => selectedStatus = value);
+                                    setState(
+                                      () => historyController.selectedStatus =
+                                          value,
+                                    );
+                                    historyController.update();
                                     loadData();
                                   },
                                 ),
@@ -170,13 +186,16 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               SizedBox(width: 12.w),
 
                               _dateButton(
-                                label: fromDate == null
+                                label: historyController.fromDate == null
                                     ? "From"
-                                    : formatDate(fromDate!),
+                                    : formatDate(historyController.fromDate!),
                                 onTap: () async {
                                   final picked = await _pickDate();
                                   if (picked != null) {
-                                    setState(() => fromDate = picked);
+                                    setState(
+                                      () => historyController.fromDate = picked,
+                                    );
+                                    historyController.update();
                                     loadData();
                                   }
                                 },
@@ -185,13 +204,16 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               SizedBox(width: 10.w),
 
                               _dateButton(
-                                label: toDate == null
+                                label: historyController.toDate == null
                                     ? "To"
-                                    : formatDate(toDate!),
+                                    : formatDate(historyController.toDate!),
                                 onTap: () async {
                                   final picked = await _pickDate();
                                   if (picked != null) {
-                                    setState(() => toDate = picked);
+                                    setState(
+                                      () => historyController.toDate = picked,
+                                    );
+                                    historyController.update();
                                     loadData();
                                   }
                                 },
@@ -202,9 +224,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    selectedStatus = null;
-                                    fromDate = null;
-                                    toDate = null;
+                                    historyController.selectedStatus = null;
+                                    historyController.fromDate = null;
+                                    historyController.toDate = null;
                                   });
                                   loadData();
                                 },

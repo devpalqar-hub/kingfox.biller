@@ -119,11 +119,8 @@ class _InvoiceSearchState extends State<InvoiceSearch> {
                   ],
                   onChanged: (value) {
                     ctrl.orderTypeFilter = value ?? "";
-                    ctrl.getInvoices(
-                      refresh: true,
-                      search: searchController.text,
-                      orderType: ctrl.orderTypeFilter,
-                    );
+                    ctrl.geAnalytics();
+                    ctrl.fetchFilterAnalytics();
                   },
                 ),
               ),

@@ -270,6 +270,18 @@ class VoucherSelectionCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SizedBox(width: 5),
+
+                  InkWell(
+                    onTap: () {
+                      controller.couponError = "";
+                      controller.couponController.text = "";
+                      controller.appliedCoupon = "";
+                      controller.update();
+                      controller.getCart();
+                    },
+                    child: Icon(Icons.close),
+                  ),
                 ],
               ),
 
