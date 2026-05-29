@@ -195,7 +195,7 @@ class ReturnsController extends GetxController {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      invoice = InvoiceModel.fromJson(data);
+      if (data["status"] != "CANCELLED") invoice = InvoiceModel.fromJson(data);
     } else {
       invoice = null;
     }

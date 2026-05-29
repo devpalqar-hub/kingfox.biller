@@ -32,7 +32,7 @@ class AddProductController extends GetxController {
   LuckyDrawCampaign? selectedCampaign;
   List<StaffModel> staffList = [];
   StaffModel? selectedStaff;
-  String selectedPaymentMethod = "CASH";
+  String selectedPaymentMethod = "cash";
 
   List<BillingSessions> session = [];
   int? selectedSessionId = null;
