@@ -21,6 +21,7 @@ class CheckoutData {
   final String? createdAt;
   final String? status;
   final String? manualDiscountAmount;
+  final String? manualDiscountPercent;
   final String? appliedCouponDiscount;
   final ReturnCoupon? returnCoupon;
   final String? orderType;
@@ -48,6 +49,7 @@ class CheckoutData {
     this.createdAt,
     this.status,
     this.manualDiscountAmount,
+     this.manualDiscountPercent,
     this.appliedCouponDiscount,
     this.returnCoupon,
     this.attendedByStaffName,
@@ -83,6 +85,7 @@ class CheckoutData {
         .map((e) => Voucher.fromJson(e))
         .toList(),
     manualDiscountAmount: (j["manualDiscountAmount"] ?? "0").toString(),
+     manualDiscountPercent: (j["manualDiscountPercent"] ?? "0").toString(),
     appliedCouponDiscount: (j["appliedCouponDiscount"] ?? "0").toString(),
     createdAt: j["createdAt"],
     status: j["status"],

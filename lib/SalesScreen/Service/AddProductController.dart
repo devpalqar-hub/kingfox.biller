@@ -48,6 +48,26 @@ class AddProductController extends GetxController {
   final couponController = TextEditingController();
   final discountController = TextEditingController();
 
+  List<String> selectedPaymentMethods = [];
+
+  bool isPaymentSelected(String method) {
+    return selectedPaymentMethods.contains(method);
+  }
+
+  void togglePaymentMethod(String method) {
+    if (selectedPaymentMethods.contains(method)) {
+      selectedPaymentMethods.remove(method);
+    } else {
+      if (selectedPaymentMethods.length == 2) {
+        selectedPaymentMethods.removeAt(0);
+      }
+
+      selectedPaymentMethods.add(method);
+    }
+
+    update();
+  }
+
   DateTime? _lastHardwareScanAt;
   String _lastHardwareScanBarcode = '';
 
@@ -56,6 +76,25 @@ class AddProductController extends GetxController {
     return compact.replaceAll(RegExp(r'[^A-Za-z0-9\-_.]'), '');
   }
 
+  bool isPercentageDiscount = false;
+
+  void toggleDiscountType(bool value) {
+    isPercentageDiscount = value;
+    update();
+  }
+
+  final TextEditingController cashAmountController = TextEditingController();
+
+  final TextEditingController cardAmountController = TextEditingController();
+
+  double get cashAmount => double.tryParse(cashAmountController.text) ?? 0;
+
+  double get cardAmount => double.tryParse(cardAmountController.text) ?? 0;
+  final TextEditingController upiAmountController = TextEditingController();
+
+  double get upiAmount => double.tryParse(upiAmountController.text) ?? 0;
+
+  double get totalPaid => cashAmount + cardAmount + upiAmount;
   Future<void> scanFromKeyboard(String rawBarcode, {int gstPercent = 5}) async {
     final barcode = _normalizeBarcode(rawBarcode);
 
@@ -259,24 +298,30 @@ class AddProductController extends GetxController {
   Future<bool> getCart({
     String? couponCode,
     double? manualDiscountAmount,
+    double? manualDiscountPercent,
   }) async {
     isLoading = true;
     update();
 
     final applied = couponCode ?? appliedCoupon;
 
-    /// ✅ AUTO READ DISCOUNT FROM CONTROLLER (OPTIONAL BUT BEST)
-    manualDiscountAmount ??= double.tryParse(discountController.text.trim());
+    if (isPercentageDiscount) {
+      manualDiscountPercent ??= double.tryParse(discountController.text.trim());
+    } else {
+      manualDiscountAmount ??= double.tryParse(discountController.text.trim());
+    }
 
     final queryParams = <String, String>{};
 
     if (applied.isNotEmpty) {
       queryParams['couponCode'] = applied;
     }
-
-    /// ✅ FIXED CONDITION (allow even 0 if needed)
     if (manualDiscountAmount != null) {
       queryParams['manualDiscountAmount'] = manualDiscountAmount.toString();
+    }
+
+    if (manualDiscountPercent != null) {
+      queryParams['manualDiscountPercent'] = manualDiscountPercent.toString();
     }
 
     queryParams["billingSessionId"] = selectedSessionId.toString();
@@ -370,6 +415,7 @@ class AddProductController extends GetxController {
     int? campaignId,
     int? voucherCount,
     double? manualDiscountAmount,
+    double? manualDiscountPercent,
     int? attendedByStaffId,
   }) async {
     couponError = null;
@@ -379,7 +425,11 @@ class AddProductController extends GetxController {
       return false;
     }
 
-    manualDiscountAmount ??= double.tryParse(discountController.text.trim());
+    if (isPercentageDiscount) {
+      manualDiscountPercent ??= double.tryParse(discountController.text.trim());
+    } else {
+      manualDiscountAmount ??= double.tryParse(discountController.text.trim());
+    }
 
     attendedByStaffId ??= selectedStaff?.id;
 
@@ -400,8 +450,28 @@ class AddProductController extends GetxController {
     final url =
         "$baseUrl/billing/cart/checkout?billingSessionId=${selectedSessionId}";
 
+    List<Map<String, dynamic>> splitPayment = [];
+
+    if (selectedPaymentMethods.length == 2) {
+      if (selectedPaymentMethods.contains("cash")) {
+        splitPayment.add({"type": "CASH", "amount": cashAmount});
+      }
+
+      if (selectedPaymentMethods.contains("card")) {
+        splitPayment.add({"type": "CARD", "amount": cardAmount});
+      }
+
+      if (selectedPaymentMethods.contains("upi")) {
+        splitPayment.add({"type": "UPI", "amount": upiAmount});
+      }
+    }
+
     final Map<String, dynamic> body = {
-      "paymentMethod": selectedPaymentMethod,
+      "paymentMethod": selectedPaymentMethods.length == 2
+          ? "SPLIT"
+          : selectedPaymentMethods.isNotEmpty
+          ? selectedPaymentMethods.first.toUpperCase()
+          : selectedPaymentMethod.toUpperCase(),
       "customerName": customerName ?? "",
       "customerPhone": customerPhone ?? "",
       "customerEmail": customerEmail ?? "",
@@ -420,13 +490,39 @@ class AddProductController extends GetxController {
     if (manualDiscountAmount != null) {
       body["manualDiscountAmount"] = manualDiscountAmount;
     }
+    if (manualDiscountPercent != null) {
+      body["manualDiscountPercent"] = manualDiscountPercent;
+    }
 
     if (attendedByStaffId != null) {
       body["attendedByStaffId"] = attendedByStaffId;
     }
 
-    body["orderType"] = selectedOrderType;
+    if (splitPayment.isNotEmpty) {
+      body["splitPayment"] = splitPayment;
+    }
 
+    if (selectedPaymentMethods.length == 2) {
+      if (totalPaid != (cart?.grandFinalTotal ?? 0)) {
+        voucherError = "Split payment total must equal bill amount";
+        isLoading = false;
+        update();
+        return false;
+      }
+    }
+
+    debugPrint("========== CHECKOUT REQUEST ==========");
+    debugPrint("URL: $url");
+    debugPrint("Headers:");
+    debugPrint(
+      jsonEncode({
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      }),
+    );
+    debugPrint("Body:");
+    debugPrint(const JsonEncoder.withIndent('  ').convert(body));
+    debugPrint("======================================");
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -435,6 +531,11 @@ class AddProductController extends GetxController {
       },
       body: jsonEncode(body),
     );
+    debugPrint("========== CHECKOUT RESPONSE ==========");
+    debugPrint("Status Code: ${response.statusCode}");
+    debugPrint("Response Body:");
+    debugPrint(response.body);
+    debugPrint("=======================================");
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data["returnOnly"] ?? false) {
@@ -446,6 +547,7 @@ class AddProductController extends GetxController {
       }
       clearAllTextControllers();
       clearVoucherSelection();
+      clearPaymentData();
       selectedStaff = null;
       discountController.clear();
       getSession(isFirst: true);
@@ -548,6 +650,18 @@ class AddProductController extends GetxController {
     } else {
       staffList = [];
     }
+
+    update();
+  }
+
+  void clearPaymentData() {
+    selectedPaymentMethods.clear();
+
+    cashAmountController.clear();
+    cardAmountController.clear();
+    upiAmountController.clear();
+
+    selectedPaymentMethod = "cash";
 
     update();
   }

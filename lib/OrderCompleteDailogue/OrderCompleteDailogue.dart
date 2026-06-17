@@ -1408,6 +1408,14 @@ class _BillSummaryPanel extends StatelessWidget {
       (s, p) => s + (p.amount ?? 0),
     );
     final grandTotal = data.grandFinalTotal ?? 0;
+     final discountAmount =
+      double.tryParse(data.manualDiscountAmount ?? "0") ?? 0;
+
+  final discountPercent =
+      double.tryParse(data.manualDiscountPercent ?? "0") ?? 0;
+
+  print("manualDiscountAmount = ${data.manualDiscountAmount}");
+  print("manualDiscountPercent = ${data.manualDiscountPercent}");
     final change = tenderedAmount > grandTotal
         ? tenderedAmount - grandTotal
         : null;
@@ -1451,13 +1459,32 @@ class _BillSummaryPanel extends StatelessWidget {
             color: const Color(0xFFDC2626),
           ),
 
-        if (data.manualDiscountAmount != "0")
-          _row(
-            'Discount',
-            -(double.parse(data.manualDiscountAmount ?? "0")),
+         if (discountAmount > 0)
+  Padding(
+    padding: EdgeInsets.symmetric(vertical: 5.h),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          discountPercent > 0
+              ? 'Discount (${discountPercent.toStringAsFixed(0)}%)'
+              : 'Discount',
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+        Text(
+          '-₹${discountAmount.toStringAsFixed(2)}',
+          style: TextStyle(
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w500,
             color: const Color(0xFFDC2626),
           ),
-
+        ),
+      ],
+    ),
+  ),
         if (data.appliedCouponDiscount != "0")
           _row(
             'Coupon Discount',

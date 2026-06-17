@@ -4,6 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
+
 class ManualDiscountCard extends StatelessWidget {
   const ManualDiscountCard({super.key});
 
@@ -15,7 +21,7 @@ class ManualDiscountCard extends StatelessWidget {
       child: GetBuilder<AddProductController>(
         builder: (ctrl) => Column(
           children: [
-            // Staff dropdown
+            /// Staff Dropdown
             Row(
               children: [
                 Expanded(
@@ -35,88 +41,186 @@ class ManualDiscountCard extends StatelessWidget {
                         .toList(),
                     onChanged: (v) {
                       if (v == null) return;
+
                       ctrl.selectStaff(
-                        ctrl.staffList.firstWhere((s) => s.id == v),
+                        ctrl.staffList.firstWhere(
+                          (s) => s.id == v,
+                        ),
                       );
                     },
                   ),
                 ),
                 SizedBox(width: 10.w),
-
                 InkWell(
                   onTap: () {
                     ctrl.selectedStaff = null;
                     ctrl.update();
                   },
-                  child: Icon(Icons.close, size: 18.sp),
+                  child: Icon(
+                    Icons.close,
+                    size: 18.sp,
+                  ),
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
+
+            SizedBox(height: 12.h),
+
+           Row(
+  children: [
+    Expanded(
+      child: GestureDetector(
+        onTap: () {
+          ctrl.isPercentageDiscount = false;
+          ctrl.update();
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 5.h),
+          decoration: BoxDecoration(
+            color: !ctrl.isPercentageDiscount
+                ? const Color(0xff1D4ED8)
+                : const Color(0xffF1F5F9),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Center(
+            child: Text(
+              "Amount",
+              style: TextStyle(
+                color: !ctrl.isPercentageDiscount
+                    ? Colors.white
+                    : Colors.black,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    SizedBox(width: 8.w),
+
+    Expanded(
+      child: GestureDetector(
+        onTap: () {
+          ctrl.isPercentageDiscount = true;
+          ctrl.update();
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 5.h),
+          decoration: BoxDecoration(
+            color: ctrl.isPercentageDiscount
+                ? const Color(0xff1D4ED8)
+                : const Color(0xffF1F5F9),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Center(
+            child: Text(
+              "Percentage",
+              style: TextStyle(
+                color: ctrl.isPercentageDiscount
+                    ? Colors.white
+                    : Colors.black,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
+            SizedBox(height: 12.h),
+
+            /// Discount Input
             Row(
               children: [
                 Expanded(
                   child: Container(
-                    height: 40.h,
-                    alignment: Alignment.centerLeft,
+                    height: 36.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                      ),
                     ),
                     child: TextField(
                       controller: ctrl.discountController,
                       keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: 14),
-
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(3),
-                      ],
-                      onSubmitted: (value) async {
-                        if (ctrl.cart == null || ctrl.cart!.items.isEmpty)
-                          return;
-                        final input = ctrl.discountController.text.trim();
-                        final discount = (input.isEmpty)
-                            ? int.parse("0")
-                            : int.tryParse(input);
-
-                        if (discount == null) return;
-                        ctrl.discountController.text = "$discount";
-                        if (discount < ctrl.cart!.subtotal)
-                          await ctrl.getCart(
-                            manualDiscountAmount: discount.toDouble(),
-                          );
-                      },
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                      ),
+                     inputFormatters: [
+  FilteringTextInputFormatter.allow(
+    RegExp(r'^\d*\.?\d{0,2}'),
+  ),
+  LengthLimitingTextInputFormatter(
+    ctrl.isPercentageDiscount ? 6 : 10,
+  ),
+],
                       decoration: InputDecoration(
-                        isDense: true,
-                        isCollapsed: true,
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          //  vertical: 10.h,
+                          horizontal: 12.w,
+                          vertical: 10.h,
                         ),
-                        hintText: 'Discout Amount',
+                        hintText: ctrl.isPercentageDiscount
+                            ? "Discount Percentage"
+                            : "Discount Amount",
+                            isCollapsed: true,
+                            isDense: true,
                         hintStyle: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF94A3B8),
                         ),
+                        suffixIcon: ctrl.isPercentageDiscount
+                            ? Center(
+                                widthFactor: 1,
+                                child: Text(
+                                  "%",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            : null,
                       ),
                     ),
                   ),
                 ),
                 SizedBox(width: 8.w),
+
+                /// Apply Button
                 _ApplyButton(
-                  onTap: () async {
-                    if (ctrl.cart == null || ctrl.cart!.items.isEmpty) return;
-                    final input = ctrl.discountController.text.trim();
-                    if (input.isEmpty) return;
-                    final discount = int.tryParse(input);
-                    if (discount == null || discount <= 0) return;
-                    await ctrl.getCart(
-                      manualDiscountAmount: discount.toDouble(),
-                    );
-                  },
-                ),
+  onTap: () async {
+    if (ctrl.cart == null || ctrl.cart!.items.isEmpty) {
+      return;
+    }
+
+    final input = ctrl.discountController.text.trim();
+
+    if (input.isEmpty) return;
+
+    final discount = double.tryParse(input);
+
+    if (discount == null || discount <= 0) {
+      return;
+    }
+
+    if (ctrl.isPercentageDiscount) {
+      await ctrl.getCart(
+        manualDiscountPercent: discount,
+      );
+    } else {
+      await ctrl.getCart(
+        manualDiscountAmount: discount,
+      );
+    }
+  },
+),
               ],
             ),
           ],
