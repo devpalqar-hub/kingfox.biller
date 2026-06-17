@@ -98,7 +98,6 @@ class AddProductController extends GetxController {
   Future<void> scanFromKeyboard(String rawBarcode, {int gstPercent = 5}) async {
     final barcode = _normalizeBarcode(rawBarcode);
 
-    // Ignore accidental key noise that is too short to be a real barcode.
     if (barcode.length < 4) return;
 
     final now = DateTime.now();
@@ -341,11 +340,6 @@ class AddProductController extends GetxController {
 
       cart = CartModel.fromJson(data);
       appliedCoupon = applied;
-
-      /// 🔍 EXTRA DEBUG
-      debugPrint("Cart Total: ${cart?.finalAmount}");
-      debugPrint("Coupon Discount: ${cart?.couponDiscountAmount}");
-
       if (applied.isNotEmpty && (cart?.couponDiscountAmount ?? 0) == 0) {
         couponError = "Invalid or expired coupon";
 
@@ -432,13 +426,6 @@ class AddProductController extends GetxController {
     }
 
     attendedByStaffId ??= selectedStaff?.id;
-
-    debugPrint("========== FINAL VALUES ==========");
-    debugPrint("Discount Text: ${discountController.text}");
-    debugPrint("Parsed Discount: $manualDiscountAmount");
-    debugPrint("Selected Staff ID: $attendedByStaffId");
-    debugPrint("=================================");
-
     if (customerPhone != null &&
         customerPhone != "" &&
         customerPhone.trim().length == 10) {
@@ -510,19 +497,6 @@ class AddProductController extends GetxController {
         return false;
       }
     }
-
-    debugPrint("========== CHECKOUT REQUEST ==========");
-    debugPrint("URL: $url");
-    debugPrint("Headers:");
-    debugPrint(
-      jsonEncode({
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $accessToken",
-      }),
-    );
-    debugPrint("Body:");
-    debugPrint(const JsonEncoder.withIndent('  ').convert(body));
-    debugPrint("======================================");
     final response = await http.post(
       Uri.parse(url),
       headers: {
@@ -531,11 +505,7 @@ class AddProductController extends GetxController {
       },
       body: jsonEncode(body),
     );
-    debugPrint("========== CHECKOUT RESPONSE ==========");
-    debugPrint("Status Code: ${response.statusCode}");
-    debugPrint("Response Body:");
-    debugPrint(response.body);
-    debugPrint("=======================================");
+    
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data["returnOnly"] ?? false) {
@@ -557,7 +527,6 @@ class AddProductController extends GetxController {
       return true;
     }
 
-    /// ❌ ERROR HANDLING
     final data = jsonDecode(response.body);
 
     String errorMessage = "";
