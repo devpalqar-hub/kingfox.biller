@@ -136,7 +136,7 @@ class PaymentMethodCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    "Remaing Amount : ₹${(ctrl.cart!.grandFinalTotal - ctrl.totalPaid).toStringAsFixed(2)}",
+                    "Remaining Amount : ₹${(ctrl.cart!.grandFinalTotal - ctrl.totalPaid).toStringAsFixed(2)}",
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
