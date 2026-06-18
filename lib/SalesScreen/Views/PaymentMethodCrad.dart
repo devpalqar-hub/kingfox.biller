@@ -128,7 +128,7 @@ class PaymentMethodCard extends StatelessWidget {
 
                 SizedBox(height: 10.h),
 
-                if (ctrl.cart == null && ctrl.cart!.grandFinalTotal != null)
+                if (ctrl.cart != null && ctrl.cart!.grandFinalTotal != null)
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(10.w),
