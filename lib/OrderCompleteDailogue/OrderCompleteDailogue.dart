@@ -863,26 +863,26 @@ class _VouchersCard extends StatelessWidget {
               ),
           ],
 
-          if (available.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AVAILABLE VOUCHERS',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: const Color(0xFF94A3B8),
-                      letterSpacing: 0.6,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  ...available.map((v) => _VoucherRow(v: v)),
-                ],
-              ),
-            ),
+          //   if (available.isNotEmpty)
+          //     Padding(
+          //       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          //       child: Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           Text(
+          //             'AVAILABLE VOUCHERS',
+          //             style: TextStyle(
+          //               fontSize: 10.sp,
+          //               color: const Color(0xFF94A3B8),
+          //               letterSpacing: 0.6,
+          //               fontWeight: FontWeight.w500,
+          //             ),
+          //           ),
+          //           SizedBox(height: 8.h),
+          //           ...available.map((v) => _VoucherRow(v: v)),
+          //         ],
+          //       ),
+          //     ),
         ],
       ),
     );
@@ -1408,14 +1408,14 @@ class _BillSummaryPanel extends StatelessWidget {
       (s, p) => s + (p.amount ?? 0),
     );
     final grandTotal = data.grandFinalTotal ?? 0;
-     final discountAmount =
-      double.tryParse(data.manualDiscountAmount ?? "0") ?? 0;
+    final discountAmount =
+        double.tryParse(data.manualDiscountAmount ?? "0") ?? 0;
 
-  final discountPercent =
-      double.tryParse(data.manualDiscountPercent ?? "0") ?? 0;
+    final discountPercent =
+        double.tryParse(data.manualDiscountPercent ?? "0") ?? 0;
 
-  print("manualDiscountAmount = ${data.manualDiscountAmount}");
-  print("manualDiscountPercent = ${data.manualDiscountPercent}");
+    print("manualDiscountAmount = ${data.manualDiscountAmount}");
+    print("manualDiscountPercent = ${data.manualDiscountPercent}");
     final change = tenderedAmount > grandTotal
         ? tenderedAmount - grandTotal
         : null;
@@ -1459,32 +1459,32 @@ class _BillSummaryPanel extends StatelessWidget {
             color: const Color(0xFFDC2626),
           ),
 
-         if (discountAmount > 0)
-  Padding(
-    padding: EdgeInsets.symmetric(vertical: 5.h),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          discountPercent > 0
-              ? 'Discount (${discountPercent.toStringAsFixed(0)}%)'
-              : 'Discount',
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: const Color(0xFF64748B),
+        if (discountAmount > 0)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  discountPercent > 0
+                      ? 'Discount (${discountPercent.toStringAsFixed(0)}%)'
+                      : 'Discount',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                Text(
+                  '-₹${discountAmount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          '-₹${discountAmount.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFFDC2626),
-          ),
-        ),
-      ],
-    ),
-  ),
         if (data.appliedCouponDiscount != "0")
           _row(
             'Coupon Discount',

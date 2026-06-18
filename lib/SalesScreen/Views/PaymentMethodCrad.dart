@@ -38,111 +38,112 @@ class PaymentMethodCard extends StatelessWidget {
                 ],
               ),
               if (ctrl.selectedPaymentMethods.length == 2) ...[
-  SizedBox(height: 12.h),
+                SizedBox(height: 12.h),
 
-  Row(
-    children: [
-      if (ctrl.selectedPaymentMethods.contains("cash"))
-        Expanded(
-          child: Container(
-            height: 30.h,
-            padding: EdgeInsets.symmetric(horizontal: 10.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: TextField(
-              controller: ctrl.cashAmountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: "Cash Amount",
-                hintStyle: TextStyle(fontSize: 10.sp),
-                isDense: true,
-                isCollapsed: true,
-              ),
-              onChanged: (_) => ctrl.update(),
-            ),
-          ),
-        ),
+                Row(
+                  children: [
+                    if (ctrl.selectedPaymentMethods.contains("cash"))
+                      Expanded(
+                        child: Container(
+                          height: 30.h,
+                          padding: EdgeInsets.symmetric(horizontal: 10.w),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: TextField(
+                            controller: ctrl.cashAmountController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Cash Amount",
+                              hintStyle: TextStyle(fontSize: 10.sp),
+                              isDense: true,
+                              isCollapsed: true,
+                            ),
+                            onChanged: (_) => ctrl.update(),
+                          ),
+                        ),
+                      ),
 
-     if (ctrl.selectedPaymentMethods.contains("cash") &&
-    (ctrl.selectedPaymentMethods.contains("card") ||
-        ctrl.selectedPaymentMethods.contains("upi")))
-  SizedBox(width: 10.w),
+                    if (ctrl.selectedPaymentMethods.contains("cash") &&
+                        (ctrl.selectedPaymentMethods.contains("card") ||
+                            ctrl.selectedPaymentMethods.contains("upi")))
+                      SizedBox(width: 10.w),
 
-if (ctrl.selectedPaymentMethods.contains("card"))
-  Expanded(
-    child: Container(
-      height: 30.h,
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: TextField(
-        controller: ctrl.cardAmountController,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Card Amount",
-          hintStyle: TextStyle(fontSize: 10.sp),
-          isDense: true,
-          isCollapsed: true,
-        ),
-        onChanged: (_) => ctrl.update(),
-      ),
-    ),
-  ),
+                    if (ctrl.selectedPaymentMethods.contains("card"))
+                      Expanded(
+                        child: Container(
+                          height: 30.h,
+                          padding: EdgeInsets.symmetric(horizontal: 10.w),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: TextField(
+                            controller: ctrl.cardAmountController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Card Amount",
+                              hintStyle: TextStyle(fontSize: 10.sp),
+                              isDense: true,
+                              isCollapsed: true,
+                            ),
+                            onChanged: (_) => ctrl.update(),
+                          ),
+                        ),
+                      ),
 
-if (ctrl.selectedPaymentMethods.contains("card") &&
-    ctrl.selectedPaymentMethods.contains("upi"))
-  SizedBox(width: 10.w),
+                    if (ctrl.selectedPaymentMethods.contains("card") &&
+                        ctrl.selectedPaymentMethods.contains("upi"))
+                      SizedBox(width: 10.w),
 
-if (ctrl.selectedPaymentMethods.contains("upi"))
-  Expanded(
-    child: Container(
-      height: 30.h,
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: TextField(
-        controller: ctrl.upiAmountController, // Fixed
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "UPI Amount",
-          hintStyle: TextStyle(fontSize: 10.sp),
-          isDense: true,
-          isCollapsed: true,
-        ),
-        onChanged: (_) => ctrl.update(),
-      ),
-    ),
-  ),
-    ],
-  ),
+                    if (ctrl.selectedPaymentMethods.contains("upi"))
+                      Expanded(
+                        child: Container(
+                          height: 30.h,
+                          padding: EdgeInsets.symmetric(horizontal: 10.w),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: TextField(
+                            controller: ctrl.upiAmountController, // Fixed
+                            keyboardType: TextInputType.number,
 
-  SizedBox(height: 10.h),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "UPI Amount",
+                              hintStyle: TextStyle(fontSize: 10.sp),
+                              isDense: true,
+                              isCollapsed: true,
+                            ),
+                            onChanged: (_) => ctrl.update(),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
 
-  Container(
-    width: double.infinity,
-    padding: EdgeInsets.all(10.w),
-    decoration: BoxDecoration(
-      color: const Color(0xffF8FAFC),
-      borderRadius: BorderRadius.circular(8.r),
-    ),
-    child: Text(
-      "Total Paid : ₹${ctrl.totalPaid.toStringAsFixed(2)}",
-      style: TextStyle(
-        fontSize: 12.sp,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-],
+                SizedBox(height: 10.h),
+
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF8FAFC),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    "Remaing Amount : ₹${(ctrl.cart!.grandFinalTotal - ctrl.totalPaid).toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
               SizedBox(height: 10.h),
               Text(
                 "Order Type",
@@ -171,19 +172,19 @@ if (ctrl.selectedPaymentMethods.contains("upi"))
     String value, {
     bool istype = false,
   }) {
-      final isSelected = istype
-    ? ctrl.selectedOrderType == value
-    : ctrl.isPaymentSelected(value);
+    final isSelected = istype
+        ? ctrl.selectedOrderType == value
+        : ctrl.isPaymentSelected(value);
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
-         if (!istype) {
-  ctrl.togglePaymentMethod(value);
-} else {
-  ctrl.selectedOrderType = value;
-  ctrl.update();
-}
+          if (!istype) {
+            ctrl.togglePaymentMethod(value);
+          } else {
+            ctrl.selectedOrderType = value;
+            ctrl.update();
+          }
         },
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 5.h),

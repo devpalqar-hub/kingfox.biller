@@ -43,9 +43,7 @@ class ManualDiscountCard extends StatelessWidget {
                       if (v == null) return;
 
                       ctrl.selectStaff(
-                        ctrl.staffList.firstWhere(
-                          (s) => s.id == v,
-                        ),
+                        ctrl.staffList.firstWhere((s) => s.id == v),
                       );
                     },
                   ),
@@ -56,81 +54,78 @@ class ManualDiscountCard extends StatelessWidget {
                     ctrl.selectedStaff = null;
                     ctrl.update();
                   },
-                  child: Icon(
-                    Icons.close,
-                    size: 18.sp,
-                  ),
+                  child: Icon(Icons.close, size: 18.sp),
                 ),
               ],
             ),
 
             SizedBox(height: 12.h),
 
-           Row(
-  children: [
-    Expanded(
-      child: GestureDetector(
-        onTap: () {
-          ctrl.isPercentageDiscount = false;
-          ctrl.update();
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 5.h),
-          decoration: BoxDecoration(
-            color: !ctrl.isPercentageDiscount
-                ? const Color(0xff1D4ED8)
-                : const Color(0xffF1F5F9),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Center(
-            child: Text(
-              "Amount",
-              style: TextStyle(
-                color: !ctrl.isPercentageDiscount
-                    ? Colors.white
-                    : Colors.black,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      ctrl.isPercentageDiscount = false;
+                      ctrl.update();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5.h),
+                      decoration: BoxDecoration(
+                        color: !ctrl.isPercentageDiscount
+                            ? const Color(0xff1D4ED8)
+                            : const Color(0xffF1F5F9),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Amount",
+                          style: TextStyle(
+                            color: !ctrl.isPercentageDiscount
+                                ? Colors.white
+                                : Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
-    SizedBox(width: 8.w),
+                SizedBox(width: 8.w),
 
-    Expanded(
-      child: GestureDetector(
-        onTap: () {
-          ctrl.isPercentageDiscount = true;
-          ctrl.update();
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 5.h),
-          decoration: BoxDecoration(
-            color: ctrl.isPercentageDiscount
-                ? const Color(0xff1D4ED8)
-                : const Color(0xffF1F5F9),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Center(
-            child: Text(
-              "Percentage",
-              style: TextStyle(
-                color: ctrl.isPercentageDiscount
-                    ? Colors.white
-                    : Colors.black,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      ctrl.isPercentageDiscount = true;
+                      ctrl.update();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5.h),
+                      decoration: BoxDecoration(
+                        color: ctrl.isPercentageDiscount
+                            ? const Color(0xff1D4ED8)
+                            : const Color(0xffF1F5F9),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Percentage",
+                          style: TextStyle(
+                            color: ctrl.isPercentageDiscount
+                                ? Colors.white
+                                : Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
 
             SizedBox(height: 12.h),
 
@@ -142,24 +137,20 @@ class ManualDiscountCard extends StatelessWidget {
                     height: 36.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: const Color(0xFFE2E8F0),
-                      ),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: TextField(
                       controller: ctrl.discountController,
                       keyboardType: TextInputType.number,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                      ),
-                     inputFormatters: [
-  FilteringTextInputFormatter.allow(
-    RegExp(r'^\d*\.?\d{0,2}'),
-  ),
-  LengthLimitingTextInputFormatter(
-    ctrl.isPercentageDiscount ? 6 : 10,
-  ),
-],
+                      style: TextStyle(fontSize: 14.sp),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*\.?\d{0,2}'),
+                        ),
+                        LengthLimitingTextInputFormatter(
+                          ctrl.isPercentageDiscount ? 6 : 10,
+                        ),
+                      ],
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
@@ -169,8 +160,8 @@ class ManualDiscountCard extends StatelessWidget {
                         hintText: ctrl.isPercentageDiscount
                             ? "Discount Percentage"
                             : "Discount Amount",
-                            isCollapsed: true,
-                            isDense: true,
+                        isCollapsed: true,
+                        isDense: true,
                         hintStyle: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF94A3B8),
@@ -195,32 +186,26 @@ class ManualDiscountCard extends StatelessWidget {
 
                 /// Apply Button
                 _ApplyButton(
-  onTap: () async {
-    if (ctrl.cart == null || ctrl.cart!.items.isEmpty) {
-      return;
-    }
+                  onTap: () async {
+                    if (ctrl.cart == null || ctrl.cart!.items.isEmpty) {
+                      return;
+                    }
 
-    final input = ctrl.discountController.text.trim();
+                    final input = ctrl.discountController.text.trim();
 
-    if (input.isEmpty) return;
+                    var discount = double.tryParse(input);
 
-    final discount = double.tryParse(input);
+                    if (discount == null || discount <= 0) {
+                      discount = 0;
+                    }
 
-    if (discount == null || discount <= 0) {
-      return;
-    }
-
-    if (ctrl.isPercentageDiscount) {
-      await ctrl.getCart(
-        manualDiscountPercent: discount,
-      );
-    } else {
-      await ctrl.getCart(
-        manualDiscountAmount: discount,
-      );
-    }
-  },
-),
+                    if (ctrl.isPercentageDiscount) {
+                      await ctrl.getCart(manualDiscountPercent: discount);
+                    } else {
+                      await ctrl.getCart(manualDiscountAmount: discount);
+                    }
+                  },
+                ),
               ],
             ),
           ],

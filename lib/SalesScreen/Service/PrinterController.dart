@@ -666,17 +666,64 @@ class PrinterController extends GetxController {
       );
       for (final v in data.availableVouchers) {
         if (v.voucherCode != null) {
-          bytes += generator.text(v.campaignName ?? '', styles: sCenter);
           bytes += generator.text(
-            v.voucherCode!,
-            styles: const PosStyles(
-              align: PosAlign.center,
-              bold: true,
-              underline: true,
-            ),
+            '${v.campaignName ?? ''} - ${v.voucherCode}',
+            styles: sCenter,
           );
+          // bytes += generator.text(
+          //   ,
+          //   styles: const PosStyles(
+          //     align: PosAlign.center,
+          //     bold: true,
+          //     underline: true,
+          //   ),
+          // );
         }
       }
+      bytes += generator.hr();
+    }
+
+    if (data.returnCoupon != null) {
+      final rc = data.returnCoupon!;
+      bytes += generator.text(
+        '---- Return Coupon ----',
+        styles: const PosStyles(bold: true, align: PosAlign.center),
+      );
+      if (rc.code != null) {
+        bytes += generator.text(
+          rc.code!,
+          styles: const PosStyles(
+            align: PosAlign.center,
+            bold: true,
+            underline: true,
+            height: PosTextSize.size2,
+            width: PosTextSize.size1,
+          ),
+        );
+      }
+      if (rc.amount != null && rc.amount! > 0) {
+        bytes += generator.row([
+          PosColumn(text: 'Coupon Value', width: 6, styles: sBold),
+          PosColumn(text: moneyFmt.format(rc.amount), width: 6, styles: sBoldR),
+        ]);
+      }
+      if (rc.expiresAt != null) {
+        String expiryDisplay = rc.expiresAt!;
+        try {
+          final parsed = DateTime.tryParse(rc.expiresAt!);
+          if (parsed != null) {
+            expiryDisplay = DateFormat('dd MMM yyyy').format(parsed.toLocal());
+          }
+        } catch (_) {}
+        bytes += generator.row([
+          PosColumn(text: 'Valid Until', width: 6, styles: sNormal),
+          PosColumn(text: expiryDisplay, width: 6, styles: sRight),
+        ]);
+      }
+      bytes += generator.text(
+        'Use this code on your next purchase',
+        styles: sCenter,
+      );
       bytes += generator.hr();
     }
 
@@ -731,6 +778,8 @@ class PrinterController extends GetxController {
       styles: const PosStyles(align: PosAlign.center, bold: true),
     );
     bytes += generator.text('Visit us again', styles: sCenter);
+    bytes += generator.text('www.kingfoxclothing.com', styles: sCenter);
+
     bytes += generator.feed(3);
     bytes += generator.cut();
 

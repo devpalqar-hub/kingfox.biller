@@ -44,6 +44,7 @@ class CartTableWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_RowModel> rows = [];
+
     for (var data in cart.items) {
       rows.add(
         _RowModel(
