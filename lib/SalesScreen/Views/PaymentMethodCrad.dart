@@ -179,6 +179,9 @@ class PaymentMethodCard extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () {
+          ctrl.upiAmountController.text = "";
+          ctrl.cardAmountController.text = "";
+          ctrl.cashAmountController.text = "";
           if (!istype) {
             ctrl.togglePaymentMethod(value);
           } else {
