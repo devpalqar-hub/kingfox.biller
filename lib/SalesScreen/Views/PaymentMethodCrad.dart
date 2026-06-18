@@ -128,21 +128,22 @@ class PaymentMethodCard extends StatelessWidget {
 
                 SizedBox(height: 10.h),
 
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF8FAFC),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    "Remaining Amount : ₹${(ctrl.cart!.grandFinalTotal - ctrl.totalPaid).toStringAsFixed(2)}",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
+                if (ctrl.cart == null && ctrl.cart!.grandFinalTotal != null)
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffF8FAFC),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      "Remaining Amount : ₹${(ctrl.cart!.grandFinalTotal - ctrl.totalPaid).toStringAsFixed(2)}",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
               ],
               SizedBox(height: 10.h),
               Text(
