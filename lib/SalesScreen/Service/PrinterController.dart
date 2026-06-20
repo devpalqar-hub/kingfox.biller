@@ -637,6 +637,12 @@ class PrinterController extends GetxController {
       totRow('CGST (${(data.gstPercent ?? 0) / 2}%)', half);
     }
 
+    if (data.addons.isNotEmpty) {
+      for (final addon in data.addons) {
+        totRow('${addon.name ?? "Addon"}', addon.price ?? 0);
+      }
+    }
+
     bytes += generator.hr(ch: '=');
     totRow('GRAND TOTAL', data.grandFinalTotal, bold: true);
     bytes += generator.hr(ch: '=');
@@ -784,9 +790,7 @@ class PrinterController extends GetxController {
     bytes += generator.cut();
 
     // ── Send ───────────────────────────────────────────────────────────────
-    if (mockMode) {
-      _showMockPreview(data, bytes);
-    } else {
+    if (!mockMode) {
       if (Platform.isMacOS) {
         await _printViaCups(bytes);
       } else {

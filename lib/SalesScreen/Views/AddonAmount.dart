@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADDON MODEL  (inline — no separate file needed)
+// ADDON MODEL
 // ─────────────────────────────────────────────────────────────────────────────
 class _Addon {
   final String name;
@@ -28,49 +28,16 @@ class _Addon {
 // PREDEFINED CATALOGUE
 // ─────────────────────────────────────────────────────────────────────────────
 const _kPredefined = [
-  _Addon(name: 'Gift Wrap', price: 50),
-  _Addon(name: 'Alteration', price: 100),
+  _Addon(name: 'Packing', price: 12),
+  _Addon(name: 'Handling', price: 0),
+  _Addon(name: 'Printing', price: 0),
+  _Addon(name: 'Shipping', price: 0),
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HOW TO OPEN
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Pass the already-selected addons (from previous open) so the dialog
-// restores state.  When Done is tapped the result is pushed back via
-// AddProductController.setAddons().
-//
-//   showDialog(
-//     context: context,
-//     builder: (_) => AddonsDialog(
-//       initial: ctrl.addons,   // List<Map<String,dynamic>>
-//     ),
-//   );
-//
-// In AddProductController add:
-//
-//   List<Map<String, dynamic>> addons = [];
-//
-//   void setAddons(List<Map<String, dynamic>> value) {
-//     addons = value;
-//     getCart();   // refresh totals
-//     update();
-//   }
-//
-// Then in getCart() query params:
-//   if (addons.isNotEmpty) queryParams['addons'] = jsonEncode(addons);
-//
-// And in checkoutCart() body:
-//   if (addons.isNotEmpty) body['addons'] = addons;
-//
-// Clear in clearAllTextControllers() and changeSession():
-//   addons = [];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DIALOG
 // ─────────────────────────────────────────────────────────────────────────────
 class AddonsDialog extends StatefulWidget {
-  /// Pass previously selected addons so state survives re-opens.
   final List<Map<String, dynamic>> initial;
 
   const AddonsDialog({super.key, this.initial = const []});
@@ -80,24 +47,17 @@ class AddonsDialog extends StatefulWidget {
 }
 
 class _AddonsDialogState extends State<AddonsDialog> {
-  // ── local state ────────────────────────────────────────────────────────────
   late List<_Addon> _selected;
 
-  // editable price controllers for predefined chips
-  late final Map<String, TextEditingController> _chipPrice;
-
-  // manual-entry controllers
+  // Custom add controllers
   final _nameCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   String? _nameErr;
   String? _priceErr;
 
-  // ── init ───────────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
-
-    // Restore from initial (the controller's saved list)
     _selected = widget.initial
         .map(
           (m) => _Addon(
@@ -107,55 +67,29 @@ class _AddonsDialogState extends State<AddonsDialog> {
           ),
         )
         .toList();
-
-    // Seed chip price controllers with restored or default prices
-    _chipPrice = {
-      for (final p in _kPredefined)
-        p.name: TextEditingController(
-          text: (_selectedPrice(p.name) ?? p.price).toStringAsFixed(0),
-        ),
-    };
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _priceCtrl.dispose();
-    for (final c in _chipPrice.values) c.dispose();
     super.dispose();
-  }
-
-  // ── helpers ────────────────────────────────────────────────────────────────
-  double? _selectedPrice(String name) {
-    try {
-      return _selected.firstWhere((a) => a.name == name).price;
-    } catch (_) {
-      return null;
-    }
   }
 
   bool _isSelected(String name) => _selected.any((a) => a.name == name);
 
+  // SIMPLIFIED: Just add with default price, or remove if already selected.
   void _togglePredefined(String name) {
     setState(() {
       if (_isSelected(name)) {
         _selected.removeWhere((a) => a.name == name);
       } else {
-        final price =
-            double.tryParse(_chipPrice[name]!.text.trim()) ??
-            _kPredefined.firstWhere((p) => p.name == name).price;
-        _selected.add(_Addon(name: name, price: price));
+        final defaultPrice = _kPredefined
+            .firstWhere((p) => p.name == name)
+            .price;
+        _selected.add(_Addon(name: name, price: defaultPrice));
       }
     });
-  }
-
-  void _updateChipPrice(String name, String raw) {
-    final price = double.tryParse(raw.trim());
-    if (price == null || price <= 0) return;
-    final idx = _selected.indexWhere((a) => a.name == name);
-    if (idx >= 0) {
-      setState(() => _selected[idx] = _selected[idx].copyWith(price: price));
-    }
   }
 
   void _addCustom() {
@@ -186,9 +120,10 @@ class _AddonsDialogState extends State<AddonsDialog> {
     });
   }
 
+  // Edit price directly from the selected list
   void _updateSelectedPrice(int idx, String raw) {
     final price = double.tryParse(raw.trim());
-    if (price == null || price <= 0) return;
+    if (price == null) return; // Allow 0, but not invalid text
     setState(() => _selected[idx] = _selected[idx].copyWith(price: price));
   }
 
@@ -202,37 +137,51 @@ class _AddonsDialogState extends State<AddonsDialog> {
     Get.back();
   }
 
-  // ── build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 32.h),
-      child: Padding(
+      child: Container(
+        width: 400.w,
+        height: 500.w,
         padding: EdgeInsets.all(18.w),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
             SizedBox(height: 16.h),
-            _buildSectionLabel('Quick add'),
-            SizedBox(height: 8.h),
-            _buildPredefinedChips(),
-            SizedBox(height: 16.h),
-            _buildSectionLabel('Custom add-on'),
-            SizedBox(height: 8.h),
-            _buildCustomRow(),
-            if (_selected.isNotEmpty) ...[
-              SizedBox(height: 14.h),
-              Divider(height: 1, color: const Color(0xFFF1F5F9)),
-              SizedBox(height: 12.h),
-              _buildSectionLabel('Selected'),
-              SizedBox(height: 8.h),
-              _buildSelectedList(),
-            ],
-            SizedBox(height: 16.h),
+
+            // ── Scrollable Body ──
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionLabel('Quick add'),
+                    SizedBox(height: 8.h),
+                    _buildPredefinedChips(),
+                    SizedBox(height: 16.h),
+
+                    _buildSectionLabel('Custom add-on'),
+                    SizedBox(height: 8.h),
+                    _buildCustomRow(),
+
+                    if (_selected.isNotEmpty) ...[
+                      SizedBox(height: 14.h),
+                      Divider(height: 1, color: const Color(0xFFF1F5F9)),
+                      SizedBox(height: 12.h),
+                      _buildSectionLabel('Selected (Edit Prices Here)'),
+                      SizedBox(height: 8.h),
+                      _buildSelectedList(),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(height: 12.h),
             _buildFooter(),
           ],
         ),
@@ -240,7 +189,6 @@ class _AddonsDialogState extends State<AddonsDialog> {
     );
   }
 
-  // ── header ─────────────────────────────────────────────────────────────────
   Widget _buildHeader() => Row(
     children: [
       Container(
@@ -285,7 +233,6 @@ class _AddonsDialogState extends State<AddonsDialog> {
     ],
   );
 
-  // ── section label ──────────────────────────────────────────────────────────
   Widget _buildSectionLabel(String text) => Text(
     text,
     style: TextStyle(
@@ -296,115 +243,53 @@ class _AddonsDialogState extends State<AddonsDialog> {
     ),
   );
 
-  // ── predefined chips ───────────────────────────────────────────────────────
+  // SIMPLIFIED: Clean buttons without inner text fields
   Widget _buildPredefinedChips() => Wrap(
     spacing: 8.w,
     runSpacing: 8.h,
     children: _kPredefined.map((p) {
       final sel = _isSelected(p.name);
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          color: sel ? const Color(0xFFEEF2FF) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-            color: sel ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
-            width: sel ? 1.5 : 1.0,
+      return GestureDetector(
+        onTap: () => _togglePredefined(p.name),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: sel ? const Color(0xFFEEF2FF) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(
+              color: sel ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
+              width: sel ? 1.5 : 1.0,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // toggle side
-            GestureDetector(
-              onTap: () => _togglePredefined(p.name),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 10.w,
-                  top: 8.h,
-                  bottom: 8.h,
-                  right: 6.w,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: Icon(
-                        sel
-                            ? Icons.check_circle_rounded
-                            : Icons.radio_button_unchecked_rounded,
-                        key: ValueKey(sel),
-                        size: 14.sp,
-                        color: sel
-                            ? const Color(0xFF6366F1)
-                            : const Color(0xFFCBD5E1),
-                      ),
-                    ),
-                    SizedBox(width: 5.w),
-                    Text(
-                      p.name,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: sel
-                            ? const Color(0xFF4338CA)
-                            : const Color(0xFF475569),
-                      ),
-                    ),
-                  ],
-                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                sel
+                    ? Icons.check_circle_rounded
+                    : Icons.add_circle_outline_rounded,
+                size: 14.sp,
+                color: sel ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
               ),
-            ),
-            // divider
-            Container(
-              width: 1,
-              height: 20.h,
-              color: sel ? const Color(0xFFC7D2FE) : const Color(0xFFE2E8F0),
-            ),
-            // editable price
-            SizedBox(
-              width: 56.w,
-              child: TextField(
-                controller: _chipPrice[p.name],
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                ],
-                onChanged: (v) => _updateChipPrice(p.name, v),
-                textAlign: TextAlign.center,
+              SizedBox(width: 6.w),
+              Text(
+                p.name,
                 style: TextStyle(
                   fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: sel
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF64748B),
-                ),
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 6.w,
-                    vertical: 8.h,
-                  ),
-                  prefixText: '₹',
-                  prefixStyle: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: sel
-                        ? const Color(0xFF6366F1)
-                        : const Color(0xFF94A3B8),
-                  ),
+                      ? const Color(0xFF4338CA)
+                      : const Color(0xFF475569),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }).toList(),
   );
 
-  // ── custom entry row ───────────────────────────────────────────────────────
   Widget _buildCustomRow() => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -430,25 +315,21 @@ class _AddonsDialogState extends State<AddonsDialog> {
     ],
   );
 
-  // ── selected list ──────────────────────────────────────────────────────────
-  Widget _buildSelectedList() => ConstrainedBox(
-    constraints: BoxConstraints(maxHeight: 160.h),
-    child: ListView.separated(
-      shrinkWrap: true,
-      itemCount: _selected.length,
-      separatorBuilder: (_, __) => SizedBox(height: 6.h),
-      itemBuilder: (_, i) {
-        final item = _selected[i];
-        return _SelectedRow(
-          addon: item,
-          onPriceChanged: (v) => _updateSelectedPrice(i, v),
-          onRemove: () => _remove(i),
-        );
-      },
-    ),
+  Widget _buildSelectedList() => ListView.separated(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: _selected.length,
+    separatorBuilder: (_, __) => SizedBox(height: 6.h),
+    itemBuilder: (_, i) {
+      final item = _selected[i];
+      return _SelectedRow(
+        addon: item,
+        onPriceChanged: (v) => _updateSelectedPrice(i, v),
+        onRemove: () => _remove(i),
+      );
+    },
   );
 
-  // ── footer ─────────────────────────────────────────────────────────────────
   Widget _buildFooter() => Row(
     children: [
       if (_selected.isNotEmpty) ...[
@@ -487,7 +368,6 @@ class _AddonsDialogState extends State<AddonsDialog> {
     ],
   );
 
-  // ── shared input field ─────────────────────────────────────────────────────
   Widget _field(
     TextEditingController ctrl,
     String hint,
@@ -512,7 +392,7 @@ class _AddonsDialogState extends State<AddonsDialog> {
           controller: ctrl,
           keyboardType: numeric ? TextInputType.number : TextInputType.text,
           inputFormatters: numeric
-              ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
+              ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
               : null,
           onChanged: (_) => setState(() {
             if (numeric)
@@ -553,7 +433,7 @@ class _AddonsDialogState extends State<AddonsDialog> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SELECTED ROW  (stateful only for its own price TextEditingController)
+// SELECTED ROW
 // ─────────────────────────────────────────────────────────────────────────────
 class _SelectedRow extends StatefulWidget {
   final _Addon addon;
@@ -582,8 +462,11 @@ class _SelectedRowState extends State<_SelectedRow> {
   @override
   void didUpdateWidget(_SelectedRow old) {
     super.didUpdateWidget(old);
+    // Only update the text field if the value changed externally
     if (old.addon.price != widget.addon.price) {
-      _pc.text = widget.addon.price.toStringAsFixed(0);
+      if (double.tryParse(_pc.text) != widget.addon.price) {
+        _pc.text = widget.addon.price.toStringAsFixed(0);
+      }
     }
   }
 
@@ -634,6 +517,8 @@ class _SelectedRowState extends State<_SelectedRow> {
             ),
           ),
           SizedBox(width: 8.w),
+
+          // Price Input for Selected Items
           Container(
             width: 70.w,
             height: 30.h,
@@ -646,7 +531,7 @@ class _SelectedRowState extends State<_SelectedRow> {
               controller: _pc,
               keyboardType: TextInputType.number,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
               onChanged: widget.onPriceChanged,
               textAlign: TextAlign.center,

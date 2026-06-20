@@ -25,6 +25,8 @@ class CheckoutData {
   final String? appliedCouponDiscount;
   final ReturnCoupon? returnCoupon;
   final String? orderType;
+  final List<Addon> addons;
+  final double? totalAddonPrice;
 
   const CheckoutData({
     this.cartId,
@@ -49,10 +51,12 @@ class CheckoutData {
     this.createdAt,
     this.status,
     this.manualDiscountAmount,
-     this.manualDiscountPercent,
+    this.manualDiscountPercent,
     this.appliedCouponDiscount,
     this.returnCoupon,
     this.attendedByStaffName,
+    this.addons = const [],
+    this.totalAddonPrice,
   });
 
   factory CheckoutData.fromJson(Map<String, dynamic> j) => CheckoutData(
@@ -76,6 +80,9 @@ class CheckoutData {
     finalAmount: (j['finalAmount'] as num?)?.toDouble(),
     grandFinalTotal: (j['grandFinalTotal'] as num?)?.toDouble(),
     invoiceNumber: j['invoiceNumber'],
+    addons: (j['addons'] as List? ?? []).map((e) => Addon.fromJson(e)).toList(),
+    totalAddonPrice: (j['totalAddonPrice'] as num?)?.toDouble(),
+
     payments: (j['payments'] as List? ?? [])
         .map((e) => Payment.fromJson(e))
         .toList(),
@@ -85,7 +92,7 @@ class CheckoutData {
         .map((e) => Voucher.fromJson(e))
         .toList(),
     manualDiscountAmount: (j["manualDiscountAmount"] ?? "0").toString(),
-     manualDiscountPercent: (j["manualDiscountPercent"] ?? "0").toString(),
+    manualDiscountPercent: (j["manualDiscountPercent"] ?? "0").toString(),
     appliedCouponDiscount: (j["appliedCouponDiscount"] ?? "0").toString(),
     createdAt: j["createdAt"],
     status: j["status"],
@@ -240,4 +247,16 @@ class Voucher {
     campaignDescription: j['campaignDescription'],
     campaignEndDate: j['campaignEndDate'],
   );
+}
+
+class Addon {
+  final String? name;
+  final double? price;
+
+  const Addon({this.name, this.price});
+
+  factory Addon.fromJson(Map<String, dynamic> j) =>
+      Addon(name: j['name'], price: (j['price'] as num?)?.toDouble());
+
+  Map<String, dynamic> toJson() => {'name': name, 'price': price};
 }

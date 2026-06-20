@@ -1452,6 +1452,51 @@ class _BillSummaryPanel extends StatelessWidget {
           data.gstAmount ?? 0,
         ),
 
+        // Add-ons
+        if (data.addons.isNotEmpty) ...[
+          SizedBox(height: 6.h),
+
+          Text(
+            'ADD-ONS',
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: const Color(0xFF94A3B8),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
+            ),
+          ),
+
+          SizedBox(height: 6.h),
+
+          ...data.addons.map(
+            (addon) => Padding(
+              padding: EdgeInsets.symmetric(vertical: 3.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      addon.name ?? '-',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '+₹${(addon.price ?? 0).toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2563EB),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+
         if ((data.appliedReturnDiscount ?? 0) > 0)
           _row(
             'Return Adj.',

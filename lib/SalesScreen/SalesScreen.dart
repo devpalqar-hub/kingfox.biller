@@ -404,7 +404,7 @@ class _SalesScreenState extends State<SalesScreen> {
                     ),
                     // ── RIGHT PANEL ───────────────────────────────────────────
                     SizedBox(
-                      width: 320.w,
+                      width: 400.w,
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(6.w, 12.h, 12.w, 12.h),
                         child: const BillSummaryCard(),

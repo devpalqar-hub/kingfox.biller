@@ -188,6 +188,7 @@ class AddProductController extends GetxController {
 
   void changeSession(int? selected) {
     appliedCoupon = "";
+    addons.clear();
     couponController.text = "";
     discountController.text = "";
     phoneController.text = "";
@@ -195,6 +196,7 @@ class AddProductController extends GetxController {
     selectedSessionId = selected;
     cctrl.selectedCustomer = null;
     cctrl.update();
+
     getCart();
     update();
   }
