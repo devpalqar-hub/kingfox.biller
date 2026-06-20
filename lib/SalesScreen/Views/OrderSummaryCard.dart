@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:kinfox_biller/SalesScreen/Service/AddProductController.dart';
+import 'package:kinfox_biller/SalesScreen/Views/AddonAmount.dart';
 
 class OrderSummaryCard extends StatelessWidget {
   final double subtotal;
@@ -11,7 +15,7 @@ class OrderSummaryCard extends StatelessWidget {
   final double refundAmount;
   final VoidCallback onPrint;
 
-  const OrderSummaryCard({
+  OrderSummaryCard({
     super.key,
     required this.subtotal,
     required this.tax,
@@ -22,7 +26,7 @@ class OrderSummaryCard extends StatelessWidget {
     required this.refundAmount,
     required this.onPrint,
   });
-
+  AddProductController ctrl = Get.find();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -44,6 +48,20 @@ class OrderSummaryCard extends StatelessWidget {
                 "Order Summary",
                 style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
               ),
+              Spacer(),
+              Container(
+                child: InkWell(
+                  onTap: () {
+                    AddProductController ctrl = Get.find();
+
+                    showDialog(
+                      context: context,
+                      builder: (_) => AddonsDialog(initial: ctrl.addons),
+                    );
+                  },
+                  child: Text("Add On"),
+                ),
+              ),
             ],
           ),
 
@@ -53,6 +71,9 @@ class OrderSummaryCard extends StatelessWidget {
           _row("Subtotal", subtotal),
           _row("CGST ", (tax / 2)),
           _row("SGST ", (tax / 2)),
+
+          if (ctrl.cart != null)
+            for (var data in ctrl.cart!.addons) _row(data.name, data.price),
           //   _row("Exchange Credit", exchangeCredit, isNegative: true, red: true),
           if (coupon > 0) _row("Coupon Deduction", coupon, isNegative: true),
           if (appliedReturnDiscount > 0)

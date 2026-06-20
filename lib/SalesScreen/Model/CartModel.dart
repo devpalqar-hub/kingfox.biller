@@ -15,16 +15,16 @@ class CartModel {
   final double gstAmount;
   final double finalAmount;
 
- 
   final double couponDiscountAmount;
   final double finalAmountAfterCoupon;
   final double grandFinalTotal;
-  final double  manualDiscountAmount;
+  final double manualDiscountAmount;
   final double finalAmountAfterManual;
 
   final CouponModel? coupon;
 
   final List<dynamic> availableVouchers;
+  final List<AddonModel> addons;
 
   CartModel({
     required this.cartId,
@@ -41,9 +41,8 @@ class CartModel {
     required this.availableVouchers,
     required this.grandFinalTotal,
     required this.manualDiscountAmount,
-     required this.finalAmountAfterManual,
-    
-
+    required this.finalAmountAfterManual,
+    required this.addons,
 
     /// 🔥 NEW
     required this.couponDiscountAmount,
@@ -70,23 +69,22 @@ class CartModel {
           .toList(),
 
       subtotal: (json['subtotal'] ?? 0).toDouble(),
-      appliedReturnDiscount:
-          (json['appliedReturnDiscount'] ?? 0).toDouble(),
+      appliedReturnDiscount: (json['appliedReturnDiscount'] ?? 0).toDouble(),
       refundAmount: (json['refundAmount'] ?? 0).toDouble(),
-      discountedSubtotal:
-          (json['discountedSubtotal'] ?? 0).toDouble(),
+      discountedSubtotal: (json['discountedSubtotal'] ?? 0).toDouble(),
       gstAmount: (json['gstAmount'] ?? 0).toDouble(),
       finalAmount: (json['finalAmount'] ?? 0).toDouble(),
-  
+
+      addons: (json['addons'] ?? [])
+          .map<AddonModel>((e) => AddonModel.fromJson(e))
+          .toList(),
+
       /// 🔥 NEW
-      couponDiscountAmount:
-          (json['couponDiscountAmount'] ?? 0).toDouble(),
-      finalAmountAfterCoupon:
-          (json['finalAmountAfterCoupon'] ?? 0).toDouble(),
-        manualDiscountAmount: (json['manualDiscountAmount'] ?? 0).toDouble(),
-         finalAmountAfterManual: (json['finalAmountAfterManual'] ?? 0).toDouble(),
-      grandFinalTotal:
-           (json['grandFinalTotal'] ?? 0).toDouble(),
+      couponDiscountAmount: (json['couponDiscountAmount'] ?? 0).toDouble(),
+      finalAmountAfterCoupon: (json['finalAmountAfterCoupon'] ?? 0).toDouble(),
+      manualDiscountAmount: (json['manualDiscountAmount'] ?? 0).toDouble(),
+      finalAmountAfterManual: (json['finalAmountAfterManual'] ?? 0).toDouble(),
+      grandFinalTotal: (json['grandFinalTotal'] ?? 0).toDouble(),
       coupon: json['coupon'] != null
           ? CouponModel.fromJson(json['coupon'])
           : null,
@@ -95,12 +93,13 @@ class CartModel {
     );
   }
 }
+
 class ReturnItemModel {
-   final String productName;
-  final int variantId; 
+  final String productName;
+  final int variantId;
   final int quantity;
   final double creditPerUnit;
-  final String ? sku;
+  final String? sku;
 
   ReturnItemModel({
     required this.productName,
@@ -112,14 +111,15 @@ class ReturnItemModel {
 
   factory ReturnItemModel.fromJson(Map<String, dynamic> json) {
     return ReturnItemModel(
-      productName: json['productName']?? "",
+      productName: json['productName'] ?? "",
       variantId: json['variantId'] ?? 0,
       quantity: json['quantity'] ?? 0,
       creditPerUnit: (json['creditPerUnit'] ?? 0).toDouble(),
-       sku: json['sku'] ?? "",
+      sku: json['sku'] ?? "",
     );
   }
 }
+
 class CartItemModel {
   final int variantId;
   final String sku;
@@ -153,10 +153,11 @@ class CartItemModel {
       price: (json['price'] ?? 0).toDouble(),
       quantity: json['quantity'] ?? 0,
       lineTotal: (json['lineTotal'] ?? 0).toDouble(),
-       image: json['image'],
+      image: json['image'],
     );
   }
 }
+
 class CouponModel {
   final String code;
   final String discountType;
@@ -177,9 +178,26 @@ class CouponModel {
       code: json['code'] ?? "",
       discountType: json['discountType'] ?? "",
       discountValue: (json['discountValue'] ?? 0).toDouble(),
-      couponDiscountAmount:
-          (json['couponDiscountAmount'] ?? 0).toDouble(),
+      couponDiscountAmount: (json['couponDiscountAmount'] ?? 0).toDouble(),
       valid: json['valid'] ?? false,
     );
+  }
+}
+
+class AddonModel {
+  final String name;
+  final double price;
+
+  AddonModel({required this.name, required this.price});
+
+  factory AddonModel.fromJson(Map<String, dynamic> json) {
+    return AddonModel(
+      name: json['name'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'price': price};
   }
 }

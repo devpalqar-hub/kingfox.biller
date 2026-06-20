@@ -323,6 +323,7 @@ class AddProductController extends GetxController {
       queryParams['manualDiscountPercent'] = manualDiscountPercent.toString();
     }
 
+    if (addons.isNotEmpty) queryParams['addons'] = jsonEncode(addons);
     queryParams["billingSessionId"] = selectedSessionId.toString();
 
     final uri = Uri.parse(
@@ -469,6 +470,7 @@ class AddProductController extends GetxController {
       body["couponCode"] = couponCode;
     }
 
+    if (addons.isNotEmpty) body['addons'] = addons;
     if (campaignId != null && voucherCount != null) {
       body["campaignId"] = campaignId;
       body["voucherCount"] = voucherCount;
@@ -505,7 +507,7 @@ class AddProductController extends GetxController {
       },
       body: jsonEncode(body),
     );
-    
+
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data["returnOnly"] ?? false) {
@@ -634,4 +636,35 @@ class AddProductController extends GetxController {
 
     update();
   }
+
+  // ── ADDONS ─────────────────────────────────────────────────────────────────────
+  final List<AddonItem> availableAddons = [
+    AddonItem(name: "Gift Wrap", price: 50),
+    AddonItem(name: "Alteration", price: 100),
+  ];
+  // List<AddonItem> selectedAddons = [];
+
+  // field
+  List<Map<String, dynamic>> addons = [];
+
+  // method
+  void setAddons(List<Map<String, dynamic>> value) {
+    addons = value;
+    getCart();
+    update();
+  }
+
+  void clearAddons() {
+    addons.clear();
+    update();
+  }
+}
+
+// ── ADDON MODEL ────────────────────────────────────────────────────────────────
+class AddonItem {
+  final String name;
+  final double price;
+  AddonItem({required this.name, required this.price});
+
+  Map<String, dynamic> toJson() => {"name": name, "price": price};
 }

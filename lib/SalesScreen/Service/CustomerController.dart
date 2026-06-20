@@ -16,7 +16,6 @@ class CustomerController extends GetxController {
   void toggleDropdown() {
     isDropdownOpen = !isDropdownOpen;
 
-
     if (isDropdownOpen && customerList.isEmpty) {
       searchCustomers();
     }
