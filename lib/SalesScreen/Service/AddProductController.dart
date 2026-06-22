@@ -422,6 +422,17 @@ class AddProductController extends GetxController {
       return false;
     }
 
+    if (selectedCampaign == null && campaigns.isNotEmpty) {
+      voucherError = "Please select atleast one lucky coupon";
+      return false;
+    }
+
+    if (selectedStaff == null && staffList.isNotEmpty) {
+      couponError = "Please select the sales person";
+      return false;
+    }
+    update();
+
     if (isPercentageDiscount) {
       manualDiscountPercent ??= double.tryParse(discountController.text.trim());
     } else {
@@ -526,6 +537,7 @@ class AddProductController extends GetxController {
       discountController.clear();
       getSession(isFirst: true);
       isLoading = false;
+      addons.clear();
       update();
 
       return true;
@@ -639,14 +651,6 @@ class AddProductController extends GetxController {
     update();
   }
 
-  // ── ADDONS ─────────────────────────────────────────────────────────────────────
-  final List<AddonItem> availableAddons = [
-    AddonItem(name: "Gift Wrap", price: 50),
-    AddonItem(name: "Alteration", price: 100),
-  ];
-  // List<AddonItem> selectedAddons = [];
-
-  // field
   List<Map<String, dynamic>> addons = [];
 
   // method
