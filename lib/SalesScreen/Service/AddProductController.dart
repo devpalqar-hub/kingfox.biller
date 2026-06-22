@@ -422,16 +422,21 @@ class AddProductController extends GetxController {
       return false;
     }
 
-    if (selectedCampaign == null && campaigns.isNotEmpty) {
+    if (selectedCampaign == null &&
+        campaigns.isNotEmpty &&
+        cart!.items.isNotEmpty) {
       voucherError = "Please select atleast one lucky coupon";
+      update();
       return false;
     }
 
-    if (selectedStaff == null && staffList.isNotEmpty) {
+    if (selectedStaff == null &&
+        staffList.isNotEmpty &&
+        cart!.items.isNotEmpty) {
       couponError = "Please select the sales person";
+      update();
       return false;
     }
-    update();
 
     if (isPercentageDiscount) {
       manualDiscountPercent ??= double.tryParse(discountController.text.trim());
@@ -482,6 +487,8 @@ class AddProductController extends GetxController {
     if (couponCode != null && couponCode.isNotEmpty) {
       body["couponCode"] = couponCode;
     }
+
+    body["orderType"] = selectedOrderType;
 
     if (addons.isNotEmpty) body['addons'] = addons;
     if (campaignId != null && voucherCount != null) {
