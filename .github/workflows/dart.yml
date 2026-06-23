@@ -71,7 +71,7 @@ jobs:
           $script = @"
           [Setup]
           AppName=Kingfox Biller
-          AppVersion=1.0.0
+          AppVersion=4.0.0
           AppPublisher=Kingfox Clothing
           AppComments=Developed by Palqar Private Limited
           DefaultDirName={autopf}\Kingfox Biller

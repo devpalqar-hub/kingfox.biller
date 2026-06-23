@@ -118,7 +118,7 @@ class AddProductController extends GetxController {
   void clearAllTextControllers() {
     nameController.clear();
     phoneController.clear();
-    voucherCountController.text = "0";
+    voucherCountController.text = "1";
     couponController.clear();
     discountController.clear();
     update();
@@ -491,7 +491,7 @@ class AddProductController extends GetxController {
     body["orderType"] = selectedOrderType;
 
     if (addons.isNotEmpty) body['addons'] = addons;
-    if (campaignId != null && voucherCount != null) {
+    if (campaignId != null && voucherCount != null && voucherCount > 0) {
       body["campaignId"] = campaignId;
       body["voucherCount"] = voucherCount;
     }

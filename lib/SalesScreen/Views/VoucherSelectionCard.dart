@@ -85,7 +85,7 @@ class VoucherSelectionCard extends StatelessWidget {
                   _qtyBtn(Icons.remove, () {
                     int curr =
                         int.tryParse(ctrl.voucherCountController.text) ?? 1;
-                    if (curr > 1) {
+                    if (curr > 0) {
                       ctrl.voucherCountController.text = (--curr).toString();
                       ctrl.update();
                     }
